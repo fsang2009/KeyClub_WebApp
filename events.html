@@ -6,6 +6,7 @@
     <title>Southport Key Club - Events</title>
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/events.css">
+    <script src="events.js"></script>
 </head>
 <body>
     <section class="header">
@@ -18,8 +19,64 @@
     </section>
 
     <section class="main-content">
-        <
+        <div class="event" data-event-id="1">
+            <h2>Beach Cleanup</h2>
+            <p>Join us for a community beach cleanup event!</p>
+            <button class="event-view-button" onclick="openModal('Beach Cleanup', 'Join us for a community beach cleanup event! Help keep our beaches clean and safe for everyone.', 'Saturday, July 15, 2026', '9:00 AM - 12:00 PM', 'Southport Beach')">Sign Up & View</button>
+        </div>
+        <div class="event" data-event-id="2">
+            <h2>Food Drive</h2>
+            <p>Help collect food donations for local families in need.</p>
+            <button class="event-view-button" onclick="openModal('Food Drive', 'Help collect food donations for local families in need. All donations go to the Southport Food Bank.', 'Sunday, July 16, 2026', '10:00 AM - 2:00 PM', 'Southport Community Center')">Sign Up & View</button>
+        </div>
     </section>
+
+    <!-- Event Modal -->
+    <div class="modal" id="eventModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalEventTitle">Event Title</h2>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="event-details">
+                    <div class="detail-item">
+                        <span class="detail-label">Date:</span>
+                        <span id="modalEventDate" class="detail-value">Date</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Time:</span>
+                        <span id="modalEventTime" class="detail-value">Time</span>
+                    </div>
+                    <div class="detail-item">
+                        <span class="detail-label">Location:</span>
+                        <span id="modalEventLocation" class="detail-value">Location</span>
+                    </div>
+                    <div class="detail-item description">
+                        <span class="detail-label">Description:</span>
+                        <p id="modalEventDescription" class="detail-value">Description</p>
+                    </div>
+                </div>
+                <div class="signup-section">
+                    <button class="signup-button" id="signupButton" onclick="toggleSignup()">Sign Up for Event</button>
+                    <p class="signup-status" id="signupStatus"></p>
+                </div>
+                <div class="chat-section" id="chatSection" style="display: none;">
+                    <h3>Event Chat</h3>
+                    <div class="chat-messages" id="chatMessages">
+                        <div class="chat-message">
+                            <span class="chat-user">Admin:</span>
+                            <span class="chat-text">Welcome to the event chat! Use this space to coordinate with other participants.</span>
+                        </div>
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKeypress(event)">
+                        <button class="chat-send" onclick="sendMessage()">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
 
     <section class="navbar" id="nav-bar">
