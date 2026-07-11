@@ -32,7 +32,7 @@ commentButtonClose.forEach((button)=>{
 /*USER COMMENTING FUNCTION*/
 
 const commentInput = document.querySelectorAll('.comment-input');
-const comments = []
+const comments = JSON.parse(localStorage.getItem('comments'))|| []
 const commentSendButton = document.querySelectorAll('.comment-send-button')
 const commentArea = document.querySelectorAll('.comment-modal-body')
 
@@ -68,8 +68,10 @@ const sendComment = () =>{commentSendButton.forEach((comment)=>{
             }
         )
         renderComment();
+        localStorage.setItem('comments', JSON.stringify(comments))
     })
 })}
 
 sendComment();
+renderComment();
 
