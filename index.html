@@ -97,7 +97,7 @@
                         Like
                     </button>
 
-                    <button class="post-action" type="button">
+                    <button class="post-action comment-button" type="button">
                         <span>💬</span>
                         Comment
                     </button>
@@ -162,7 +162,7 @@
                         Like
                     </button>
 
-                    <button class="post-action" type="button">
+                    <button class="post-action comment-button" type="button">
                         <span>💬</span>
                         Comment
                     </button>
@@ -216,7 +216,7 @@
                         Like
                     </button>
 
-                    <button class="post-action" type="button">
+                    <button class="post-action comment-button" type="button">
                         <span>💬</span>
                         Comment
                     </button>
@@ -239,6 +239,58 @@
             <a href="settings.html">Settings</a>
         </div>
     </section>
+
+    <!-- Comment Modal -->
+    <div class="comment-modal" id="commentModal">
+        <div class="comment-modal-content">
+            <div class="comment-modal-header">
+                <h3>Comments</h3>
+                <button class="comment-modal-close" id="closeCommentModal">&times;</button>
+            </div>
+            <div class="comment-modal-body">
+                <div class="comment other-comment">
+                    <div class="comment-avatar">
+                        <img src="https://via.placeholder.com/40" alt="User avatar">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">Sarah Johnson</span>
+                            <span class="comment-time">2 hours ago</span>
+                        </div>
+                        <p class="comment-text">This is great news! Looking forward to the upcoming events.</p>
+                    </div>
+                </div>
+                <div class="comment other-comment">
+                    <div class="comment-avatar">
+                        <img src="https://via.placeholder.com/40" alt="User avatar">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">Mike Chen</span>
+                            <span class="comment-time">3 hours ago</span>
+                        </div>
+                        <p class="comment-text">Can't wait to participate in the beach cleanup!</p>
+                    </div>
+                </div>
+                <div class="comment other-comment">
+                    <div class="comment-avatar">
+                        <img src="https://via.placeholder.com/40" alt="User avatar">
+                    </div>
+                    <div class="comment-content">
+                        <div class="comment-header">
+                            <span class="comment-author">Emily Davis</span>
+                            <span class="comment-time">5 hours ago</span>
+                        </div>
+                        <p class="comment-text">Thanks for keeping us updated on everything!</p>
+                    </div>
+                </div>
+            </div>
+            <div class="comment-modal-footer">
+                <input type="text" class="comment-input" placeholder="Write a comment...">
+                <button class="comment-send-button">Send</button>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>

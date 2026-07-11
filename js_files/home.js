@@ -1,14 +1,30 @@
 const likeEmoji = document.querySelectorAll ('.like-button');
 likeEmoji.forEach((emoji)=>{
-    let buttonClicked = false;
+    let likeButtonClicked = false;
     emoji.closest('button').addEventListener('click',()=>{
-        if (!buttonClicked){
+        if (!likeButtonClicked){
             console.log('hi!')
             emoji.innerHTML ='❤️'
-            buttonClicked = true;
+            likeButtonClicked = true;
         } else{
             emoji.innerHTML ='♡'
-            buttonClicked = false;
+            likeButtonClicked = false;
         }
+    })
+})
+
+/* COMMENT FUNCTION CODE */
+const commentButton = document.querySelectorAll('.comment-button');
+const commentModal = document.querySelector('#commentModal')
+commentButton.forEach((button)=>{
+    button.addEventListener('click',()=>{
+            commentModal.classList.add('active')
+    })
+})
+
+const commentButtonClose = document.querySelectorAll('.comment-modal-close')
+commentButtonClose.forEach((button)=>{
+    button.addEventListener('click',()=>{
+        commentModal.classList.remove('active');
     })
 })
