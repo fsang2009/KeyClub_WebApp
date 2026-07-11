@@ -1,7 +1,7 @@
 /* Main Content - Home Page Specific */
 .main-content {
     flex: 1;
-    padding: 28px 16px 120px;
+    padding: 32px 20px 140px;
     max-width: 600px;
     margin: 0 auto;
     width: 100%;
@@ -12,8 +12,8 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 24px;
+    padding: 32px;
+    margin-bottom: 28px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.6);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -27,12 +27,12 @@
 .user {
     display: flex;
     align-items: center;
-    gap: 20px;
+    gap: 24px;
 }
 
 .user-avatar {
-    width: 60px;
-    height: 60px;
+    width: 64px;
+    height: 64px;
     border-radius: 16px;
     object-fit: cover;
     border: 3px solid rgba(99, 102, 241, 0.1);

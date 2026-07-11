@@ -3,8 +3,8 @@
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border-radius: 20px;
-    padding: 28px;
-    margin-bottom: 24px;
+    padding: 32px;
+    margin-bottom: 28px;
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
     border: 1px solid rgba(255, 255, 255, 0.6);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -17,7 +17,7 @@
     font-size: 1.6rem;
     font-weight: 800;
     color: #1e293b;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
     line-height: 1.2;
@@ -39,7 +39,7 @@
 
 .main-content{
     flex: 1;
-    padding: 28px 16px 120px;
+    padding: 32px 20px 140px;
     max-width: 600px;
     margin: 0 auto;
     width: 100%;
@@ -149,16 +149,16 @@
 }
 
 .modal-body {
-    padding: 28px;
+    padding: 32px;
 }
 
 .event-details {
-    margin-bottom: 28px;
+    margin-bottom: 32px;
 }
 
 .detail-item {
     display: flex;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     align-items: flex-start;
 }
 
@@ -189,8 +189,8 @@
 }
 
 .signup-section {
-    margin-bottom: 28px;
-    padding: 24px;
+    margin-bottom: 32px;
+    padding: 28px;
     background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
     border-radius: 16px;
     text-align: center;
@@ -226,7 +226,7 @@
 }
 
 .signup-status {
-    margin-top: 16px;
+    margin-top: 20px;
     font-size: 0.9rem;
     color: #10b981;
     font-weight: 700;
@@ -236,14 +236,14 @@
 /* Chat Section */
 .chat-section {
     border-top: 1px solid rgba(0, 0, 0, 0.05);
-    padding-top: 24px;
+    padding-top: 28px;
 }
 
 .chat-section h3 {
     font-size: 1.15rem;
     font-weight: 700;
     color: #1e293b;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
     letter-spacing: 0.02em;
     text-transform: uppercase;
 }
@@ -251,15 +251,15 @@
 .chat-messages {
     background: rgba(0, 0, 0, 0.02);
     border-radius: 12px;
-    padding: 20px;
+    padding: 24px;
     max-height: 200px;
     overflow-y: auto;
-    margin-bottom: 16px;
+    margin-bottom: 20px;
 }
 
 .chat-message {
-    margin-bottom: 16px;
-    padding: 12px 16px;
+    margin-bottom: 20px;
+    padding: 14px 18px;
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
@@ -280,12 +280,12 @@
 
 .chat-input {
     display: flex;
-    gap: 12px;
+    gap: 16px;
 }
 
 .chat-input input {
     flex: 1;
-    padding: 14px 18px;
+    padding: 16px 20px;
     border: 2px solid rgba(0, 0, 0, 0.1);
     border-radius: 12px;
     font-size: 0.95rem;
@@ -303,7 +303,7 @@
     background: linear-gradient(135deg, #6366f1, #8b5cf6);
     color: white;
     border: none;
-    padding: 14px 24px;
+    padding: 16px 28px;
     border-radius: 12px;
     font-weight: 700;
     letter-spacing: 0.05em;
