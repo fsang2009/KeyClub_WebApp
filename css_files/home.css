@@ -326,6 +326,10 @@ a {
     transform: translateY(-2px);
 }
 
+.welcome-button:active {
+    transform: scale(0.95) !important;
+}
+
 
 /* =====================================================
    FEED HEADING
@@ -371,7 +375,8 @@ a {
     transition:
         background 0.2s ease,
         color 0.2s ease,
-        border-color 0.2s ease;
+        border-color 0.2s ease,
+        transform 0.1s ease;
 }
 
 .filter-button:hover {
@@ -379,6 +384,10 @@ a {
 
     background: var(--blue-light);
     color: var(--blue);
+}
+
+.filter-button:active {
+    transform: scale(0.95) !important;
 }
 
 
@@ -695,7 +704,8 @@ a {
 
     transition:
         background 0.2s ease,
-        color 0.2s ease;
+        color 0.2s ease,
+        transform 0.1s ease;
 }
 
 .post-action:last-child {
@@ -707,8 +717,30 @@ a {
     color: var(--blue);
 }
 
+.post-action:active {
+    transform: scale(0.95) !important;
+}
+
 .post-action span {
     font-size: 1rem;
+}
+
+/* Like button animation */
+@keyframes heartBounce {
+    0% { transform: scale(1); }
+    25% { transform: scale(1.3); }
+    50% { transform: scale(0.9); }
+    75% { transform: scale(1.1); }
+    100% { transform: scale(1); }
+}
+
+.like-button {
+    display: inline-block;
+    transition: transform 0.1s ease;
+}
+
+.like-button.animate {
+    animation: heartBounce 0.4s ease !important;
 }
 
 
@@ -916,6 +948,39 @@ a {
 
 .comment-modal.active {
     display: flex;
+    animation: fadeIn 0.3s ease;
+}
+
+.comment-modal.active .comment-modal-content {
+    animation: scaleUp 0.3s ease;
+}
+
+.comment-modal.closing {
+    animation: fadeOut 0.2s ease forwards;
+}
+
+.comment-modal.closing .comment-modal-content {
+    animation: scaleDown 0.2s ease forwards;
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+    }
+    to {
+        opacity: 0;
+    }
+}
+
+@keyframes scaleDown {
+    from {
+        transform: scale(1);
+        opacity: 1;
+    }
+    to {
+        transform: scale(0.8);
+        opacity: 0;
+    }
 }
 
 .comment-modal-content {
@@ -930,6 +995,26 @@ a {
     box-shadow: var(--shadow);
 
     overflow: hidden;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes scaleUp {
+    from {
+        transform: scale(0.8);
+        opacity: 0;
+    }
+    to {
+        transform: scale(1);
+        opacity: 1;
+    }
 }
 
 .comment-modal-header {
@@ -1099,11 +1184,17 @@ a {
 
     cursor: pointer;
 
-    transition: background 0.2s ease;
+    transition:
+        background 0.2s ease,
+        transform 0.1s ease;
 }
 
 .comment-send-button:hover {
     background: var(--blue-dark);
+}
+
+.comment-send-button:active {
+    transform: scale(0.95) !important;
 }
 
 

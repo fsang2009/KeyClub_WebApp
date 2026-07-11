@@ -22,12 +22,12 @@
         <div class="event" data-event-id="1">
             <h2>Beach Cleanup</h2>
             <p>Join us for a community beach cleanup event!</p>
-            <button class="event-view-button" onclick="openModal('Beach Cleanup', 'Join us for a community beach cleanup event! Help keep our beaches clean and safe for everyone.', 'Saturday, July 15, 2026', '9:00 AM - 12:00 PM', 'Southport Beach')">Sign Up & View</button>
+            <button class="event-view-button">Sign Up & View</button>
         </div>
         <div class="event" data-event-id="2">
             <h2>Food Drive</h2>
             <p>Help collect food donations for local families in need.</p>
-            <button class="event-view-button" onclick="openModal('Food Drive', 'Help collect food donations for local families in need. All donations go to the Southport Food Bank.', 'Sunday, July 16, 2026', '10:00 AM - 2:00 PM', 'Southport Community Center')">Sign Up & View</button>
+            <button class="event-view-button">Sign Up & View</button>
         </div>
     </section>
 
@@ -36,7 +36,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalEventTitle">Event Title</h2>
-                <button class="modal-close" onclick="closeModal()">&times;</button>
+                <button class="modal-close">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="event-details">
@@ -58,7 +58,7 @@
                     </div>
                 </div>
                 <div class="signup-section">
-                    <button class="signup-button" id="signupButton" onclick="toggleSignup()">Sign Up for Event</button>
+                    <button class="signup-button" id="signupButton">Sign Up for Event</button>
                     <p class="signup-status" id="signupStatus"></p>
                 </div>
                 <div class="chat-section" id="chatSection" style="display: none;">
@@ -70,8 +70,8 @@
                         </div>
                     </div>
                     <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Type a message..." onkeypress="handleChatKeypress(event)">
-                        <button class="chat-send" onclick="sendMessage()">Send</button>
+                        <input type="text" id="chatInput" placeholder="Type a message...">
+                        <button class="chat-send">Send</button>
                     </div>
                 </div>
             </div>

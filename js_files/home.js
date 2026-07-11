@@ -5,6 +5,8 @@ likeEmoji.forEach((emoji)=>{
         if (!likeButtonClicked){
             console.log('hi!')
             emoji.innerHTML ='❤️'
+            emoji.classList.add('animate');
+            setTimeout(() => emoji.classList.remove('animate'), 400);
             likeButtonClicked = true;
         } else{
             emoji.innerHTML ='♡'
@@ -25,7 +27,12 @@ commentButton.forEach((button)=>{
 const commentButtonClose = document.querySelectorAll('.comment-modal-close')
 commentButtonClose.forEach((button)=>{
     button.addEventListener('click',()=>{
-        commentModal.classList.remove('active');
+        commentModal.classList.add('closing');
+        commentModal.querySelector('.comment-modal-content').classList.add('closing');
+        setTimeout(() => {
+            commentModal.classList.remove('active', 'closing');
+            commentModal.querySelector('.comment-modal-content').classList.remove('closing');
+        }, 200);
     })
 })
 
