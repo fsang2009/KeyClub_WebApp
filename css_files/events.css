@@ -122,11 +122,59 @@ body {
 .main-content {
     position: relative;
     z-index: 2;
+    width: min(calc(100% - 32px), 980px);
+    margin: -52px auto 0;
+}
+
+.events-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 20px 24px;
+    border: 1px solid rgba(230, 234, 242, 0.9);
+    border-radius: 22px;
+    background: rgba(255, 255, 255, 0.96);
+    box-shadow: var(--shadow);
+}
+
+.events-header h2 {
+    margin: 0;
+    color: var(--blue-dark);
+    font-size: clamp(1.3rem, 4vw, 1.7rem);
+}
+
+.add-event-button {
+    padding: 12px 20px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--gold), #f1ad2f);
+    box-shadow: 0 8px 18px rgba(244, 185, 66, 0.25);
+    color: var(--blue-dark);
+    font: inherit;
+    font-size: 0.85rem;
+    font-weight: 800;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.add-event-button:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 11px 22px rgba(244, 185, 66, 0.32);
+    transform: translateY(-2px);
+}
+
+.add-event-button:active {
+    transform: scale(0.97);
+}
+
+.event-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 22px;
-    width: min(calc(100% - 32px), 980px);
-    margin: -52px auto 0;
 }
 
 
@@ -680,6 +728,88 @@ This centers the modal-content even in that case.
 
 
 /* =====================================================
+   ADD EVENT FORM
+===================================================== */
+
+.add-event-modal-content {
+    max-width: 500px;
+}
+
+.add-event-form {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: var(--blue-dark);
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    text-transform: uppercase;
+}
+
+.form-group input,
+.form-group textarea {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    outline: none;
+    background: var(--white);
+    color: var(--text-dark);
+    font: inherit;
+    font-size: 0.95rem;
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group textarea:focus {
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.11);
+}
+
+.form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+    font-family: inherit;
+}
+
+.submit-event-button {
+    padding: 15px 20px;
+    border: 0;
+    border-radius: 14px;
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    box-shadow: 0 10px 22px rgba(36, 87, 214, 0.28);
+    color: var(--white);
+    font: inherit;
+    font-weight: 900;
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        filter 0.2s ease;
+}
+
+.submit-event-button:hover {
+    filter: brightness(1.05);
+    box-shadow: 0 13px 27px rgba(36, 87, 214, 0.34);
+    transform: translateY(-2px);
+}
+
+.submit-event-button:active {
+    transform: scale(0.98);
+}
+
+
+/* =====================================================
    VERY SMALL SCREENS
 ===================================================== */
 
@@ -695,4 +825,8 @@ This centers the modal-content even in that case.
     .nav-links a {
         font-size: 0.52rem;
     }
+}
+
+.modal.active {
+    display: flex;
 }
