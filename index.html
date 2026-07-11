@@ -3,28 +3,246 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/home.css">
+
     <title>Southport Key Club - Home</title>
 </head>
-<body class ="home-body">
-    <section class = "header">
-        <h1>Southport Key Club </h1>
-    </section>
 
-    <section class ="main-content">
-        <div class ="post">
-            <div class ="user">
-                <img class ="user-avatar" src="https://via.placeholder.com/50" alt="User Avatar">
-                <p class ="user-name">John Doe</p>
-            </div>
+<body class="home-body">
+
+    <section class="header">
+        <div class="header-content">
+            <p class="header-label">Welcome Back</p>
+            <h1>Southport Key Club</h1>
+            <p class="header-description">
+                Stay connected with club updates, service opportunities, and member announcements.
+            </p>
         </div>
     </section>
 
 
+    <main class="main-content">
 
-    <section class ="navbar" id="nav-bar">
-        <div class ="nav-links" id = "nav-bar-nav-links">
+        <section class="welcome-card">
+            <div class="welcome-icon">
+                <span>KC</span>
+            </div>
+
+            <div class="welcome-text">
+                <p class="section-label">Your Club Dashboard</p>
+                <h2>Ready to make a difference?</h2>
+                <p>
+                    Check the latest announcements, upcoming events, and service opportunities.
+                </p>
+            </div>
+
+            <a href="events.html" class="welcome-button">
+                View Events
+            </a>
+        </section>
+
+
+        <section class="feed-section">
+
+            <div class="feed-heading">
+                <div>
+                    <p class="section-label">Club Feed</p>
+                    <h2>Latest Updates</h2>
+                </div>
+
+                <button class="filter-button" type="button">
+                    Recent
+                </button>
+            </div>
+
+
+            <article class="post featured-post">
+
+                <div class="post-header">
+                    <div class="user">
+                        <img
+                            class="user-avatar"
+                            src="https://via.placeholder.com/50"
+                            alt="Southport Key Club avatar"
+                        >
+
+                        <div class="user-information">
+                            <p class="user-name">Southport Key Club</p>
+                            <p class="post-time">Today at 9:30 AM</p>
+                        </div>
+                    </div>
+
+                    <span class="post-category announcement-category">
+                        Announcement
+                    </span>
+                </div>
+
+
+                <div class="post-content">
+                    <h3>Welcome to the new Key Club dashboard!</h3>
+
+                    <p>
+                        This page will be your main place for club announcements,
+                        upcoming events, volunteer opportunities, and important updates.
+                    </p>
+                </div>
+
+
+                <div class="post-actions">
+                    <button class="post-action" type="button">
+                        <span>♡</span>
+                        Like
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>💬</span>
+                        Comment
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>↗</span>
+                        Share
+                    </button>
+                </div>
+
+            </article>
+
+
+            <article class="post">
+
+                <div class="post-header">
+                    <div class="user">
+                        <img
+                            class="user-avatar"
+                            src="https://via.placeholder.com/50"
+                            alt="Officer avatar"
+                        >
+
+                        <div class="user-information">
+                            <p class="user-name">John Doe</p>
+                            <p class="post-time">Yesterday at 4:15 PM</p>
+                        </div>
+                    </div>
+
+                    <span class="post-category event-category">
+                        Event
+                    </span>
+                </div>
+
+
+                <div class="post-content">
+                    <h3>Beach Cleanup Sign-Ups Are Open</h3>
+
+                    <p>
+                        Join us this Saturday for a community beach cleanup.
+                        Members can earn three service hours by participating.
+                    </p>
+
+                    <div class="event-preview">
+                        <div class="event-preview-date">
+                            <span>Jul</span>
+                            <strong>15</strong>
+                        </div>
+
+                        <div class="event-preview-details">
+                            <h4>Beach Cleanup</h4>
+                            <p>9:00 AM – 12:00 PM</p>
+                            <p>Southport Beach</p>
+                        </div>
+
+                        <a href="events.html" class="event-preview-button">
+                            View
+                        </a>
+                    </div>
+                </div>
+
+
+                <div class="post-actions">
+                    <button class="post-action" type="button">
+                        <span>♡</span>
+                        Like
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>💬</span>
+                        Comment
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>↗</span>
+                        Share
+                    </button>
+                </div>
+
+            </article>
+
+
+            <article class="post">
+
+                <div class="post-header">
+                    <div class="user">
+                        <img
+                            class="user-avatar"
+                            src="https://via.placeholder.com/50"
+                            alt="Member avatar"
+                        >
+
+                        <div class="user-information">
+                            <p class="user-name">Jane Smith</p>
+                            <p class="post-time">Monday at 2:40 PM</p>
+                        </div>
+                    </div>
+
+                    <span class="post-category member-category">
+                        Member Post
+                    </span>
+                </div>
+
+
+                <div class="post-content">
+                    <h3>Thank You, Volunteers!</h3>
+
+                    <p>
+                        Thank you to everyone who helped with the food pantry last weekend.
+                        Together, we collected more than 300 food items for local families.
+                    </p>
+                </div>
+
+
+                <div class="post-stats">
+                    <span>18 likes</span>
+                    <span>4 comments</span>
+                </div>
+
+
+                <div class="post-actions">
+                    <button class="post-action" type="button">
+                        <span>♡</span>
+                        Like
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>💬</span>
+                        Comment
+                    </button>
+
+                    <button class="post-action" type="button">
+                        <span>↗</span>
+                        Share
+                    </button>
+                </div>
+
+            </article>
+
+        </section>
+
+    </main>
+
+
+    <section class="navbar" id="nav-bar">
+        <div class="nav-links" id="nav-bar-nav-links">
             <a href="index.html">Home</a>
             <a href="events.html">Events</a>
             <a href="calendar.html">Calendar</a>
@@ -32,6 +250,6 @@
             <a href="settings.html">Settings</a>
         </div>
     </section>
-    
+
 </body>
 </html>

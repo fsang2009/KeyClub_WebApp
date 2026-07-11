@@ -3,59 +3,322 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
     <title>Southport Key Club - Calendar</title>
+
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/calendar.css">
 </head>
+
 <body>
+
     <section class="header">
-        <div class ="header-title">
+        <div class="header-title">
             <h1>Southport Key Club</h1>
         </div>
-        <div class ="header-subtitle">
+
+        <div class="header-subtitle">
             <p>Calendar</p>
         </div>
     </section>
 
-    <section class="main-content">
-        <div class="calendar">
+
+    <main class="main-content">
+
+        <section class="calendar-card">
+
             <div class="calendar-header">
-                <h2>Calendar</h2>
-            </div>
-            <div class="calendar-body">
-                <div class="calendar-grid">
-                    <div class="calendar-day">
-                        <h3>Monday</h3>
-                        <p>1</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Tuesday</h3>
-                        <p>2</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Wednesday</h3>
-                        <p>3</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Thursday</h3>
-                        <p>4</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Friday</h3>
-                        <p>5</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Saturday</h3>
-                        <p>6</p>
-                    </div>
-                    <div class="calendar-day">
-                        <h3>Sunday</h3>
-                        <p>7</p>
-                    </div>
+                <div>
+                    <p class="calendar-label">Club Schedule</p>
+                    <h2>July 2026</h2>
+                </div>
+
+                <div class="calendar-controls">
+                    <button
+                        class="calendar-control-button"
+                        type="button"
+                        aria-label="Previous month"
+                    >
+                        &#10094;
+                    </button>
+
+                    <button
+                        class="today-button"
+                        type="button"
+                    >
+                        Today
+                    </button>
+
+                    <button
+                        class="calendar-control-button"
+                        type="button"
+                        aria-label="Next month"
+                    >
+                        &#10095;
+                    </button>
                 </div>
             </div>
-        </div>
-    </section>
+
+
+            <div class="calendar-scroll">
+
+                <div class="calendar-weekdays">
+                    <div>Sun</div>
+                    <div>Mon</div>
+                    <div>Tue</div>
+                    <div>Wed</div>
+                    <div>Thu</div>
+                    <div>Fri</div>
+                    <div>Sat</div>
+                </div>
+
+
+                <div class="calendar-grid">
+
+                    <!-- Previous month -->
+                    <div class="calendar-day outside-month">
+                        <span class="day-number">28</span>
+                    </div>
+
+                    <div class="calendar-day outside-month">
+                        <span class="day-number">29</span>
+                    </div>
+
+                    <div class="calendar-day outside-month">
+                        <span class="day-number">30</span>
+                    </div>
+
+
+                    <!-- July -->
+                    <div class="calendar-day">
+                        <span class="day-number">1</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">2</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">3</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">4</span>
+
+                        <div class="calendar-event meeting-event">
+                            Club Meeting
+                        </div>
+                    </div>
+
+
+                    <div class="calendar-day">
+                        <span class="day-number">5</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">6</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">7</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">8</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">9</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">10</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">11</span>
+                    </div>
+
+
+                    <div class="calendar-day">
+                        <span class="day-number">12</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">13</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">14</span>
+                    </div>
+
+                    <div class="calendar-day today">
+                        <span class="day-number">15</span>
+
+                        <div class="calendar-event service-event">
+                            Beach Cleanup
+                        </div>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">16</span>
+
+                        <div class="calendar-event donation-event">
+                            Food Drive
+                        </div>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">17</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">18</span>
+                    </div>
+
+
+                    <div class="calendar-day">
+                        <span class="day-number">19</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">20</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">21</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">22</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">23</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">24</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">25</span>
+
+                        <div class="calendar-event social-event">
+                            Member Social
+                        </div>
+                    </div>
+
+
+                    <div class="calendar-day">
+                        <span class="day-number">26</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">27</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">28</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">29</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">30</span>
+                    </div>
+
+                    <div class="calendar-day">
+                        <span class="day-number">31</span>
+                    </div>
+
+
+                    <!-- Next month -->
+                    <div class="calendar-day outside-month">
+                        <span class="day-number">1</span>
+                    </div>
+
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="upcoming-events">
+
+            <div class="section-heading">
+                <div>
+                    <p class="section-label">What’s Next</p>
+                    <h2>Upcoming Events</h2>
+                </div>
+
+                <a href="events.html">View all events</a>
+            </div>
+
+
+            <div class="upcoming-events-grid">
+
+                <article class="upcoming-event-card">
+                    <div class="event-date">
+                        <span class="event-month">Jul</span>
+                        <strong>15</strong>
+                    </div>
+
+                    <div class="event-information">
+                        <span class="event-category service-category">
+                            Service
+                        </span>
+
+                        <h3>Beach Cleanup</h3>
+                        <p>9:00 AM – 12:00 PM</p>
+                        <p>Southport Beach</p>
+                    </div>
+                </article>
+
+
+                <article class="upcoming-event-card">
+                    <div class="event-date">
+                        <span class="event-month">Jul</span>
+                        <strong>16</strong>
+                    </div>
+
+                    <div class="event-information">
+                        <span class="event-category donation-category">
+                            Donation
+                        </span>
+
+                        <h3>Food Drive</h3>
+                        <p>10:00 AM – 2:00 PM</p>
+                        <p>Southport Community Center</p>
+                    </div>
+                </article>
+
+
+                <article class="upcoming-event-card">
+                    <div class="event-date">
+                        <span class="event-month">Jul</span>
+                        <strong>25</strong>
+                    </div>
+
+                    <div class="event-information">
+                        <span class="event-category social-category">
+                            Social
+                        </span>
+
+                        <h3>Member Social</h3>
+                        <p>5:30 PM – 7:00 PM</p>
+                        <p>Southport High School</p>
+                    </div>
+                </article>
+
+            </div>
+
+        </section>
+
+    </main>
 
 
     <section class="navbar" id="nav-bar">
@@ -67,5 +330,6 @@
             <a href="settings.html">Settings</a>
         </div>
     </section>
+
 </body>
 </html>
