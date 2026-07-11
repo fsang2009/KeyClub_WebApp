@@ -465,7 +465,9 @@ This centers the modal-content even in that case.
         box-shadow 0.2s ease,
         filter 0.2s ease;
 }
-
+.signed-up{
+    background: rgba(0, 128, 0, 0.678) !important;
+}
 .signup-button:hover {
     filter: brightness(1.04);
     box-shadow: 0 13px 27px rgba(244, 185, 66, 0.34);

@@ -31,15 +31,21 @@ eventArea.addEventListener('click', (e)=>{
     }
 })
 
+let currentEventID = ''
+
 const modalCloseButton = document.querySelector('.modal-close');
 modalCloseButton.addEventListener('click', ()=>{
     setTimeout(() => {
+        currentEventID = ''
         document.getElementById('eventModal').style.display = 'none';
     }, 200);
 })
 
 
+
+
 const openModal = (eventId) =>{
+    currentEventID = eventId
     const event = eventData.find(e => e.id === eventId);
     
     document.getElementById('modalEventTitle').textContent = event.title;
@@ -49,6 +55,20 @@ const openModal = (eventId) =>{
     document.getElementById('modalEventDescription').textContent = event.description;
     
     document.getElementById('eventModal').style.display = 'block';
+
+    const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {} ;
+    if(eventSignUps[currentEventID]){
+        signUpButton.textContent = "Cancel Signup";
+    signUpButton.classList.add('signed-up');
+    toggleMessages(currentEventID)
+    renderChats();
+    } else{ 
+         signUpButton.textContent = "Sign Up for Event";
+    signUpButton.classList.remove('signed-up');
+    toggleMessages(currentEventID)
+    }
+
+
 }
 
 
@@ -112,3 +132,99 @@ const addEvent = ()=>{
 addEvent()
 renderEvent()
 
+/* USER SIGNING UP FUNCTION */
+const signUpButton = document.querySelector('.signup-button')
+let lateMSG = null
+signUpButton.addEventListener('click',()=>{
+        clearTimeout(lateMSG)
+        const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {} ;
+        
+        if(!eventSignUps[currentEventID])   {
+             lateMSG = setTimeout(()=>{
+                signUpButton.textContent = "Cancel Signup"
+            }, 3000)
+            signUpButton.textContent = "Signed Up! 🥳"
+            signUpButton.classList.add('signed-up');
+             eventSignUps[currentEventID] = true;
+            localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
+            console.log(eventSignUps)
+            toggleMessages(currentEventID)
+            
+        }
+     else{
+            signUpButton.textContent = 'Sign Up'
+            signUpButton.classList.remove('signed-up')
+            delete eventSignUps[currentEventID];
+             localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
+             toggleMessages(currentEventID)
+    }
+})
+
+//const eventChats = {"event-id-1": [{user:"You", text: "Yo"}], "event-id-2"}
+
+//MESSAGING FUNCTIONS
+const toggleMessages = (eventID)=>{
+    const chatBox = document.querySelector('.chat-section')
+    const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
+    const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {}
+    if (eventSignUps[eventID]){
+        chatBox.style.display = 'block'
+        eventChats[eventID] = eventChats[eventID] || [];
+
+    } else {
+        chatBox.style.display = 'none'
+    }
+
+}
+
+
+//Send message function
+const sendMessageButton = document.querySelector('.chat-send');
+const messages = document.querySelector('#chatInput'); 
+
+let messageEmpty = null
+   
+    sendMessageButton.addEventListener('click',()=>{
+        clearTimeout(messageEmpty)
+         const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
+        const userMessages = messages.value;
+        eventChats[currentEventID] = eventChats[currentEventID] || []; 
+        if(messages.value === ''){
+            messages.placeholder = 'Please Enter a Message'
+            messageEmpty = setTimeout(()=>{
+                messages.placeholder = ''
+            }, 2000)
+            return
+        }
+        eventChats[currentEventID].push({
+            user: 'You',
+            message: userMessages
+        })
+        console.log(eventChats[currentEventID])
+        messages.value = ''
+        localStorage.setItem('eventChats', JSON.stringify(eventChats))
+        renderChats();
+        
+    }
+
+)
+
+
+// Render chat messsages 
+const chatMessages = document.querySelector('.chat-messages')
+const renderChats = ()=>{
+    chatMessages.innerHTML = ''
+    let html = ''
+    const eventChats = JSON.parse(localStorage.getItem('eventChats'))|| {};
+    eventChats[currentEventID]=eventChats[currentEventID] || [];
+    eventChats[currentEventID].forEach((chat)=>{
+        html += `
+         <div class="chat-message">
+                            <span class="chat-user">${chat.user}:</span>
+                            <span class="chat-text">${chat.message}</span>
+                        </div>
+        `
+        
+    })
+    chatMessages.innerHTML = html
+}
