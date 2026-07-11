@@ -1017,6 +1017,11 @@ a {
     background: var(--blue-light);
 }
 
+.user-comment .comment-content {
+    background: var(--white);
+    border: 1px solid var(--border);
+}
+
 .comment-header {
     display: flex;
 
