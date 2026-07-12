@@ -11,7 +11,15 @@ const createAcccountButton = document.querySelector('.create-account-button')
 
 const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
 
+const errorMessageFill = document.querySelector('#fill-signup-error');
+const errorMessagePasswordCheck = document.querySelector('#password-check-signup-error');
+const errorMessageEmailCheck = document.querySelector('#email-check-signup-error');
+
+let errorMessageTimer = null
+
+
 document.getElementById('signup-form').addEventListener('submit',(event)=>{
+    clearTimeout(errorMessageTimer);
     event.preventDefault();
     const userSetFirstName = userFirstName.value.trim();
     const userSetLastName = userLastName.value.trim();
@@ -25,7 +33,29 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
     if((userSetFirstName === ''|| userSetLastName === '' || userSetEmail === ''
     || userSetSchool === ''|| userSetGrade === '' || userSetDisplayName === '' 
     || userSetPassword === '' || userConfirmedPassword === ''
-    )|| (userSetPassword !== userConfirmedPassword) || (userInfo[userSetEmail])){
+    )){
+        errorMessageFill.textContent = 'Please Fill in all Boxes'
+        errorMessageFill.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessageFill.textContent = ''
+            errorMessageFill.style.display='none'
+        }, 4300)
+        return;
+    } if(userSetPassword !== userConfirmedPassword){
+        errorMessagePasswordCheck.textContent = 'Passwords do not match'
+        errorMessagePasswordCheck.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessagePasswordCheck.textContent = '';
+            errorMessagePasswordCheck.style.display ='none';
+        }, 4300)
+        return;
+    } if (userInfo[userSetEmail]){
+        errorMessageEmailCheck.textContent = 'Email address already used by an account!'
+        errorMessageEmailCheck.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessageEmailCheck.textContent = ''
+            errorMessageEmailCheck.style.display='none'
+        }, 4300)
         return;
     }
         userInfo[userSetEmail] = userInfo[userSetEmail] || {};
@@ -35,9 +65,11 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             email: userSetEmail,
             school: userSetSchool,
             grade: userSetGrade,
-            displayname: userSetDisplayName,
+            username: userSetDisplayName,
             password: userSetPassword
         }
+
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
+    window.location.href ='profile.html'
 
 })

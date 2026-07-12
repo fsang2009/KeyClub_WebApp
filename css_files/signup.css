@@ -350,6 +350,17 @@ a {
     margin-bottom: 35px;
 }
 
+.error-message {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    border-radius: 10px;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    color: #dc2626;
+    font-size: 12px;
+    font-weight: 600;
+}
+
 .eyebrow {
     display: block;
     margin-bottom: 9px;

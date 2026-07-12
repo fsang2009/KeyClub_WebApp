@@ -10,7 +10,9 @@ const eventCard = document.querySelectorAll('.event')
             </div>*/
 
 /* ADD EVENT SECTION */
-
+const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
+const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
+const currentUser = userInfo[userSetEmail];
 
 const addEventButton = document.querySelector('.add-event-button');
 const addEventModal = document.querySelector('#addEventModal')
@@ -173,6 +175,7 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = "Signed Up! 🥳"
             signUpButton.classList.add('signed-up');
              eventSignUps[currentEventID] = true;
+             currentUser[signedUpEvents].currentEventId = true; 
             localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
             console.log(eventSignUps)
             toggleMessages(currentEventID)
@@ -182,6 +185,7 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = 'Sign Up'
             signUpButton.classList.remove('signed-up')
             delete eventSignUps[currentEventID];
+            delete currentUser[signedUpEvents].currentEventId
              localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
              toggleMessages(currentEventID)
     }
@@ -245,7 +249,7 @@ const toggleMessages = (eventID)=>{
     const chatBox = document.querySelector('.chat-section')
     const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
     const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {}
-    if (eventSignUps[eventID]){
+    if (currentUser[signedUpEvents].eventID){
         chatBox.style.display = 'block'
         eventChats[eventID] = eventChats[eventID] || [];
 
@@ -275,7 +279,7 @@ let messageEmpty = null
             return
         }
         eventChats[currentEventID].push({
-            user: 'You',
+            user: currentUser.username,
             message: userMessages
         })
         console.log(eventChats[currentEventID])

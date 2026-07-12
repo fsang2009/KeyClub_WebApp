@@ -2,6 +2,13 @@
 'userHours' = { totalHours, totalPoints, eventHistory: [] }
 'userAchievements' = [achievement objects]*/
 
+const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
+const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
+const currentUser = userInfo[userSetEmail]
+
+if(!currentUser){
+    window.location.href = 'login.html'
+}
 // Edit profile functionality
 const editProfileButton = document.querySelector('.edit-profile-button');
 const editProfileModal = document.querySelector('#editProfileModal');
@@ -9,8 +16,8 @@ const closeProfileModalButton = document.querySelector('.edit-profile-close');
 
 editProfileButton.addEventListener('click',()=>{
     editProfileModal.classList.add('active');
-    nameInput.value = userInfo.username
-    profileDescription.value = userInfo.description
+    nameInput.value = currentUser.username || ''
+    profileDescription.value = currentUser.description || ''
 })
 
 closeProfileModalButton.addEventListener('click',()=>{
@@ -23,7 +30,7 @@ const profileDescription = document.querySelector('#profileDescription');
 
 const submitProfileEdit = document.querySelector('.submit-profile-button');
 
-const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
+
 
 // School-friendly profile pictures array
 const profilePictures = [
@@ -37,10 +44,11 @@ const profilePictures = [
     'images/profiles/avatar8.png'
 ];
 
+ 
 // Assign random profile picture if user doesn't have one
-if (!userInfo.profileImage) {
+if (!currentUser.profileImage) {
     const randomIndex = Math.floor(Math.random() * profilePictures.length);
-    userInfo.profileImage = profilePictures[randomIndex];
+    currentUser.profileImage = profilePictures[randomIndex];
     localStorage.setItem('userinfo', JSON.stringify(userInfo));
 }
 
@@ -48,9 +56,9 @@ const userNameProfile = document.querySelector('#username');
 const descriptionProfile = document.querySelector('#description');
 const profileImageElement = document.querySelector('.profile-header img');
 
-userNameProfile.textContent = userInfo.username || 'Student'
-descriptionProfile.textContent = userInfo.description || 'Bio'
-profileImageElement.src = userInfo.profileImage
+userNameProfile.textContent = currentUser.username || 'Student'
+descriptionProfile.textContent = currentUser.description || 'Bio'
+profileImageElement.src = currentUser.profileImage
 
 
 let nameInputTimer = null
@@ -69,12 +77,12 @@ submitProfileEdit.addEventListener('click',(event)=>{
     }
 
 
+    currentUser.username = newUsername
+    currentUser.description = newProfileDescription
 
 
-    userNameProfile.textContent = newUsername;
-    descriptionProfile.textContent = newProfileDescription;
-    userInfo.username = newUsername;
-    userInfo.description = newProfileDescription;
+    userNameProfile.textContent = currentUser.username;
+    descriptionProfile.textContent = currentUser.description;
     localStorage.setItem('userinfo', JSON.stringify(userInfo));
     editProfileModal.classList.remove('active');
 })
