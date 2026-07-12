@@ -21,7 +21,7 @@ const eventLocation = document.querySelector('#eventLocation');
 const eventDescription = document.querySelector('#eventDescription');
 const eventArea = document.querySelector('.event-grid');
 
-const eventData = JSON.parse(localStorage.getItem('eventData')) || []
+let eventData = JSON.parse(localStorage.getItem('eventData')) || []
 
 eventArea.addEventListener('click', (e)=>{
     if(e.target.classList.contains('event-view-button')){
@@ -101,17 +101,41 @@ const addEvent = ()=>{
         const currentTime = eventTime.value;
         const currentLocation = eventLocation.value;
         const currentDescription = eventDescription.value;
-    
+
         if(currentTitle && currentDate && currentTime && currentLocation && currentDescription){
-            eventData.push({
-                id: crypto.randomUUID(),
-                title: currentTitle,
-                description: currentDescription,
-                time: currentTime,
-                date: currentDate,
-                location: currentLocation
-            })
-            addEventModal.classList.remove('active')
+            // Check if we're in edit mode
+            if (submitEventButton.dataset.editMode === 'true') {
+                // Update existing event
+                const eventIndex = eventData.findIndex(event => event.id === currentEventID);
+                if (eventIndex !== -1) {
+                    eventData[eventIndex] = {
+                        id: currentEventID,
+                        title: currentTitle,
+                        description: currentDescription,
+                        time: currentTime,
+                        date: currentDate,
+                        location: currentLocation
+                    };
+                }
+                // Reset edit mode
+                submitEventButton.dataset.editMode = 'false';
+                submitEventButton.textContent = 'Create Event';
+                addEventModal.classList.remove('active');
+                // Close event details modal if open
+                document.getElementById('eventModal').style.display = 'none';
+                currentEventID = '';
+            } else {
+                // Create new event
+                eventData.push({
+                    id: crypto.randomUUID(),
+                    title: currentTitle,
+                    description: currentDescription,
+                    time: currentTime,
+                    date: currentDate,
+                    location: currentLocation
+                })
+                addEventModal.classList.remove('active')
+            }
         }
         renderEvent();
         localStorage.setItem('eventData', JSON.stringify(eventData));
@@ -121,6 +145,9 @@ const addEvent = ()=>{
     exitButton.addEventListener('click',()=>{
         setTimeout(()=>{
             addEventModal.classList.remove('active');
+            // Reset edit mode if closing without saving
+            submitEventButton.dataset.editMode = 'false';
+            submitEventButton.textContent = 'Create Event';
         }, 200)
     })
     
@@ -159,6 +186,57 @@ signUpButton.addEventListener('click',()=>{
              toggleMessages(currentEventID)
     }
 })
+
+/* DELETE EVENT FUNCTION */
+const deleteEventButton = document.querySelector('#deleteEventButton');
+deleteEventButton.addEventListener('click', () => {
+    if (confirm('Are you sure you want to delete this event?')) {
+        // Remove event from eventData
+     eventData = JSON.parse(localStorage.getItem('eventData')) || [];
+        eventData = eventData.filter(event => event.id !== currentEventID);
+        localStorage.setItem('eventData', JSON.stringify(eventData));
+
+        // Clean up signups for this event
+        const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {};
+        delete eventSignUps[currentEventID];
+        localStorage.setItem('eventsignups', JSON.stringify(eventSignUps));
+
+        // Clean up chat messages for this event
+        const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
+        delete eventChats[currentEventID];
+        localStorage.setItem('eventChats', JSON.stringify(eventChats));
+
+        // Re-render events and close modal
+        renderEvent();
+        document.getElementById('eventModal').style.display = 'none';
+        currentEventID = '';
+    }
+});
+
+/* EDIT EVENT FUNCTION */
+const editEventButton = document.querySelector('#editEventButton');
+editEventButton.addEventListener('click', () => {
+    // Get current event data
+    const eventData = JSON.parse(localStorage.getItem('eventData')) || [];
+    const currentEvent = eventData.find(event => event.id === currentEventID);
+
+    if (currentEvent) {
+        // Populate add event form with current data
+        eventTitle.value = currentEvent.title;
+        eventDate.value = currentEvent.date;
+        eventTime.value = currentEvent.time;
+        eventLocation.value = currentEvent.location;
+        eventDescription.value = currentEvent.description;
+
+        // Open add event modal
+        addEventModal.classList.add('active');
+
+        // Change submit button to "Update Event"
+        const submitEventButton = addEventModal.querySelector('.submit-event-button');
+        submitEventButton.textContent = 'Update Event';
+        submitEventButton.dataset.editMode = 'true';
+    }
+});
 
 //const eventChats = {"event-id-1": [{user:"You", text: "Yo"}], "event-id-2"}
 

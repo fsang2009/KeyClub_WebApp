@@ -6,62 +6,22 @@
     <title>Southport Key Club - Profile</title>
     
     <link rel="stylesheet" href="css_files/profile.css">
+    <script src = "js_files/profile.js" defer></script>
 </head>
 <body>
+    <a href ="landingpage.html">go landing page</a>
     <section class="header">
         <div class ="profile-header">
             <img src="images/profile.png" alt="Profile Picture">
-            <h1>User Name</h1>
+            <h1 id="username">User Name</h1>
+            <button class="edit-profile-button">Edit Profile</button>
         </div>
         <div class ="description">
-            <p>Description</p>
+            <p id ="description">Description</p>
         </div>
     </section>
 
     <section class="main-content">
-        <div class ="achievements-board">
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-            <div class ="achievement">
-                <img src="images/achievement.png" alt="Achievement">
-                <h2>Achievement</h2>
-                <p>Description</p>
-            </div>
-        </div>
-
         <div class ="service-hours-board">
             <div class ="service-hours">
                 <h2>Service Hours</h2>
@@ -70,6 +30,13 @@
             <div class = "points">
                 <h2>Points</h2>
                 <p>Points: 100</p>
+            </div>
+        </div>
+
+        <div class="signed-up-events">
+            <h2 class="section-title">Your Events</h2>
+            <div class="events-scroll-container" id="signedUpEventsContainer">
+                <!-- Events will be dynamically inserted here -->
             </div>
         </div>
     </section>
@@ -84,5 +51,28 @@
             <a href="settings.html">Settings</a>
         </div>
     </section>
+
+    <!-- Edit Profile Modal -->
+    <div class="modal" id="editProfileModal">
+        <div class="modal-content edit-profile-modal-content">
+            <div class="modal-header">
+                <h2>Edit Profile</h2>
+                <button class="modal-close edit-profile-close">&times;</button>
+            </div>
+            <div class="modal-body">
+                <form class="edit-profile-form">
+                    <div class="form-group">
+                        <label for="profileName">Name</label>
+                        <input type="text" id="profileName" placeholder="Enter your name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="profileDescription">Description</label>
+                        <textarea id="profileDescription" placeholder="Tell us about yourself" rows="4" required></textarea>
+                    </div>
+                    <button type="submit" class="submit-profile-button">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
 </body>
 </html>

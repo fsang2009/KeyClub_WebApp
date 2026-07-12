@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Log In | KeyConnect</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=League+Spartan:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="css_files/login.css">
+</head>
+
+<body>
+
+    <main class="login-page">
+
+        <section class="login-brand-panel">
+
+            <div class="background-circle circle-one"></div>
+            <div class="background-circle circle-two"></div>
+            <div class="background-circle circle-three"></div>
+
+            <a href="index.html" class="brand">
+
+                <div class="brand-icon">
+                    <span>K</span>
+                </div>
+
+                <div class="brand-text">
+                    <span class="brand-name">KeyConnect</span>
+                    <span class="brand-subtitle">
+                        Student Service Network
+                    </span>
+                </div>
+
+            </a>
+
+
+            <div class="brand-content">
+
+                <div class="brand-badge">
+                    <span class="badge-dot"></span>
+                    Welcome back, student leader
+                </div>
+
+                <h1>
+                    Keep building
+                    <span>your impact.</span>
+                </h1>
+
+                <p>
+                    Log in to discover new service events, track your volunteer
+                    hours, connect with your chapter, and continue making a
+                    difference in your community.
+                </p>
+
+
+                <div class="impact-card">
+
+                    <div class="impact-card-header">
+
+                        <div>
+                            <span class="impact-label">
+                                Chapter impact
+                            </span>
+
+                            <h2>1,284 hours</h2>
+                        </div>
+
+                        <div class="impact-symbol">
+                            ★
+                        </div>
+
+                    </div>
+
+
+                    <div class="impact-progress">
+
+                        <div class="progress-heading">
+                            <span>Annual service goal</span>
+                            <span>86%</span>
+                        </div>
+
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+
+                    </div>
+
+
+                    <div class="impact-stats">
+
+                        <div class="impact-stat">
+                            <strong>68</strong>
+                            <span>Active members</span>
+                        </div>
+
+                        <div class="impact-divider"></div>
+
+                        <div class="impact-stat">
+                            <strong>24</strong>
+                            <span>Events completed</span>
+                        </div>
+
+                        <div class="impact-divider"></div>
+
+                        <div class="impact-stat">
+                            <strong>12</strong>
+                            <span>Community partners</span>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="brand-footer">
+
+                <div class="brand-footer-icon">✓</div>
+
+                <div>
+                    <span>Ready for your next event?</span>
+                    <strong>Your club is waiting.</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="login-form-panel">
+
+            <div class="mobile-header">
+
+                <a href="index.html" class="mobile-brand">
+
+                    <div class="mobile-brand-icon">
+                        K
+                    </div>
+
+                    <span>KeyConnect</span>
+
+                </a>
+
+            </div>
+
+
+            <div class="form-container">
+
+                <div class="form-heading">
+
+                    <span class="eyebrow">
+                        Member access
+                    </span>
+
+                    <h2>Welcome back</h2>
+
+                    <p>
+                        Enter your account information to continue to your
+                        KeyConnect dashboard.
+                    </p>
+
+                </div>
+
+
+                <form class="login-form" id="login-form">
+
+                    <div class="form-group">
+
+                        <label for="email">
+                            Email address
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">@</span>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="student@school.org"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <div class="label-row">
+
+                            <label for="password">
+                                Password
+                            </label>
+
+                            <a href="#" class="forgot-password">
+                                Forgot password?(This feature does not work yet.)
+                            </a>
+
+                        </div>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon password-dot">
+                                ●
+                            </span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Enter your password"
+                                autocomplete="current-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                id="password-toggle"
+                                aria-label="Show password"
+                            >
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <label class="remember-option">
+
+                        <input
+                            type="checkbox"
+                            id="remember"
+                            name="remember"
+                        >
+
+                        <span class="custom-checkbox"></span>
+
+                        <span class="remember-text">
+                            Keep me logged in on this device
+                        </span>
+
+                    </label>
+
+
+                    <button type="submit" class="login-button">
+
+                        <span>Log in to KeyConnect</span>
+
+                        <span class="button-arrow">→</span>
+
+                    </button>
+
+
+                    <div class="form-divider">
+
+                        <span></span>
+
+                        <p>New to KeyConnect?</p>
+
+                        <span></span>
+
+                    </div>
+
+
+                    <a href="signup.html" class="signup-button">
+                        Create a student account
+                    </a>
+
+
+                    <p class="support-text">
+                        Having trouble logging in?
+                        <a href="#">Contact your club officer</a>
+                    </p>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+ 
+
+</body>
+</html>

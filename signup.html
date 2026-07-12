@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+    >
+
+    <title>Create Account | KeyConnect</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link
+        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=League+Spartan:wght@600;700;800&display=swap"
+        rel="stylesheet"
+    >
+
+    <link rel="stylesheet" href="css_files/signup.css">
+    <script src ="js_files/signup.js" defer></script>
+</head>
+
+<body>
+
+    <main class="signup-page">
+
+        <section class="signup-brand-panel">
+
+            <div class="brand-background-circle circle-one"></div>
+            <div class="brand-background-circle circle-two"></div>
+            <div class="brand-background-circle circle-three"></div>
+
+            <a href="../index.html" class="brand">
+
+                <div class="brand-icon">
+                    <span>K</span>
+                </div>
+
+                <div class="brand-text">
+                    <span class="brand-name">KeyClub</span>
+                    <span class="brand-subtitle">Student Service Network</span>
+                </div>
+
+            </a>
+
+
+            <div class="brand-panel-content">
+
+                <div class="brand-badge">
+                    <span class="badge-dot"></span>
+                    Built for student service
+                </div>
+
+                <h1>
+                    Your impact starts
+                    <span>right here.</span>
+                </h1>
+
+                <p>
+                    Create your student profile, join your school’s Key Club,
+                    register for service events, and start tracking every hour
+                    you give back to your community.
+                </p>
+
+
+                <div class="benefit-list">
+
+                    <div class="benefit-item">
+
+                        <div class="benefit-icon">
+                            <span>✓</span>
+                        </div>
+
+                        <div>
+                            <h3>Track service hours</h3>
+                            <p>
+                                Keep an organized record of your volunteer work.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="benefit-item">
+
+                        <div class="benefit-icon">
+                            <span>⌁</span>
+                        </div>
+
+                        <div>
+                            <h3>Check in with your QR code</h3>
+                            <p>
+                                Attend events without paper forms or manual logs.
+                            </p>
+                        </div>
+
+                    </div>
+
+
+                    <div class="benefit-item">
+
+                        <div class="benefit-icon">
+                            <span>★</span>
+                        </div>
+
+                        <div>
+                            <h3>Unlock achievements</h3>
+                            <p>
+                                Celebrate milestones as your impact grows.
+                            </p>
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+            <div class="impact-preview">
+
+                <div class="impact-icon">★</div>
+
+                <div>
+                    <span>Community impact</span>
+                    <strong>Every hour matters.</strong>
+                </div>
+
+            </div>
+
+        </section>
+
+
+        <section class="signup-form-panel">
+
+            <div class="mobile-header">
+
+                <a href="../index.html" class="mobile-brand">
+
+                    <div class="mobile-brand-icon">K</div>
+
+                    <span>KeyClub</span>
+
+                </a>
+
+            </div>
+
+
+            <div class="form-container">
+
+                <div class="form-heading">
+
+                    <span class="eyebrow">Join your club</span>
+
+                    <h2>Create your account</h2>
+
+                    <p>
+                        Enter your information below to begin serving,
+                        connecting, and leading.
+                    </p>
+
+                </div>
+
+
+                <form class="signup-form" id="signup-form">
+
+                    <div class="input-row">
+
+                        <div class="form-group">
+
+                            <label for="first-name">First name</label>
+
+                            <div class="input-wrapper">
+                                <input
+                                    type="text"
+                                    id="first-name"
+                                    name="firstName"
+                                    placeholder="Maya"
+                                    autocomplete="given-name"
+                                    required
+                                >
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="last-name">Last name</label>
+
+                            <div class="input-wrapper">
+                                <input
+                                    type="text"
+                                    id="last-name"
+                                    name="lastName"
+                                    placeholder="Johnson"
+                                    autocomplete="family-name"
+                                    required
+                                >
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="email">School email</label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">@</span>
+
+                            <input
+                                type="email"
+                                id="email"
+                                name="email"
+                                placeholder="student@school.org"
+                                autocomplete="email"
+                                required
+                            >
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="input-row">
+
+                        <div class="form-group">
+
+                            <label for="school">School</label>
+
+                            <div class="select-wrapper">
+
+                                <select
+                                    id="school"
+                                    name="school"
+                                    required
+                                >
+                                    <option value="" selected disabled>
+                                        Select your school
+                                    </option>
+
+                                    <option value="southport">
+                                        Southport High School
+                                    </option>
+
+                                    <option value="perry-meridian">
+                                        Perry Meridian High School
+                                    </option>
+
+                                    <option value="other">
+                                        Other school
+                                    </option>
+                                </select>
+
+                                <span class="select-arrow">⌄</span>
+
+                            </div>
+
+                        </div>
+
+
+                        <div class="form-group">
+
+                            <label for="grade">Grade level</label>
+
+                            <div class="select-wrapper">
+
+                                <select
+                                    id="grade"
+                                    name="grade"
+                                    required
+                                >
+                                    <option value="" selected disabled>
+                                        Select grade
+                                    </option>
+
+                                    <option value="9">9th grade</option>
+                                    <option value="10">10th grade</option>
+                                    <option value="11">11th grade</option>
+                                    <option value="12">12th grade</option>
+                                </select>
+
+                                <span class="select-arrow">⌄</span>
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="username">Display name</label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">☺</span>
+
+                            <input
+                                type="text"
+                                id="username"
+                                name="username"
+                                placeholder="Choose an appropriate display name"
+                                minlength="3"
+                                maxlength="24"
+                                autocomplete="nickname"
+                                required
+                            >
+
+                        </div>
+
+                        <span class="input-helper">
+                            This is the name other club members will see.
+                        </span>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <div class="label-row">
+
+                            <label for="password">Password</label>
+
+                            <span class="password-requirement">
+                                At least 8 characters
+                            </span>
+
+                        </div>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon password-lock">●</span>
+
+                            <input
+                                type="password"
+                                id="password"
+                                name="password"
+                                placeholder="Create a secure password"
+                                minlength="8"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-password-toggle="password"
+                                aria-label="Show password"
+                            >
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <div class="form-group">
+
+                        <label for="confirm-password">
+                            Confirm password
+                        </label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon password-lock">●</span>
+
+                            <input
+                                type="password"
+                                id="confirm-password"
+                                name="confirmPassword"
+                                placeholder="Enter your password again"
+                                minlength="8"
+                                autocomplete="new-password"
+                                required
+                            >
+
+                            <button
+                                type="button"
+                                class="password-toggle"
+                                data-password-toggle="confirm-password"
+                                aria-label="Show confirmed password"
+                            >
+                                Show
+                            </button>
+
+                        </div>
+
+                    </div>
+
+
+                    <label class="agreement">
+
+                        <input
+                            type="checkbox"
+                            id="terms"
+                            name="terms"
+                            required
+                        >
+
+                        <span class="custom-checkbox"></span>
+
+                        <span class="agreement-text">
+                            I agree to the
+                            <a href="#">community guidelines</a>
+                            and
+                            <a href="#">privacy policy</a>.
+                        </span>
+
+                    </label>
+
+
+                    <button type="submit" class="create-account-button">
+
+                        <span>Create my account</span>
+
+                        <span class="button-arrow">→</span>
+
+                    </button>
+
+
+                    <p class="login-prompt">
+                        Already have an account?
+                        <a href="login.html">Log in here</a>
+                    </p>
+
+                </form>
+
+            </div>
+
+        </section>
+
+    </main>
+
+
+
+</body>
+</html>
