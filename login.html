@@ -8,7 +8,7 @@
         content="width=device-width, initial-scale=1.0"
     >
 
-    <title>Log In | KeyConnect</title>
+    <title>Log In | KeyClub</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -18,7 +18,8 @@
         rel="stylesheet"
     >
 
-    <link rel="stylesheet" href="css_files/login.css">
+    <link rel="stylesheet" href="css_files/login.css"> 
+    <script src ="js_files/login.js" defer></script>
 </head>
 
 <body>
@@ -151,7 +152,7 @@
                         K
                     </div>
 
-                    <span>KeyConnect</span>
+                    <span>KeyClub</span>
 
                 </a>
 
@@ -175,6 +176,7 @@
 
                 </div>
 
+                <div class="error-message" id="login-error" style="display: none;"></div>
 
                 <form class="login-form" id="login-form">
 
@@ -192,7 +194,7 @@
                                 type="email"
                                 id="email"
                                 name="email"
-                                placeholder="student@school.org"
+                                placeholder="studentID@school.org"
                                 autocomplete="email"
                                 required
                             >
@@ -264,7 +266,7 @@
 
                     <button type="submit" class="login-button">
 
-                        <span>Log in to KeyConnect</span>
+                        <span>Log in to KeyClub</span>
 
                         <span class="button-arrow">→</span>
 
