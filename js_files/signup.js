@@ -11,8 +11,8 @@ const createAcccountButton = document.querySelector('.create-account-button')
 
 const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
 
-doccument.getElementbyId('signup-form').addEventListener('submit',(event)=>{
-    event.preventDeafult();
+document.getElementbyId('signup-form').addEventListener('submit',(event)=>{
+    event.preventDefault();
     const userSetFirstName = userFirstName.value.trim();
     const userSetLastName = userLastName.value.trim();
     const userSetEmail = userEmail.value.trim();
