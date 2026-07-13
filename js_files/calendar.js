@@ -119,7 +119,7 @@ let currentDate = {
 }
 const scheduleEventModal = document.querySelector('#scheduleEventModal');
 calendarGrid.addEventListener('click',(event)=>{
-    if(event.target && event.target.closest('.calendar-day')){
+    if(event.target && event.target.closest('.calendar-day') && !event.target.closest('.calendar-event')){
         scheduleEventModal.classList.add('active');
         currentDate.day = event.target.dataset.day;
         currentDate.month = event.target.dataset.month;
@@ -129,7 +129,7 @@ calendarGrid.addEventListener('click',(event)=>{
 
 })
 
-const eventsCalendarData = JSON.parse(localStorage.getItem('eventsCalendarData'))||[];
+let eventsCalendarData = JSON.parse(localStorage.getItem('eventsCalendarData'))||[];
 
 const eventName = document.querySelector('#eventName');
 const eventTime = document.querySelector('#eventTime');
@@ -151,13 +151,15 @@ document.querySelector('.submit-button').addEventListener('click',(event)=>{
     const newEventName = eventName.value;
     const newEventTime = eventTime.value;
     const newEventLocation=eventLocation.value;
-    const newEventDescription = eventDescription.value;
+    const newEventDescription = eventDescription.value; 
+    const id = Date.now();
 
     eventsCalendarData.push({
         name: newEventName,
         time: newEventTime,
         location: newEventLocation,
         description: newEventDescription,
+        id: id,
          day: currentDate.day,
     month: currentDate.month,
     year: currentDate.year
@@ -168,12 +170,21 @@ document.querySelector('.submit-button').addEventListener('click',(event)=>{
     eventLocation.value =''
     eventDescription.value =''
 
+     const specificDay = document.querySelector(`[data-day="${currentDate.day}"][data-month="${currentDate.month}"][data-year="${currentDate.year}"]`);
+        if(specificDay){
+            const eventElement = document.createElement('div');
+            eventElement.className = 'calendar-event service-event';
+            eventElement.textContent = newEventName;
+            eventElement.id = id;
+            specificDay.appendChild(eventElement);
+        }
     
-    renderSchedule(currentDate);
+    
     currentDate.day = null;
     currentDate.month = null;
     currentDate.year = null;
 
+    
     scheduleEventModal.classList.remove('active');
     localStorage.setItem('eventsCalendarData', JSON.stringify(eventsCalendarData));
 
@@ -182,23 +193,8 @@ document.querySelector('.submit-button').addEventListener('click',(event)=>{
 
 
 
-const renderSchedule = (eventData)=>{
-    const newEventArray = eventsCalendarData.reduce((acc,current)=>{
-        if(current.day === eventData.day && current.month === eventData.month && current.year === eventData.year){
-            acc.push(current)
-        }
-        return acc
-    }, [])
-    const specificDay = document.querySelector(`[data-day="${eventData.day}"][data-month="${eventData.month}"][data-year="${eventData.year}"]`);
-    
-    newEventArray.forEach((keyEvent)=>{
-        const eventElement = document.createElement('div');
-        eventElement.className = 'calendar-event service-event';
-        eventElement.textContent = keyEvent.name;
-        specificDay.appendChild(eventElement);
-    })
 
-}
+
 
 const renderAllEvents = ()=>{
     eventsCalendarData.forEach((event)=>{
@@ -207,10 +203,15 @@ const renderAllEvents = ()=>{
             const eventElement = document.createElement('div');
             eventElement.className = 'calendar-event service-event';
             eventElement.textContent = event.name;
+            eventElement.id = event.id
             specificDay.appendChild(eventElement);
         }
     })
 }
+/*we have event, we have to remove div element
+get specific day box from day, month, year
+from box, remove the div with the id
+*/
 
 renderAllEvents()
 /*we have current event date by textContent, how to
@@ -235,3 +236,79 @@ by the exact dataset we're on, then innerHTML then boom
     </div>
 </div>
 */
+
+
+// opening up event modal
+/* <div class="calendar-day" id ="calendarDayBox"
+         data-day ="${i}"
+                        data-month ="${currentMonth}" 
+                        data-year ="${currentYear}">
+                        <span class="day-number">${i}</span>
+                    </div>` */
+
+const eventDetailsModal = document.querySelector('#eventDetailsModal');
+
+const eventDetailsModalTime = document.querySelector('#eventDetailsTime');
+const eventDetailsModalLocation = document.querySelector('#eventDetailsLocation');
+const eventDetailsModalDescription  = document.querySelector('#eventDetailsDescription');
+const eventDetailsModalTitle = document.querySelector('#eventDetailsTitle');
+
+let currentId = null;
+
+calendarGrid.addEventListener('click',(event)=>{
+    if(event.target && event.target.closest('.calendar-event')){
+        console.log('Event clicked');
+        const eventId = event.target.id;
+        console.log('Event ID:', eventId);
+        const eventData = eventsCalendarData.find(e => String(e.id) === String(eventId));
+        console.log('Event data found:', eventData);
+        console.log('All events:', eventsCalendarData);
+
+        currentId  = eventId;
+
+        const time = eventData.time;
+        const location = eventData.location;
+        const description = eventData.description;
+        const title = eventData.name;
+
+        eventDetailsModalTitle.textContent = `${title} Details`;
+        eventDetailsModalDescription.textContent = `${description}`;
+        eventDetailsModalLocation.textContent = `${location}`;
+        eventDetailsModalTime.textContent = `${time}`;
+
+        console.log('Modal element:', eventDetailsModal);
+        eventDetailsModal.classList.add('active');
+        console.log('Modal should be active now');
+        
+    }
+
+})
+
+//Close event details modal
+
+const eventDetailsModalCloseButton = document.querySelector('#closeEventDetailsModal');
+
+eventDetailsModalCloseButton.addEventListener('click',()=>{
+    eventDetailsModalTitle.textContent = '';
+        eventDetailsModalDescription.textContent = '';
+        eventDetailsModalLocation.textContent = '';
+        eventDetailsModalTime.textContent = '';
+        currentId = null;
+        eventDetailsModal.classList.remove('active');
+})
+
+//Delete event
+
+const deleteEventCalendarButton = document.querySelector('#deleteEventButton');
+deleteEventCalendarButton.addEventListener('click',()=>{
+    console.log('Id:', currentId)
+    if(currentId){
+        const event = eventsCalendarData.find(e=> String(e.id) === String(currentId));
+        document.getElementById(event.id).remove(); 
+        
+        eventsCalendarData = eventsCalendarData.filter(e => String(e.id) !== String(currentId));
+        localStorage.setItem('eventsCalendarData', JSON.stringify(eventsCalendarData));
+        eventDetailsModal.classList.remove('active');
+        
+    }
+})

@@ -198,5 +198,32 @@
         </div>
     </div>
 
+    <!-- Event Details Modal -->
+    <div id="eventDetailsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="eventDetailsTitle">Event Details</h2>
+                <button class="modal-close" id="closeEventDetailsModal">&times;</button>
+            </div>
+            <div class="event-details-content">
+                <div class="event-detail-item">
+                    <span class="event-detail-label" id="event-detail-time">Time:</span>
+                    <span id="eventDetailsTime" class="event-detail-value"></span>
+                </div>
+                <div class="event-detail-item">
+                    <span class="event-detail-label" id = "event-detail-location">Location:</span>
+                    <span id="eventDetailsLocation" class="event-detail-value"></span>
+                </div>
+                <div class="event-detail-item">
+                    <span class="event-detail-label" id ="event-detail-description">Description:</span>
+                    <p id="eventDetailsDescription" class="event-detail-value"></p>
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="action-button delete-button" id="deleteEventButton" style ="color: black">Delete Event</button>
+            </div>
+        </div>
+    </div>
+
 </body>
 </html>
