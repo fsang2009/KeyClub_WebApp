@@ -93,8 +93,20 @@ const signedUpEventsContainer = document.querySelector('#signedUpEventsContainer
 const renderSignedUpEvents = () =>{
     const eventData = JSON.parse(localStorage.getItem('eventData'));
     console.log(eventData)
+    const eventIds = Object.keys(currentUser.signedUpEvents).reduce((acc, current)=>{
+        acc.push(current);
+        return acc;
+    },[])
+
+    const eventList = eventData.reduce((acc,current)=>{
+        if (eventIds.includes(current.id)){
+            acc.push(current)
+        }
+        return acc;
+    }, [])
+
     let eventHTML = ''
-    eventData.forEach((event)=>{
+    eventList.forEach((event)=>{
         eventHTML += `<div class="profile-event-card">
     <h3>${event.title}</h3>
     <p class="event-date">${event.date}</p>

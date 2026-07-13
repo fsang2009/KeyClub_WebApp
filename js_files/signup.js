@@ -66,7 +66,8 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             school: userSetSchool,
             grade: userSetGrade,
             username: userSetDisplayName,
-            password: userSetPassword
+            password: userSetPassword,
+            signedUpEvents: {}
         }
 
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
