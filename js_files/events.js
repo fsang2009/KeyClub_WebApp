@@ -20,13 +20,14 @@ if (!currentUser.signedUpEvents) {
                 <p>Help collect food donations for local families in need.</p>
                 <button class="event-view-button">Sign Up & View</button>
             </div>*/
-
+let currentEventID = ''
 /* ADD EVENT SECTION */
 const addEventButton = document.querySelector('.add-event-button');
 const addEventModal = document.querySelector('#addEventModal')
 const eventTitle = document.querySelector('#eventTitle');
 const eventDate = document.querySelector('#eventDate');
 const eventTime = document.querySelector('#eventTime');
+const eventEndTime = document.querySelector('#eventEndTime');
 const eventLocation = document.querySelector('#eventLocation');
 const eventDescription = document.querySelector('#eventDescription');
 const eventArea = document.querySelector('.event-grid');
@@ -36,12 +37,14 @@ let eventData = JSON.parse(localStorage.getItem('eventData')) || []
 eventArea.addEventListener('click', (e)=>{
     if(e.target.classList.contains('event-view-button')){
         const eventcard = e.target.closest('.event');
-        const eventId = eventcard.dataset.eventId; 
+        const eventId = eventcard.dataset.eventId;
+        currentEventID = eventId 
         openModal(eventId);
+        
     }
 })
 
-let currentEventID = ''
+
 
 const modalCloseButton = document.querySelector('.modal-close');
 modalCloseButton.addEventListener('click', ()=>{
@@ -57,13 +60,14 @@ modalCloseButton.addEventListener('click', ()=>{
 const openModal = (eventId) =>{
     currentEventID = eventId
     const event = eventData.find(e => e.id === eventId);
-    
+
     document.getElementById('modalEventTitle').textContent = event.title;
     document.getElementById('modalEventDate').textContent = event.date;
     document.getElementById('modalEventTime').textContent = event.time;
+    document.getElementById('modalEventEndTime').textContent = event.endTime;
     document.getElementById('modalEventLocation').textContent = event.location;
     document.getElementById('modalEventDescription').textContent = event.description;
-    
+
     document.getElementById('eventModal').style.display = 'block';
 
     if(currentUser.signedUpEvents[currentEventID] === true){
@@ -108,10 +112,11 @@ const addEvent = ()=>{
         const currentTitle = eventTitle.value;
         const currentDate = eventDate.value;
         const currentTime = eventTime.value;
+        const currentEndTime = eventEndTime.value;
         const currentLocation = eventLocation.value;
         const currentDescription = eventDescription.value;
 
-        if(currentTitle && currentDate && currentTime && currentLocation && currentDescription){
+        if(currentTitle && currentDate && currentTime && currentEndTime && currentLocation && currentDescription){
             // Check if we're in edit mode
             if (submitEventButton.dataset.editMode === 'true') {
                 // Update existing event
@@ -122,6 +127,7 @@ const addEvent = ()=>{
                         title: currentTitle,
                         description: currentDescription,
                         time: currentTime,
+                        endTime: currentEndTime,
                         date: currentDate,
                         location: currentLocation
                     };
@@ -140,6 +146,7 @@ const addEvent = ()=>{
                     title: currentTitle,
                     description: currentDescription,
                     time: currentTime,
+                    endTime: currentEndTime,
                     date: currentDate,
                     location: currentLocation
                 })
@@ -195,39 +202,42 @@ signUpButton.addEventListener('click',()=>{
 })
 
 /* DELETE EVENT FUNCTION */
+const eventModal = document.querySelector('#eventModal')
 const deleteEventButton = document.querySelector('#deleteEventButton');
 deleteEventButton.addEventListener('click', () => {
-    if (confirm('Are you sure you want to delete this event?')) {
-        // Remove event from eventData
-     eventData = JSON.parse(localStorage.getItem('eventData')) || [];
-        eventData = eventData.filter(event => event.id !== currentEventID);
-        localStorage.setItem('eventData', JSON.stringify(eventData));
+    // Remove event from eventData
+    console.log('this is the deleteButton')
+    eventData = eventData.filter(event => event.id !== currentEventID);
+    
 
-        // Clean up signups for this event from all users
-        Object.values(userInfo).forEach(user => {
-            if (user.signedUpEvents[currentEventID]) {
-                delete user.signedUpEvents[currentEventID];
-            }
-        });
-        localStorage.setItem('userinfo', JSON.stringify(userInfo));
+    // Clean up signups for this event from all users
+    Object.values(userInfo).forEach(user => {
+        if (user.signedUpEvents && 
+            user.signedUpEvents[currentEventID] 
+        ) {
+            delete user.signedUpEvents[currentEventID];
+        }
+    });
+    localStorage.setItem('userinfo', JSON.stringify(userInfo));
 
-        // Clean up chat messages for this event
-        const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
-        delete eventChats[currentEventID];
-        localStorage.setItem('eventChats', JSON.stringify(eventChats));
+    // Clean up chat messages for this event
+    const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
+    delete eventChats[currentEventID];
+    localStorage.setItem('eventChats', JSON.stringify(eventChats));
 
-        // Re-render events and close modal
-        renderEvent();
-        document.getElementById('eventModal').style.display = 'none';
-        currentEventID = '';
-    }
+    // Re-render events and close modal
+    
+    eventModal.style.display='none';
+    currentEventID = '';
+    renderEvent();
+    localStorage.setItem('eventData', JSON.stringify(eventData));
 });
 
 /* EDIT EVENT FUNCTION */
 const editEventButton = document.querySelector('#editEventButton');
 editEventButton.addEventListener('click', () => {
     // Get current event data
-    const eventData = JSON.parse(localStorage.getItem('eventData')) || [];
+    let eventData = JSON.parse(localStorage.getItem('eventData')) || [];
     const currentEvent = eventData.find(event => event.id === currentEventID);
 
     if (currentEvent) {
@@ -235,6 +245,7 @@ editEventButton.addEventListener('click', () => {
         eventTitle.value = currentEvent.title;
         eventDate.value = currentEvent.date;
         eventTime.value = currentEvent.time;
+        eventEndTime.value = currentEvent.endTime;
         eventLocation.value = currentEvent.location;
         eventDescription.value = currentEvent.description;
 

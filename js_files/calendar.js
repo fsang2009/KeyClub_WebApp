@@ -133,6 +133,7 @@ let eventsCalendarData = JSON.parse(localStorage.getItem('eventsCalendarData'))|
 
 const eventName = document.querySelector('#eventName');
 const eventTime = document.querySelector('#eventTime');
+const eventEndTime = document.querySelector('#eventEndTime');
 const eventLocation = document.querySelector('#eventLocation');
 const eventDescription = document.querySelector('#eventDescription');
 
@@ -150,13 +151,15 @@ document.querySelector('.submit-button').addEventListener('click',(event)=>{
 
     const newEventName = eventName.value;
     const newEventTime = eventTime.value;
+    const newEventEndTime = eventEndTime.value;
     const newEventLocation=eventLocation.value;
-    const newEventDescription = eventDescription.value; 
+    const newEventDescription = eventDescription.value;
     const id = Date.now();
 
     eventsCalendarData.push({
         name: newEventName,
         time: newEventTime,
+        endTime: newEventEndTime,
         location: newEventLocation,
         description: newEventDescription,
         id: id,
@@ -167,6 +170,7 @@ document.querySelector('.submit-button').addEventListener('click',(event)=>{
 
     eventName.value = ''
     eventTime.value = ''
+    eventEndTime.value = ''
     eventLocation.value =''
     eventDescription.value =''
 
@@ -249,6 +253,7 @@ by the exact dataset we're on, then innerHTML then boom
 const eventDetailsModal = document.querySelector('#eventDetailsModal');
 
 const eventDetailsModalTime = document.querySelector('#eventDetailsTime');
+const eventDetailsModalEndTime = document.querySelector('#eventDetailsEndTime');
 const eventDetailsModalLocation = document.querySelector('#eventDetailsLocation');
 const eventDetailsModalDescription  = document.querySelector('#eventDetailsDescription');
 const eventDetailsModalTitle = document.querySelector('#eventDetailsTitle');
@@ -267,6 +272,7 @@ calendarGrid.addEventListener('click',(event)=>{
         currentId  = eventId;
 
         const time = eventData.time;
+        const endTime = eventData.endTime;
         const location = eventData.location;
         const description = eventData.description;
         const title = eventData.name;
@@ -275,6 +281,7 @@ calendarGrid.addEventListener('click',(event)=>{
         eventDetailsModalDescription.textContent = `${description}`;
         eventDetailsModalLocation.textContent = `${location}`;
         eventDetailsModalTime.textContent = `${time}`;
+        eventDetailsModalEndTime.textContent = `${endTime}`;
 
         console.log('Modal element:', eventDetailsModal);
         eventDetailsModal.classList.add('active');
@@ -293,6 +300,7 @@ eventDetailsModalCloseButton.addEventListener('click',()=>{
         eventDetailsModalDescription.textContent = '';
         eventDetailsModalLocation.textContent = '';
         eventDetailsModalTime.textContent = '';
+        eventDetailsModalEndTime.textContent = '';
         currentId = null;
         eventDetailsModal.classList.remove('active');
 })
@@ -312,3 +320,40 @@ deleteEventCalendarButton.addEventListener('click',()=>{
         
     }
 })
+
+
+const eventData  = JSON.parse(localStorage.getItem('eventData'));
+const eventGrid = document.querySelector('.upcoming-events-grid');
+
+const renderEvents  = ()=>{
+    let html = ''
+    eventData.forEach((event)=>{
+        const formattedDate = new Date(event.date).toLocaleDateString('en-US', { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
+});
+
+        html += `<article class="upcoming-event-card">
+                    <div class="event-date">
+                        <span class="event-month">${formattedDate}</span>
+                        
+                    </div>
+
+                    <div class="event-information">
+                        <span class="event-category service-category">
+                            Service
+                        </span>
+
+                        <h3>${event.title}</h3>
+                        <p>${event.time} – ${event.endTime} PM</p>
+                        <p>${event.location}</p>
+                    </div>
+                </article>`
+    })
+
+    eventGrid.innerHTML = html
+}
+
+renderEvents();
+
