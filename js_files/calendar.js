@@ -57,7 +57,10 @@ for(d=fillInCellDates; d<=daysInPrevMonth; d++){
 }
     for(i=1; i <= daysInMonth; i++){
         
-        dateCell +=`<div class="calendar-day">
+        dateCell +=`<div class="calendar-day" id ="calendarDayBox"
+         data-day ="${i}"
+                        data-month ="${currentMonth}" 
+                        data-year ="${currentYear}">
                         <span class="day-number">${i}</span>
                     </div>`
     }
@@ -79,7 +82,7 @@ updateMonthYear(months[currentMonth], currentYear)
 renderCalendar(currentMonth, currentYear);
 
 
-// Change as we move forward in months
+// Change as we move forward/backward in months
 
 const previousMonthButton = document.querySelector('#previousMonth');
 const forwardMonthButton = document.querySelector('#nextMonth');
@@ -108,4 +111,127 @@ forwardMonthButton.addEventListener('click',()=>{
 })
 
 
+//schedule events logic 
+let currentDate = {
+    day: null,
+    month: null,
+    year: null,
+}
+const scheduleEventModal = document.querySelector('#scheduleEventModal');
+calendarGrid.addEventListener('click',(event)=>{
+    if(event.target && event.target.closest('.calendar-day')){
+        scheduleEventModal.classList.add('active');
+        currentDate.day = event.target.dataset.day;
+        currentDate.month = event.target.dataset.month;
+        currentDate.year = event.target.dataset.year;
+        console.log(currentDate);
+    }
+
+})
+
+const eventsCalendarData = JSON.parse(localStorage.getItem('eventsCalendarData'))||[];
+
+const eventName = document.querySelector('#eventName');
+const eventTime = document.querySelector('#eventTime');
+const eventLocation = document.querySelector('#eventLocation');
+const eventDescription = document.querySelector('#eventDescription');
+
+const closeScheduleEventModal = document.querySelector('#closeScheduleModal');
+closeScheduleEventModal.addEventListener('click',()=>{
+
+    currentDate.day = null;
+    currentDate.month = null;
+    currentDate.year = null;
+    scheduleEventModal.classList.remove('active');
+})
+
+document.querySelector('.submit-button').addEventListener('click',(event)=>{
+    event.preventDefault();
+
+    const newEventName = eventName.value;
+    const newEventTime = eventTime.value;
+    const newEventLocation=eventLocation.value;
+    const newEventDescription = eventDescription.value;
+
+    eventsCalendarData.push({
+        name: newEventName,
+        time: newEventTime,
+        location: newEventLocation,
+        description: newEventDescription,
+         day: currentDate.day,
+    month: currentDate.month,
+    year: currentDate.year
+    })
+
+    eventName.value = ''
+    eventTime.value = ''
+    eventLocation.value =''
+    eventDescription.value =''
+
     
+    renderSchedule(currentDate);
+    currentDate.day = null;
+    currentDate.month = null;
+    currentDate.year = null;
+
+    scheduleEventModal.classList.remove('active');
+    localStorage.setItem('eventsCalendarData', JSON.stringify(eventsCalendarData));
+
+
+})
+
+
+
+const renderSchedule = (eventData)=>{
+    const newEventArray = eventsCalendarData.reduce((acc,current)=>{
+        if(current.day === eventData.day && current.month === eventData.month && current.year === eventData.year){
+            acc.push(current)
+        }
+        return acc
+    }, [])
+    const specificDay = document.querySelector(`[data-day="${eventData.day}"][data-month="${eventData.month}"][data-year="${eventData.year}"]`);
+    
+    newEventArray.forEach((keyEvent)=>{
+        const eventElement = document.createElement('div');
+        eventElement.className = 'calendar-event service-event';
+        eventElement.textContent = keyEvent.name;
+        specificDay.appendChild(eventElement);
+    })
+
+}
+
+const renderAllEvents = ()=>{
+    eventsCalendarData.forEach((event)=>{
+        const specificDay = document.querySelector(`[data-day="${event.day}"][data-month="${event.month}"][data-year="${event.year}"]`);
+        if(specificDay){
+            const eventElement = document.createElement('div');
+            eventElement.className = 'calendar-event service-event';
+            eventElement.textContent = event.name;
+            specificDay.appendChild(eventElement);
+        }
+    })
+}
+
+renderAllEvents()
+/*we have current event date by textContent, how to
+use value to enter event? 
+
+2. we now have not just the date, but the 
+day, month, and year, which are all datasets to a specific 
+box. so we should be easily able to use them to our advantage 
+by innerContent. make a scoped const in which we will find them
+by the exact dataset we're on, then innerHTML then boom 
+*/
+
+/*<div class="calendar-day">
+    <span class="day-number">15</span>
+    
+    <div class="calendar-event service-event">
+        Beach Cleanup
+    </div>
+    
+    <div class="calendar-event meeting-event">
+        Club Meeting
+    </div>
+</div>
+*/
