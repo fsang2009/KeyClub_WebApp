@@ -8,6 +8,7 @@
 
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/calendar.css">
+    <script src ="js_files/calendar.js" defer></script>
 </head>
 
 <body>
@@ -38,6 +39,7 @@
                         class="calendar-control-button"
                         type="button"
                         aria-label="Previous month"
+                        id="previousMonth"
                     >
                         &#10094;
                     </button>
@@ -53,6 +55,7 @@
                         class="calendar-control-button"
                         type="button"
                         aria-label="Next month"
+                        id = "nextMonth"
                     >
                         &#10095;
                     </button>
@@ -74,172 +77,7 @@
 
 
                 <div class="calendar-grid">
-
-                    <!-- Previous month -->
-                    <div class="calendar-day outside-month">
-                        <span class="day-number">28</span>
-                    </div>
-
-                    <div class="calendar-day outside-month">
-                        <span class="day-number">29</span>
-                    </div>
-
-                    <div class="calendar-day outside-month">
-                        <span class="day-number">30</span>
-                    </div>
-
-
-                    <!-- July -->
-                    <div class="calendar-day">
-                        <span class="day-number">1</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">2</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">3</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">4</span>
-
-                        <div class="calendar-event meeting-event">
-                            Club Meeting
-                        </div>
-                    </div>
-
-
-                    <div class="calendar-day">
-                        <span class="day-number">5</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">6</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">7</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">8</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">9</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">10</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">11</span>
-                    </div>
-
-
-                    <div class="calendar-day">
-                        <span class="day-number">12</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">13</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">14</span>
-                    </div>
-
-                    <div class="calendar-day today">
-                        <span class="day-number">15</span>
-
-                        <div class="calendar-event service-event">
-                            Beach Cleanup
-                        </div>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">16</span>
-
-                        <div class="calendar-event donation-event">
-                            Food Drive
-                        </div>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">17</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">18</span>
-                    </div>
-
-
-                    <div class="calendar-day">
-                        <span class="day-number">19</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">20</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">21</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">22</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">23</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">24</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">25</span>
-
-                        <div class="calendar-event social-event">
-                            Member Social
-                        </div>
-                    </div>
-
-
-                    <div class="calendar-day">
-                        <span class="day-number">26</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">27</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">28</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">29</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">30</span>
-                    </div>
-
-                    <div class="calendar-day">
-                        <span class="day-number">31</span>
-                    </div>
-
-
-                    <!-- Next month -->
-                    <div class="calendar-day outside-month">
-                        <span class="day-number">1</span>
-                    </div>
-
+                    <!-- Calendar days will be dynamically generated by JavaScript -->
                 </div>
 
             </div>
