@@ -67,8 +67,15 @@ for(d=fillInCellDates; d<=daysInPrevMonth; d++){
 
 
 
-const currentMonth = currentDateInfo.getMonth();
-const currentYear = currentDateInfo.getFullYear();
+let currentMonth = currentDateInfo.getMonth();
+let currentYear = currentDateInfo.getFullYear();
+
+const monthDateValue = document.querySelector('#monthDateValue');
+const updateMonthYear =(month, year)=>{
+    monthDateValue.textContent = `${month} ${year}`
+}
+
+updateMonthYear(months[currentMonth], currentYear)
 renderCalendar(currentMonth, currentYear);
 
 
@@ -78,7 +85,27 @@ const previousMonthButton = document.querySelector('#previousMonth');
 const forwardMonthButton = document.querySelector('#nextMonth');
 
 previousMonthButton.addEventListener('click',()=>{
-
+    if(currentMonth<=0){
+         currentMonth = 12;
+         currentYear --
+    }
+    currentMonth --
+    console.log(`currentMonth value: ${currentMonth}`)
+    renderCalendar(currentMonth, currentYear);
+    updateMonthYear(months[currentMonth], currentYear);
+    
 
 })
+
+forwardMonthButton.addEventListener('click',()=>{
+    if(currentMonth >=11){
+        currentMonth = -1;
+        currentYear++
+    }
+    currentMonth ++ 
+    renderCalendar(currentMonth, currentYear);
+    updateMonthYear(months[currentMonth], currentYear);
+})
+
+
     
