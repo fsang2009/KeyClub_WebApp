@@ -1,3 +1,11 @@
+const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
+const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
+const currentUser = userInfo[userSetEmail]
+
+if(!currentUser){
+    window.location.href = 'login.html'
+}
+
 const likeEmoji = document.querySelectorAll ('.like-button');
 likeEmoji.forEach((emoji)=>{
     let likeButtonClicked = false;
@@ -52,7 +60,7 @@ const renderComment = ()=>{
         <div class="comment user-comment">
                 
             <div class="comment-content">
-                <h style = "font-weight: 'bold'">You</h>
+                <h style = "font-weight: 'bold'">${currentUser.username}</h>
                 <p class="comment-text">${comment.userComment}</p>
             </div>
         </div>

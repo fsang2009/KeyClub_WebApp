@@ -10,10 +10,6 @@ const eventCard = document.querySelectorAll('.event')
             </div>*/
 
 /* ADD EVENT SECTION */
-const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
-const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
-const currentUser = userInfo[userSetEmail];
-
 const addEventButton = document.querySelector('.add-event-button');
 const addEventModal = document.querySelector('#addEventModal')
 const eventTitle = document.querySelector('#eventTitle');
@@ -59,7 +55,7 @@ const openModal = (eventId) =>{
     document.getElementById('eventModal').style.display = 'block';
 
     const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {} ;
-    if(currentUser[signedUpEvents].currentEventID === true){
+    if(eventSignUps[currentEventID]){
         signUpButton.textContent = "Cancel Signup";
     signUpButton.classList.add('signed-up');
     toggleMessages(currentEventID)
@@ -175,10 +171,7 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = "Signed Up! 🥳"
             signUpButton.classList.add('signed-up');
              eventSignUps[currentEventID] = true;
-             currentUser[signedUpEvents].currentEventId = currentUser[signedUpEvents].currentEventId || {}
-             currentUser[signedUpEvents].currentEventId = true; 
             localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
-              localStorage.setItem('userinfo', JSON.stringify(userInfo));
             console.log(eventSignUps)
             toggleMessages(currentEventID)
             
@@ -187,10 +180,7 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = 'Sign Up'
             signUpButton.classList.remove('signed-up')
             delete eventSignUps[currentEventID];
-            currentUser[signedUpEvents].currentEventId = currentUser[signedUpEvents].currentEventId || {}
-            delete currentUser[signedUpEvents].currentEventId
              localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
-             localStorage.setItem('userinfo', JSON.stringify(userInfo))
              toggleMessages(currentEventID)
     }
 })
@@ -253,7 +243,7 @@ const toggleMessages = (eventID)=>{
     const chatBox = document.querySelector('.chat-section')
     const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
     const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {}
-    if (currentUser[signedUpEvents].eventID){
+    if (eventSignUps[eventID]){
         chatBox.style.display = 'block'
         eventChats[eventID] = eventChats[eventID] || [];
 
@@ -283,7 +273,7 @@ let messageEmpty = null
             return
         }
         eventChats[currentEventID].push({
-            user: currentUser.username,
+            user: 'You',
             message: userMessages
         })
         console.log(eventChats[currentEventID])
