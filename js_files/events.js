@@ -59,7 +59,7 @@ const openModal = (eventId) =>{
     document.getElementById('eventModal').style.display = 'block';
 
     const eventSignUps = JSON.parse(localStorage.getItem('eventsignups')) || {} ;
-    if(eventSignUps[currentEventID]){
+    if(currentUser[signedUpEvents].currentEventID === true){
         signUpButton.textContent = "Cancel Signup";
     signUpButton.classList.add('signed-up');
     toggleMessages(currentEventID)
@@ -175,8 +175,10 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = "Signed Up! 🥳"
             signUpButton.classList.add('signed-up');
              eventSignUps[currentEventID] = true;
+             currentUser[signedUpEvents].currentEventId = currentUser[signedUpEvents].currentEventId || {}
              currentUser[signedUpEvents].currentEventId = true; 
             localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
+              localStorage.setItem('userinfo', JSON.stringify(userInfo));
             console.log(eventSignUps)
             toggleMessages(currentEventID)
             
@@ -185,8 +187,10 @@ signUpButton.addEventListener('click',()=>{
             signUpButton.textContent = 'Sign Up'
             signUpButton.classList.remove('signed-up')
             delete eventSignUps[currentEventID];
+            currentUser[signedUpEvents].currentEventId = currentUser[signedUpEvents].currentEventId || {}
             delete currentUser[signedUpEvents].currentEventId
              localStorage.setItem('eventsignups', JSON.stringify(eventSignUps))
+             localStorage.setItem('userinfo', JSON.stringify(userInfo))
              toggleMessages(currentEventID)
     }
 })
