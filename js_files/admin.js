@@ -165,7 +165,7 @@ const renderAttendanceList =()=>{
     attendanceRecords.forEach((record)=>{
         html += ` <div class="attendance-item">
                     <div class="attendance-info">
-                        <h3 class="attendance-name">${userInfo[record.studentEmail].firstname} ${userInfo[record.studentEmail].lastname}</h3>
+                        <h3 class="attendance-name">${userInfo[record.studentEmail]?.firstname || 'unkown'} ${userInfo[record.studentEmail]?.lastname || 'unkown'}</h3>
                         <p class="attendance-email">${record.studentEmail}</p>
                         <p class ="attendance-event">${record.eventTitle}</p>
                         <p class="attendance-event">Event ID: ${record.eventId}</p>
