@@ -8,7 +8,7 @@ console.log('currentUser:', currentUser);
 
 if(!currentUser){
     console.log('No current user, redirecting to login');
-    // window.location.href = 'login.html' // Temporarily disabled for debugging
+    window.location.href = 'login.html' // Temporarily disabled for debugging
 }
 
 
@@ -27,14 +27,19 @@ const events = JSON.parse(localStorage.getItem('eventData'));
 const generateEvents = ()=>{
     const events = JSON.parse(localStorage.getItem('eventData'));
     eventChosen.innerHTML = '<option value="">Select event</option>'
+    otherEventChosen.innerHTML = '<option value="">Select event</option>'
     if (events){
     events.forEach((event)=>{
         if(event.id && event.title){
             const option = document.createElement('option');
+            const otherOption = document.createElement('option');
+            otherOption.value = event.id;
+            otherOption.textContent= event.title;
             option.value = event.id
             option.textContent = event.title
+            otherEventChosen.appendChild(otherOption);
             eventChosen.appendChild(option);
-            otherEventChosen.appendChild(option);
+            
         }
     });
     }
@@ -153,7 +158,7 @@ manualSubmitButton.addEventListener('click',()=>{
 //log in attendance log list
 
 let attendanceList = document.querySelector('#attendanceList');
-const attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords'))||[];
+let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords'))||[];
 
 const getNewRecords = (studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date)=>{
     const newRecord = { studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date };
@@ -230,7 +235,11 @@ function onScanSuccess(decodedText, decodedResult) {
         },2000)
         return;
     }
-    const selectedEvent = eventData.find(e=>e.id === studentEventChosen);
+    const selectedEvent = eventData.find(e=>e.id == studentEventChosen);
+    if (!selectedEvent) {
+    console.error("Selected event not found in database.");
+    return;
+}
     const studentEventChosenTitle = selectedEvent.title
     
         usersSignedIn.push({user: decodedText, timeEntered: timeNow, timeExited: null});
@@ -241,7 +250,7 @@ function onScanSuccess(decodedText, decodedResult) {
         timeArrived: otherTimeNow, 
         timeLeft: null,
         hours: null, 
-        date: now
+        date: now.toLocaleDateString
     }
     attendanceRecords.push(newRecord);
     localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
@@ -328,8 +337,8 @@ const renderUsersLogged =()=>{
     usersSignedIn.forEach((user)=>{
         html+=`
                     <div class ="studentLogBox" id="${user.user}">
-                        <p>${userInfo[user.user].firstname} ${userInfo[user.user].lastname} | Checked in: ${user.timeEntered} Checked out: ❌</p>
-                        <button class ="UserLogDelete">
+                        <p class ="getDOM">${userInfo[user.user]?.firstname || 'unknown'} ${userInfo[user.user]?.lastname ||'unknown'} | Checked in: ${user.timeEntered} Checked out: ❌</p>
+                        <button class ="UserLogDelete" id="${user.user}">
                             Delete
                         </button>
                     </div>
@@ -338,7 +347,20 @@ const renderUsersLogged =()=>{
             })
             userScannedLogArea.innerHTML = html; 
 }
+//delete userLog 
 
+
+const studentLogBox = document.querySelector('.studentLogBox')
+userScannedLogArea.addEventListener('click',(event)=>{
+    if (event.target && event.target.classList.contains('UserLogDelete')){
+        const email = event.target.id;
+        usersSignedIn = usersSignedIn.filter(user=> user.user !== email);
+
+        event.target.closest('.studentLogBox').remove()
+        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
+    }
+    
+})
 document.addEventListener('DOMContentLoaded', renderUsersLogged);
 // 5. Connect the HTML buttons to the scanner action methods
 startBtn.addEventListener('click', () => {
@@ -361,3 +383,15 @@ const cameraUserLog = (studentEmail, hours) =>{
     user.hours += hours;
     user.points += hours;    
 }
+
+
+renderUsersLogged();
+
+const historyLogArea = document.querySelector('.attendance-list');
+const clearHistoryButton = document.querySelector('#clearLogHistory');
+clearHistoryButton.addEventListener('click',()=>{
+    console.log('hi')
+    historyLogArea.replaceChildren();
+    attendanceRecords = [];
+    localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords))
+})
