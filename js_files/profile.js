@@ -190,4 +190,17 @@ const renderSignedUpEvents = () =>{
     })
     signedUpEventsContainer.innerHTML = eventHTML
 }
-renderSignedUpEvents()
+renderSignedUpEvents();
+
+
+
+// load student hours/points 
+
+const studentHoursEntry = document.querySelector('#studentHours');
+const studentPointsEntry = document.querySelector('#studentPoints');
+
+const studentHours = currentUser.hours;
+const studentPoints = currentUser.points;
+
+studentHoursEntry.textContent = `Hours: ${studentHours}`;
+studentPointsEntry.textContent = `Points: ${studentPoints}`;

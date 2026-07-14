@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southport Key Club - Admin</title>
+
+    <link rel="stylesheet" href="css_files/common.css">
+    <link rel="stylesheet" href="css_files/admin.css">
+    <script src="js_files/admin.js" defer></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</head>
+<body>
+    <section class="header">
+        <div class="header-content">
+            <h1>Admin Dashboard</h1>
+            <p class="header-description">Scan QR codes to track event attendance</p>
+        </div>
+    </section>
+
+    <section class="main-content">
+        <div class="admin-dashboard">
+            <div class="scan-section">
+                <h2 class="section-title">QR Code Scanner</h2>
+                <div class="scanner-container">
+                    <div class="scanner-viewport" id="scannerViewport">
+                        <div class="scanner-overlay">
+                            <div class="scan-line"></div>
+                            <p class="scanner-status">Ready to scan</p>
+                        </div>
+                    </div>
+                    <div class="scanner-controls">
+                        <button id="startScanButton" class="scan-button">Start Camera</button>
+                        <button id="stopScanButton" class="scan-button secondary">Stop Camera</button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="attendance-section">
+                <h2 class="section-title">Recent Attendance</h2>
+                <div class="attendance-list" id="attendanceList">
+                    <p class="empty-state">No attendance records yet</p>
+                </div>
+            </div>
+
+            <!-- Attendance item template (for JavaScript reference) -->
+            <template id="attendanceTemplate">
+                <div class="attendance-item">
+                    <div class="attendance-info">
+                        <h3 class="attendance-name">Student Name</h3>
+                        <p class="attendance-email">student@email.com</p>
+                        <p class="attendance-event">Event Name</p>
+                    </div>
+                    <div class="attendance-details">
+                        <p class="attendance-time">Time: 2:00 PM - 4:00 PM</p>
+                        <p class="attendance-hours">Hours: 2.0</p>
+                        <p class="attendance-date">Date: 2024-07-15</p>
+                    </div>
+                </div>
+            </template>
+
+            <div class="manual-entry-section">
+                <h2 class="section-title">Manual Entry</h2>
+                <div class="manual-entry-form">
+                    <div class="form-group">
+                        <label for="manualEmail">Student Email</label>
+                        <input type="email" id="manualEmail" placeholder="Enter student email">
+                    </div>
+                    <div class="form-group">
+                        <label for="manualEvent">Event</label>
+                        <select id="manualEvent">
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manualTimeArrived">Time Arrived</label>
+                        <input type="time" id="manualTimeArrived">
+                    </div>
+                    <div class="form-group">
+                        <label for="manualTimeLeaving">Time Leaving</label>
+                        <input type="time" id="manualTimeLeaving">
+                    </div>
+                    <p class="error-message" id="manualErrorMessage"></p>
+                    <p class="success-message" id="manualSuccessMessage"></p>
+                    <div class="button-group">
+                        <button id="manualSubmitButton" class="submit-button">Mark Attendance</button>
+                        <button id="manualClearButton" class="clear-button">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="navbar" id="nav-bar">
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="profile.html">Profile</a>
+            <a href="admin.html" aria-current="page">Admin</a>
+        </div>
+    </section>
+    
+</body>
+</html>

@@ -1,0 +1,450 @@
+/* =====================================================
+   ADMIN PAGE
+===================================================== */
+
+:root {
+    --scanner-border: rgba(36, 87, 214, 0.3);
+    --scan-line-color: #24945f;
+}
+
+/* =====================================================
+   ADMIN DASHBOARD
+===================================================== */
+
+.admin-dashboard {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 24px;
+}
+
+.section-title {
+    margin: 0 0 16px;
+
+    color: var(--blue-dark);
+
+    font-size: clamp(1.35rem, 3vw, 1.75rem);
+    font-weight: 900;
+}
+
+/* =====================================================
+   SCANNER SECTION
+===================================================== */
+
+.scan-section {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
+    background: var(--white);
+    box-shadow: var(--shadow);
+
+    padding: 24px;
+}
+
+.scanner-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.scanner-viewport {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16/9;
+
+    overflow: hidden;
+
+    border: 3px solid var(--scanner-border);
+    border-radius: 16px;
+
+    background: #0a1428;
+}
+
+.scanner-overlay {
+    position: absolute;
+    inset: 0;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(10, 20, 40, 0.8);
+}
+
+.scan-line {
+    position: absolute;
+    width: 80%;
+    height: 3px;
+
+    background: var(--scan-line-color);
+    box-shadow: 0 0 10px var(--scan-line-color);
+
+    animation: scanMove 2s ease-in-out infinite;
+}
+
+@keyframes scanMove {
+    0%, 100% {
+        top: 10%;
+    }
+    50% {
+        top: 90%;
+    }
+}
+
+.scanner-status {
+    position: relative;
+    z-index: 1;
+
+    margin: 0;
+
+    color: rgba(255, 255, 255, 0.9);
+
+    font-size: 1rem;
+    font-weight: 600;
+}
+
+.scanner-controls {
+    display: flex;
+    gap: 12px;
+}
+
+.scan-button {
+    flex: 1;
+    min-height: 48px;
+    padding: 14px 20px;
+
+    border: 0;
+    border-radius: 14px;
+
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 800;
+
+    cursor: pointer;
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.scan-button {
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: var(--white);
+    box-shadow: 0 10px 22px rgba(36, 87, 214, 0.28);
+}
+
+.scan-button:hover {
+    filter: brightness(1.05);
+    transform: translateY(-2px);
+}
+
+.scan-button.secondary {
+    background: var(--page-bg);
+    color: var(--text-dark);
+    border: 1px solid var(--border);
+    box-shadow: none;
+}
+
+.scan-button.secondary:hover {
+    background: var(--border);
+}
+
+/* =====================================================
+   ATTENDANCE SECTION
+===================================================== */
+
+.attendance-section {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
+    background: var(--white);
+    box-shadow: var(--shadow);
+
+    padding: 24px;
+}
+
+.attendance-list {
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+
+    border: 1px solid var(--border);
+    border-radius: 16px;
+
+    background: var(--page-bg);
+}
+
+.empty-state {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    height: 200px;
+    margin: 0;
+
+    color: var(--text-muted);
+
+    font-size: 0.95rem;
+}
+
+.attendance-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+
+    background: var(--white);
+
+    transition: background 0.2s ease;
+}
+
+.attendance-item:last-child {
+    border-bottom: none;
+}
+
+.attendance-item:hover {
+    background: var(--blue-light);
+}
+
+.attendance-info {
+    flex: 1;
+}
+
+.attendance-name {
+    margin: 0 0 4px;
+
+    color: var(--text-dark);
+
+    font-size: 0.95rem;
+    font-weight: 700;
+}
+
+.attendance-email {
+    margin: 0;
+
+    color: var(--text-muted);
+
+    font-size: 0.85rem;
+}
+
+.attendance-time {
+    margin-left: 16px;
+
+    color: var(--blue);
+
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.attendance-event {
+    margin: 4px 0 0;
+
+    color: var(--blue);
+
+    font-size: 0.85rem;
+    font-weight: 600;
+}
+
+.attendance-details {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+}
+
+.attendance-hours {
+    color: var(--blue-dark);
+
+    font-size: 0.85rem;
+    font-weight: 700;
+}
+
+.attendance-date {
+    color: var(--text-muted);
+
+    font-size: 0.8rem;
+}
+
+/* =====================================================
+   MANUAL ENTRY SECTION
+===================================================== */
+
+.manual-entry-section {
+    border: 1px solid var(--border);
+    border-radius: 24px;
+
+    background: var(--white);
+    box-shadow: var(--shadow);
+
+    padding: 24px;
+}
+
+.manual-entry-form {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.error-message {
+    margin: 0;
+    padding: 12px 16px;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid rgba(220, 38, 38, 0.3);
+    border-radius: 8px;
+    color: #dc2626;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.error-message.show {
+    display: block;
+}
+
+.success-message {
+    margin: 0;
+    padding: 12px 16px;
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 8px;
+    color: #22c55e;
+    font-size: 0.875rem;
+    display: none;
+}
+
+.success-message.show {
+    display: block;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.clear-button {
+    padding: 12px 24px;
+    background: var(--white);
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    color: var(--blue-dark);
+    font-size: 0.9rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clear-button:hover {
+    background: var(--blue-light);
+    border-color: var(--blue);
+    color: var(--blue-dark);
+    transform: translateY(-1px);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    color: var(--blue-dark);
+
+    font-size: 0.82rem;
+    font-weight: 900;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 14px 16px;
+
+    border: 1px solid var(--border);
+    border-radius: 14px;
+
+    background: var(--white);
+    color: var(--text-dark);
+
+    font: inherit;
+    font-size: 0.95rem;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+    outline: none;
+    border-color: var(--blue);
+    box-shadow: 0 0 0 4px rgba(36, 87, 214, 0.11);
+}
+
+.submit-button {
+    min-height: 48px;
+    padding: 14px 20px;
+
+    border: 0;
+    border-radius: 14px;
+
+    background: linear-gradient(135deg, var(--blue), var(--blue-dark));
+    color: var(--white);
+
+    font: inherit;
+    font-size: 0.9rem;
+    font-weight: 900;
+
+    cursor: pointer;
+    box-shadow: 0 10px 22px rgba(36, 87, 214, 0.28);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease;
+}
+
+.submit-button:hover {
+    filter: brightness(1.05);
+    transform: translateY(-2px);
+}
+
+/* =====================================================
+   RESPONSIVE
+===================================================== */
+
+@media (min-width: 900px) {
+    .admin-dashboard {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .scan-section {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 600px) {
+    .scan-button {
+        font-size: 0.8rem;
+        padding: 12px 16px;
+    }
+
+    .attendance-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .attendance-time {
+        margin-left: 0;
+    }
+}
+
+/* Keep hover effects off touch-only devices */
+@media (hover: none) {
+    .scan-button:hover,
+    .submit-button:hover,
+    .attendance-item:hover {
+        transform: none;
+    }
+}
