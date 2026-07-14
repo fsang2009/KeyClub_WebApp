@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="css_files/admin.css">
     <script src="js_files/admin.js" defer></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="https://unpkg.com/html5-qrcode"></script>
 </head>
 <body>
     <section class="header">
@@ -24,16 +25,25 @@
                 <h2 class="section-title">QR Code Scanner</h2>
                 <div class="scanner-container">
                     <div class="scanner-viewport" id="scannerViewport">
-                        <div class="scanner-overlay">
-                            <div class="scan-line"></div>
-                            <p class="scanner-status">Ready to scan</p>
-                        </div>
+                       <div id="qr-reader" style="width: 100%;"></div>
                     </div>
+                    <p class="scanner-status" style="text-align: center; margin: 15px 0; font-weight: bold; color: black;">Ready to scan</p>
                     <div class="scanner-controls">
                         <button id="startScanButton" class="scan-button">Start Camera</button>
                         <button id="stopScanButton" class="scan-button secondary">Stop Camera</button>
+                        <div class="form-group" style= "display:flex; flex-direction: column; align-items: center;">
+                            <label for="cameraEvent">Event</label>
+                            <select id="cameraEvent">
+                        </select>
+                        <p class="error-message" id="cameraErrorMessage"></p>
+                    </div>
                     </div>
                 </div>
+            <div class="userScannedLogContainer">
+                <div class ="userScannedLog" id ="userScannedLogBox">
+                    <!-- user logs go here-->
+                </div>
+            </div> 
             </div>
 
             <div class="attendance-section">

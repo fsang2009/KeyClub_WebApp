@@ -18,6 +18,7 @@ if(!currentUser){
 const arrived = document.querySelector('#manualTimeArrived');
 const left = document.querySelector('#manualTimeLeaving')
 const eventChosen = document.querySelector('#manualEvent');
+const otherEventChosen = document.querySelector('#cameraEvent')
 // ^^^  use .append to automatically add events from data
 const studentEmail = document.querySelector('#manualEmail');
 
@@ -33,6 +34,7 @@ const generateEvents = ()=>{
             option.value = event.id
             option.textContent = event.title
             eventChosen.appendChild(option);
+            otherEventChosen.appendChild(option);
         }
     });
     }
@@ -185,3 +187,177 @@ const renderAttendanceList =()=>{
 }
 
 document.addEventListener('DOMContentLoaded', renderAttendanceList);
+
+
+//log users with camera logic below
+const startBtn = document.querySelector('#startScanButton');
+const stopBtn = document.querySelector('#stopScanButton');
+const statusText = document.querySelector('.scanner-status');
+
+const config = { 
+    fps: 10, 
+    qrbox: 250 
+};
+
+
+let usersSignedIn = JSON.parse(localStorage.getItem('usersSignedIn'))|| [];
+
+const cameraErrorMessage = document.querySelector('#cameraErrorMessage');
+let cameraErrorMessageTime = null;
+
+const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config, /* verbose= */ false);
+let statusTextTimer = null;
+// 4. Define what happens on success
+function onScanSuccess(decodedText, decodedResult) {
+    clearTimeout(cameraErrorMessageTime)
+    clearTimeout(statusTextTimer)
+    if (!usersSignedIn.some(record=> record.user === decodedText)){
+        console.log(`Scan result: ${decodedText}`);
+        const now = new Date();
+        const timeNow = now.toLocaleTimeString('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit'
+});
+    const otherTimeNow = now.toLocaleTimeString();
+        const studentEventChosen = otherEventChosen.value
+        if(studentEventChosen === ''){
+        console.log('Event Not Chosen!')
+        cameraErrorMessage.style.display='block';
+        cameraErrorMessage.textContent ='Please select an event'
+        cameraErrorMessageTime = setTimeout(()=>{
+            cameraErrorMessage.style.display='none';
+            cameraErrorMessage.textContent = ''
+        },2000)
+        return;
+    }
+    const selectedEvent = eventData.find(e=>e.id === studentEventChosen);
+    const studentEventChosenTitle = selectedEvent.title
+    
+        usersSignedIn.push({user: decodedText, timeEntered: timeNow, timeExited: null});
+    const newRecord = {
+        studentEmail: decodedText,
+        eventId: studentEventChosen,
+        eventTitle: studentEventChosenTitle,
+        timeArrived: otherTimeNow, 
+        timeLeft: null,
+        hours: null, 
+        date: now
+    }
+    attendanceRecords.push(newRecord);
+    localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+        renderUsersLogged();
+        statusText.textContent = "Entry time Logged!";
+        statusText.style.color = "#4CAF50";
+        statusTextTimer = setTimeout(()=>{
+            statusText.textContent = "Ready to scan";
+        statusText.style.color = "#000000";
+        }, 2000)
+        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
+        
+    } else{
+        const user =  usersSignedIn.find(user=>user.user === decodedText);
+        const now = new Date();
+        const timeNow = now.toLocaleTimeString('en-GB', {
+  hour: '2-digit',
+  minute: '2-digit'
+});
+        user.timeExited = timeNow
+        
+        const otherTimeNow = now.toLocaleTimeString();
+        const timeEntered = timeToDecimal(user.timeEntered);
+        const timeExited = timeToDecimal(user.timeExited);
+
+        const timeSpent = calculateTime(timeEntered, timeExited);
+
+        userInfo[decodedText].hours += timeSpent;
+        userInfo[decodedText].points += timeSpent;
+        
+        const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.timeLeft === null);
+        record.timeLeft = otherTimeNow;
+        record.hours = timeSpent;
+        localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
+
+        renderAttendanceList();
+        localStorage.setItem('userinfo', JSON.stringify(userInfo));
+
+        document.getElementById(decodedText).remove();
+        
+        usersSignedIn = usersSignedIn.filter(user=> user.user !== decodedText);
+        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
+
+        renderUsersLogged();
+
+    
+    }
+}
+/* 
+const getNewRecords = (studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date)=>{
+    const newRecord = { studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date };
+  attendanceRecords.push(newRecord);
+
+  localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords))
+  renderAttendanceList();
+}
+const renderAttendanceList =()=>{
+    let html = ''
+    attendanceRecords.forEach((record)=>{
+        html += ` <div class="attendance-item">
+                    <div class="attendance-info">
+                        <h3 class="attendance-name">${userInfo[record.studentEmail]?.firstname || 'unkown'} ${userInfo[record.studentEmail]?.lastname || 'unkown'}</h3>
+                        <p class="attendance-email">${record.studentEmail}</p>
+                        <p class ="attendance-event">${record.eventTitle}</p>
+                        <p class="attendance-event">Event ID: ${record.eventId}</p>
+                    </div>
+                    <div class="attendance-details">
+                        <p class="attendance-time">Time: ${record.timeArrived} - ${record.timeLeft}</p>
+                        <p class="attendance-hours">Hours: ${record.hours}</p>
+                        <p class="attendance-date">Date: ${record.date}</p>
+                    </div>
+                </div>
+           `
+    })
+
+        attendanceList.innerHTML = html;
+
+       
+*/
+
+const userScannedLogArea = document.querySelector('#userScannedLogBox');
+const renderUsersLogged =()=>{
+    let html = ''
+    usersSignedIn.forEach((user)=>{
+        html+=`
+                    <div class ="studentLogBox" id="${user.user}">
+                        <p>${userInfo[user.user].firstname} ${userInfo[user.user].lastname} | Checked in: ${user.timeEntered} Checked out: ❌</p>
+                        <button class ="UserLogDelete">
+                            Delete
+                        </button>
+                    </div>
+                `
+    
+            })
+            userScannedLogArea.innerHTML = html; 
+}
+
+document.addEventListener('DOMContentLoaded', renderUsersLogged);
+// 5. Connect the HTML buttons to the scanner action methods
+startBtn.addEventListener('click', () => {
+    statusText.textContent = "Accessing camera...";
+    html5QrcodeScanner.render(onScanSuccess);
+});
+
+stopBtn.addEventListener('click', () => {
+    html5QrcodeScanner.clear().then(() => {
+        statusText.textContent = "Camera stopped";
+        statusText.style.color = "";
+        console.log("Scanner cleaned up safely.");
+    }).catch(err => {
+        console.error("Failed to clear scanner: ", err);
+    });
+});
+
+const cameraUserLog = (studentEmail, hours) =>{
+    const user = userInfo[studentEmail]
+    user.hours += hours;
+    user.points += hours;    
+}
