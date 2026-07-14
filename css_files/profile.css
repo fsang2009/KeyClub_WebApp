@@ -1,90 +1,28 @@
 /* =====================================================
-   GLOBAL RESET
+   PROFILE PAGE
 ===================================================== */
 
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
 :root {
-    --blue-dark: #102a56;
-    --blue: #2457d6;
-    --blue-light: #eaf0ff;
-    --gold: #f4b942;
-    --gold-light: #fff5d6;
-    --text-dark: #182033;
-    --text-muted: #70788b;
-    --white: #ffffff;
-    --page-bg: #f4f7fc;
     --card-shadow: 0 12px 35px rgba(31, 45, 75, 0.09);
 }
 
-html {
-    scroll-behavior: smooth;
-}
-
-body {
-    min-height: 100vh;
-    background: var(--page-bg);
-    color: var(--text-dark);
-    font-family: Arial, Helvetica, sans-serif;
-    padding-bottom: 95px;
-    overflow-x: hidden;
-}
-
-
 /* =====================================================
-   PROFILE HEADER
+   PROFILE HEADER CONTENT
 ===================================================== */
 
-.header {
-    position: relative;
-    overflow: hidden;
-    padding: 42px 24px 78px;
-    text-align: center;
-    color: var(--white);
-    background:
-        radial-gradient(
-            circle at 85% 15%,
-            rgba(255, 255, 255, 0.16) 0,
-            rgba(255, 255, 255, 0.16) 80px,
-            transparent 81px
-        ),
-        linear-gradient(135deg, #173a82 0%, #2457d6 55%, #6383f2 100%);
-}
-
-/* Decorative gold glow */
-.header::before {
-    content: "";
-    position: absolute;
-    width: 230px;
-    height: 230px;
-    left: -100px;
-    bottom: -140px;
-    border-radius: 50%;
-    background: rgba(244, 185, 66, 0.24);
-}
-
-/* Decorative outlined circle */
-.header::after {
-    content: "";
-    position: absolute;
-    width: 145px;
-    height: 145px;
-    right: -65px;
-    bottom: 10px;
-    border: 25px solid rgba(255, 255, 255, 0.08);
-    border-radius: 50%;
-}
-
 .profile-header {
-    position: relative;
-    z-index: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.description {
+    position: relative;
+    z-index: 1;
+    margin-top: 16px;
+    max-width: 500px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .profile-header img {
@@ -739,4 +677,23 @@ body {
 
 .modal.active {
     display: flex;
+}
+
+.qr-code-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    border: 5px solid;
+    border-radius: 10px;
+    border-color: black;
+    width: 260px;
+    margin-top:20px;
+
+}
+
+.qr-code-center{
+    width: 100%;
+    display: flex; 
+    justify-content: center;
 }

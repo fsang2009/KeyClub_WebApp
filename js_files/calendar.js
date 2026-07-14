@@ -19,6 +19,15 @@ starts at index 0, so january is 0 , december is 11)
 
 Step 5. idfk just start on it
 */
+
+
+
+const userInfo = JSON.parse(localStorage.getItem('userinfo'));
+if(!userInfo){
+    window.location.href = 'login.html'
+}
+
+//actual calendar code below
 const months = [
     "January",
     "February",

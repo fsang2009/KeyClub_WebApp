@@ -6,9 +6,71 @@ const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
 const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
 const currentUser = userInfo[userSetEmail]
 
+
+
 if(!currentUser){
     window.location.href = 'login.html'
 }
+
+
+
+// QR code generation system
+
+const userEmail = currentUser.email
+const qrContainer = document.querySelector('.qr-code-container');
+const qrImage = qrContainer.querySelector('img');
+
+if(currentUser.qrCode){
+    // User already has a QR code - just display it
+    qrImage.src = currentUser.qrCode;
+} else{
+const generateQrCode = (container, email)=>{
+    return new Promise((resolve, reject)=>{
+        new QRCode(container,{
+            text: email,
+            width: 200, 
+            height: 200,
+        })        
+        let resolved = false;
+
+        const observer = new MutationObserver(()=>{
+            if(resolved) return;
+            const img = container.querySelector('img');
+            if(img && img.src){
+                resolved = true;
+                observer.disconnect();
+                resolve(img.src);
+            }
+        })
+
+        observer.observe(container, {childList: true, subtree: true}); 
+       
+        setTimeout(()=>{
+            if(!resolved){
+                observer.disconnect();
+                const img = container.querySelector('img');
+                if(img && img.src){
+                    resolve(img.src);
+                } else{
+                    reject(new Error('QR Code generation timeout'))
+                }
+            }
+        }, 2000)
+    })
+
+}
+
+  generateQrCode(qrContainer, userEmail)
+    .then(qrDataUrl => {currentUser.qrCode = qrDataUrl;
+        localStorage.setItem('userinfo', JSON.stringify(userInfo));
+    })
+    .catch(error=>{
+        console.log('Failed to generate QR Code:', error);
+    })
+}
+
+   
+
 // Edit profile functionality
 const editProfileButton = document.querySelector('.edit-profile-button');
 const editProfileModal = document.querySelector('#editProfileModal');

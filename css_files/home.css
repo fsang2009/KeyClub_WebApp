@@ -81,7 +81,8 @@ a {
 
 .header {
     position: relative;
-
+    display:flex;
+    justify-content: center;
     overflow: hidden;
 
     min-height: 310px;
@@ -1218,4 +1219,1052 @@ a {
     .nav-links a {
         font-size: 0.51rem;
     }
+}
+
+/* =====================================================
+   RESPONSIVE WEB APP POLISH
+   Phones, tablets, Chromebooks, laptops, and touch devices
+===================================================== */
+
+:root {
+    --content-gutter: clamp(12px, 3vw, 32px);
+    --content-width: 880px;
+    --nav-safe-bottom: max(14px, env(safe-area-inset-bottom));
+}
+
+html {
+    min-width: 280px;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+}
+
+body {
+    min-height: 100svh;
+    padding-bottom: calc(105px + env(safe-area-inset-bottom));
+}
+
+img,
+svg,
+video,
+canvas {
+    display: block;
+    max-width: 100%;
+}
+
+button,
+a,
+input,
+textarea,
+select {
+    -webkit-tap-highlight-color: transparent;
+}
+
+button,
+a {
+    touch-action: manipulation;
+}
+
+input,
+textarea,
+select,
+button {
+    max-width: 100%;
+}
+
+button:focus-visible,
+a:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+    outline: 3px solid rgba(36, 87, 214, 0.32);
+    outline-offset: 3px;
+}
+
+.header-content,
+.main-content {
+    min-width: 0;
+}
+
+.main-content {
+    width: min(calc(100% - (var(--content-gutter) * 2)), var(--content-width));
+}
+
+.welcome-text,
+.post-content,
+.event-preview-details,
+.comment-content {
+    min-width: 0;
+}
+
+.welcome-text h2,
+.post-content h3,
+.event-preview-details h4,
+.comment-text,
+.header-description {
+    overflow-wrap: anywhere;
+}
+
+.welcome-button,
+.event-preview-button,
+.filter-button,
+.comment-send-button,
+.post-action,
+.nav-links a {
+    min-height: 44px;
+}
+
+.post-action {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.post-action span,
+.post-action {
+    white-space: nowrap;
+}
+
+.navbar {
+    bottom: var(--nav-safe-bottom);
+}
+
+.nav-links a {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+.comment-modal {
+    padding:
+        max(12px, env(safe-area-inset-top))
+        max(12px, env(safe-area-inset-right))
+        max(12px, env(safe-area-inset-bottom))
+        max(12px, env(safe-area-inset-left));
+}
+
+.comment-modal-content {
+    display: flex;
+    width: min(100%, 500px);
+    max-height: min(80svh, 720px);
+    flex-direction: column;
+}
+
+.comment-modal-body {
+    min-height: 0;
+    max-height: none;
+    flex: 1 1 auto;
+    overscroll-behavior: contain;
+}
+
+.comment-modal-footer {
+    flex: 0 0 auto;
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+}
+
+.comment-input {
+    min-width: 0;
+}
+
+/* Chromebook and smaller laptop layouts */
+@media (min-width: 701px) and (max-width: 1100px) {
+    .header {
+        min-height: 290px;
+        padding: 58px var(--content-gutter) 96px;
+    }
+
+    .header-content {
+        width: min(100%, 900px);
+    }
+
+    .main-content {
+        margin-top: -58px;
+    }
+
+    .welcome-card {
+        padding: 23px;
+    }
+}
+
+/* Compact tablets and narrow Chromebook windows */
+@media (max-width: 760px) {
+    .feed-heading {
+        align-items: center;
+    }
+
+    .post-header,
+    .post-content,
+    .post-stats {
+        padding-left: clamp(16px, 4vw, 22px);
+        padding-right: clamp(16px, 4vw, 22px);
+    }
+
+    .navbar {
+        width: min(calc(100% - 20px), 650px);
+    }
+}
+
+/* Phone layouts */
+@media (max-width: 520px) {
+    :root {
+        --content-gutter: 12px;
+    }
+
+    body {
+        padding-bottom: calc(94px + env(safe-area-inset-bottom));
+    }
+
+    .header {
+        min-height: 265px;
+        padding:
+            max(46px, calc(34px + env(safe-area-inset-top)))
+            18px
+            86px;
+    }
+
+    .header-description {
+        font-size: 0.94rem;
+        line-height: 1.6;
+    }
+
+    .main-content {
+        width: calc(100% - 20px);
+        margin-top: -50px;
+    }
+
+    .welcome-card {
+        grid-template-columns: 56px minmax(0, 1fr);
+        gap: 14px;
+        padding: 18px;
+    }
+
+    .welcome-icon {
+        width: 56px;
+        height: 56px;
+    }
+
+    .feed-heading {
+        gap: 10px;
+    }
+
+    .filter-button {
+        flex-shrink: 0;
+        padding-inline: 12px;
+    }
+
+    .post-header {
+        gap: 10px;
+    }
+
+    .user-avatar {
+        width: 46px;
+        height: 46px;
+    }
+
+    .event-preview {
+        gap: 12px;
+        padding: 14px;
+    }
+
+    .post-stats {
+        gap: 12px;
+    }
+
+    .post-actions {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .post-actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .post-action {
+        min-width: 82px;
+        padding-inline: 8px;
+    }
+
+    .navbar {
+        bottom: max(8px, env(safe-area-inset-bottom));
+        width: calc(100% - 16px);
+        padding: 7px;
+        border-radius: 18px;
+    }
+
+    .nav-links a {
+        min-height: 46px;
+        padding: 9px 4px;
+        border-radius: 12px;
+        font-size: clamp(0.52rem, 2.25vw, 0.62rem);
+        letter-spacing: 0.15px;
+    }
+
+    .comment-modal {
+        align-items: flex-end;
+        padding: 0;
+    }
+
+    .comment-modal-content {
+        width: 100%;
+        max-width: none;
+        max-height: min(88svh, 760px);
+        border-radius: 22px 22px 0 0;
+    }
+
+    .comment-modal-header {
+        padding: 16px 18px;
+    }
+
+    .comment-modal-body {
+        padding: 16px 18px;
+    }
+
+    .comment-modal-footer {
+        padding: 12px 14px max(12px, env(safe-area-inset-bottom));
+    }
+
+    .comment-send-button {
+        padding-inline: 16px;
+    }
+}
+
+/* Extremely narrow phones */
+@media (max-width: 380px) {
+    .header h1 {
+        font-size: clamp(2rem, 13vw, 2.65rem);
+    }
+
+    .feed-heading {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .filter-button {
+        width: 100%;
+    }
+
+    .welcome-card {
+        grid-template-columns: 1fr;
+    }
+
+    .welcome-icon {
+        width: 52px;
+        height: 52px;
+    }
+
+    .post-header {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .post-category {
+        align-self: flex-start;
+    }
+
+    .event-preview {
+        grid-template-columns: 1fr;
+    }
+
+    .event-preview-date {
+        width: 100%;
+        height: 54px;
+        flex-direction: row;
+        gap: 6px;
+    }
+
+    .event-preview-date strong {
+        margin-top: 0;
+    }
+
+    .comment {
+        gap: 8px;
+    }
+
+    .comment-avatar {
+        width: 34px;
+        height: 34px;
+    }
+
+    .comment-modal-footer {
+        align-items: stretch;
+        flex-direction: column;
+    }
+
+    .comment-send-button {
+        width: 100%;
+    }
+}
+
+/* Short landscape screens, including phones and small Chromebooks */
+@media (max-height: 560px) and (orientation: landscape) {
+    body {
+        padding-bottom: calc(82px + env(safe-area-inset-bottom));
+    }
+
+    .header {
+        min-height: 220px;
+        padding-top: 38px;
+        padding-bottom: 72px;
+    }
+
+    .main-content {
+        margin-top: -42px;
+    }
+
+    .comment-modal-content {
+        max-height: 94svh;
+    }
+
+    .navbar {
+        bottom: 6px;
+    }
+}
+
+/* Hover effects only where a real hover pointer exists */
+@media (hover: hover) and (pointer: fine) {
+    .welcome-button:hover,
+    .filter-button:hover,
+    .post:hover,
+    .event-preview-button:hover,
+    .post-action:hover,
+    .nav-links a:hover,
+    .comment-modal-close:hover,
+    .comment-send-button:hover {
+        will-change: transform;
+    }
+}
+
+/* Prevent sticky hover states on touchscreens */
+@media (hover: none) {
+    .post:hover,
+    .welcome-button:hover,
+    .event-preview-button:hover,
+    .nav-links a:hover {
+        transform: none;
+    }
+}
+
+/* Accessibility: respect reduced-motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* High-contrast support */
+@media (forced-colors: active) {
+    .welcome-card,
+    .post,
+    .navbar,
+    .comment-modal-content,
+    .event-preview {
+        border: 1px solid CanvasText;
+    }
+}
+
+/* =====================================================
+   DESKTOP / CHROMEBOOK WEB APP MODE
+   The mobile design stays intact. On roomier screens,
+   the bottom navigation becomes a fixed app sidebar.
+===================================================== */
+
+@media (min-width: 1000px) {
+    :root {
+        --app-sidebar-width: 220px;
+        --content-width: 960px;
+    }
+
+    body {
+        padding-left: var(--app-sidebar-width);
+        padding-bottom: 56px;
+    }
+
+    .header {
+        min-height: 330px;
+        padding: 72px clamp(42px, 6vw, 88px) 112px;
+    }
+
+    .header-content {
+        width: min(100%, 1120px);
+    }
+
+    .header h1 {
+        font-size: clamp(3.35rem, 5vw, 5.15rem);
+    }
+
+    .header-description {
+        max-width: 650px;
+        font-size: 1.05rem;
+    }
+
+    .main-content {
+        width: min(calc(100% - 64px), var(--content-width));
+        margin-top: -72px;
+    }
+
+    .welcome-card {
+        padding: 28px 30px;
+        gap: 24px;
+    }
+
+    .feed-section {
+        margin-top: 34px;
+    }
+
+    .post {
+        border-radius: 26px;
+    }
+
+    .post-header {
+        padding: 24px 26px 15px;
+    }
+
+    .post-content {
+        padding: 5px 26px 25px;
+    }
+
+    .post-stats {
+        padding: 0 26px 15px;
+    }
+
+    .post-action {
+        min-height: 50px;
+    }
+
+    .navbar {
+        top: 0;
+        bottom: 0;
+        left: 0;
+
+        width: var(--app-sidebar-width);
+        height: 100svh;
+        padding:
+            max(26px, env(safe-area-inset-top))
+            18px
+            max(26px, env(safe-area-inset-bottom));
+
+        border: 0;
+        border-right: 1px solid rgba(225, 230, 240, 0.95);
+        border-radius: 0;
+
+        background: rgba(255, 255, 255, 0.96);
+        box-shadow: 10px 0 35px rgba(17, 31, 63, 0.08);
+
+        transform: none;
+        backdrop-filter: blur(18px);
+    }
+
+    .nav-links {
+        height: 100%;
+        flex-direction: column;
+        align-items: stretch;
+        justify-content: center;
+        gap: 10px;
+    }
+
+    .nav-links a {
+        width: 100%;
+        min-height: 52px;
+        padding: 15px 17px;
+
+        justify-content: flex-start;
+
+        border-radius: 15px;
+
+        font-size: 0.73rem;
+        letter-spacing: 0.65px;
+        text-align: left;
+    }
+
+    .nav-links a:hover {
+        transform: translateX(4px);
+    }
+
+    .nav-links a[href="index.html"] {
+        box-shadow: 0 9px 22px rgba(36, 87, 214, 0.22);
+    }
+}
+
+/* Standard 1366px Chromebook and smaller laptop screens */
+@media (min-width: 1000px) and (max-width: 1280px) {
+    :root {
+        --app-sidebar-width: 196px;
+        --content-width: 860px;
+    }
+
+    .header {
+        min-height: 300px;
+        padding: 58px 42px 100px;
+    }
+
+    .header h1 {
+        font-size: clamp(3rem, 5vw, 4.25rem);
+    }
+
+    .main-content {
+        width: min(calc(100% - 48px), var(--content-width));
+        margin-top: -62px;
+    }
+
+    .navbar {
+        padding-inline: 14px;
+    }
+
+    .nav-links a {
+        padding-inline: 14px;
+        font-size: 0.68rem;
+    }
+}
+
+/* Large desktop screens: add breathing room without over-stretching text */
+@media (min-width: 1440px) {
+    :root {
+        --app-sidebar-width: 238px;
+        --content-width: 1020px;
+    }
+
+    .main-content {
+        width: min(calc(100% - 80px), var(--content-width));
+    }
+
+    .welcome-card {
+        padding: 30px 32px;
+    }
+}
+
+/* A short laptop window needs denser vertical navigation */
+@media (min-width: 1000px) and (max-height: 680px) {
+    .navbar {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+
+    .nav-links {
+        gap: 6px;
+    }
+
+    .nav-links a {
+        min-height: 45px;
+        padding-top: 11px;
+        padding-bottom: 11px;
+    }
+
+    .header {
+        min-height: 265px;
+        padding-top: 48px;
+        padding-bottom: 88px;
+    }
+
+    .main-content {
+        margin-top: -54px;
+    }
+}
+
+/* =====================================================
+   FINAL VISUAL POLISH
+   Preserves the existing brand while giving the app a
+   cleaner, more premium and deliberate interface.
+===================================================== */
+
+:root {
+    --page-bg: #f3f6fb;
+    --surface-soft: #f8faff;
+    --surface-blue: #edf3ff;
+    --border-strong: #dce3ef;
+    --text-soft: #8a93a5;
+    --shadow-small: 0 10px 28px rgba(24, 39, 75, 0.075);
+    --shadow: 0 22px 55px rgba(24, 39, 75, 0.12);
+    --shadow-hover: 0 24px 52px rgba(24, 39, 75, 0.145);
+}
+
+body {
+    background:
+        radial-gradient(circle at 92% 8%, rgba(36, 87, 214, 0.09), transparent 320px),
+        radial-gradient(circle at 4% 70%, rgba(116, 84, 214, 0.045), transparent 390px),
+        var(--page-bg);
+    font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+}
+
+.header {
+    isolation: isolate;
+    background:
+        radial-gradient(circle at 16% 18%, rgba(255,255,255,.16) 0 72px, transparent 73px),
+        radial-gradient(circle at 86% 20%, rgba(255,255,255,.08) 0 130px, transparent 132px),
+        linear-gradient(135deg, #122e66 0%, #2457d6 52%, #7188ef 100%);
+}
+
+.header::before {
+    opacity: .88;
+    filter: blur(.2px);
+}
+
+.header::after {
+    background: linear-gradient(145deg, rgba(244,185,66,.30), rgba(244,185,66,.08));
+}
+
+.header-label {
+    display: inline-flex;
+    align-items: center;
+    min-height: 28px;
+    padding: 6px 11px;
+    border: 1px solid rgba(255,255,255,.16);
+    border-radius: 999px;
+    background: rgba(255,255,255,.08);
+    backdrop-filter: blur(8px);
+}
+
+.header h1 {
+    max-width: 820px;
+    margin-top: 15px;
+    text-wrap: balance;
+    text-shadow: 0 8px 30px rgba(7, 22, 55, .16);
+}
+
+.header-description {
+    color: rgba(255,255,255,.86);
+    text-wrap: pretty;
+}
+
+.welcome-card,
+.post,
+.comment-modal-content {
+    border-color: rgba(220, 227, 239, .88);
+}
+
+.welcome-card {
+    background: rgba(255,255,255,.965);
+    box-shadow: 0 22px 60px rgba(19, 40, 86, .14);
+    backdrop-filter: blur(16px);
+}
+
+.welcome-card::before {
+    content: "";
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--gold), #ffd777 38%, var(--blue-medium));
+}
+
+.welcome-card::after {
+    opacity: .78;
+    background: radial-gradient(circle, var(--blue-light) 0 46%, rgba(234,240,255,.25) 47% 100%);
+}
+
+.welcome-icon {
+    border: 1px solid rgba(255,255,255,.22);
+    box-shadow: 0 13px 28px rgba(36, 87, 214, .25);
+}
+
+.welcome-button,
+.event-preview-button,
+.comment-send-button {
+    position: relative;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--blue), var(--blue-medium));
+    box-shadow: 0 10px 22px rgba(36, 87, 214, .22);
+}
+
+.welcome-button::after,
+.event-preview-button::after,
+.comment-send-button::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(110deg, transparent 20%, rgba(255,255,255,.18), transparent 78%);
+    transform: translateX(-120%);
+    transition: transform .45s ease;
+}
+
+.feed-heading {
+    padding-inline: 2px;
+}
+
+.feed-heading h2 {
+    letter-spacing: -.035em;
+}
+
+.filter-button {
+    min-height: 42px;
+    padding-inline: 17px;
+    border-color: var(--border-strong);
+    box-shadow: 0 5px 14px rgba(24,39,75,.045);
+}
+
+.post {
+    background: rgba(255,255,255,.985);
+    box-shadow: var(--shadow-small);
+}
+
+.featured-post {
+    border-top-width: 5px;
+}
+
+.post-header {
+    background: linear-gradient(180deg, rgba(248,250,255,.72), rgba(255,255,255,0));
+}
+
+.user-avatar {
+    box-shadow: 0 6px 15px rgba(36,87,214,.12);
+}
+
+.user-name,
+.post-content h3,
+.event-preview-details h4 {
+    letter-spacing: -.015em;
+}
+
+.post-content h3 {
+    text-wrap: balance;
+}
+
+.post-content > p,
+.comment-text {
+    text-wrap: pretty;
+}
+
+.post-category {
+    border: 1px solid currentColor;
+    border-color: color-mix(in srgb, currentColor 14%, transparent);
+}
+
+.event-preview {
+    border-color: rgba(36,87,214,.10);
+    background:
+        linear-gradient(145deg, rgba(255,255,255,.92), rgba(234,240,255,.92));
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.9);
+}
+
+.event-preview-date {
+    border: 1px solid rgba(255,255,255,.22);
+}
+
+.post-stats {
+    color: var(--text-soft);
+}
+
+.post-actions {
+    background: #fbfcff;
+}
+
+.post-action {
+    background: transparent;
+}
+
+.navbar {
+    border-color: rgba(220,227,239,.92);
+}
+
+.nav-links a {
+    position: relative;
+}
+
+.nav-links a[href="index.html"]::after {
+    content: "";
+    position: absolute;
+    bottom: 5px;
+    left: 50%;
+    width: 18px;
+    height: 3px;
+    border-radius: 999px;
+    background: rgba(255,255,255,.78);
+    transform: translateX(-50%);
+}
+
+.comment-modal {
+    padding: 18px;
+    background: rgba(12, 23, 47, .56);
+    backdrop-filter: blur(8px);
+}
+
+.comment-modal-content {
+    box-shadow: 0 30px 80px rgba(8, 22, 52, .25);
+}
+
+.comment-modal-header,
+.comment-modal-footer {
+    background: rgba(255,255,255,.96);
+}
+
+.comment-input {
+    min-width: 0;
+    background: #f7f9fd;
+    transition: border-color .2s ease, box-shadow .2s ease, background .2s ease;
+}
+
+.comment-input:focus {
+    background: var(--white);
+    box-shadow: 0 0 0 4px rgba(36,87,214,.10);
+}
+
+@media (hover: hover) and (pointer: fine) {
+    .post:hover {
+        border-color: rgba(36,87,214,.13);
+        box-shadow: var(--shadow-hover);
+        transform: translateY(-5px);
+    }
+
+    .welcome-button:hover::after,
+    .event-preview-button:hover::after,
+    .comment-send-button:hover::after {
+        transform: translateX(120%);
+    }
+
+    .filter-button:hover {
+        box-shadow: 0 8px 18px rgba(36,87,214,.10);
+    }
+}
+
+@media (min-width: 1000px) {
+    body {
+        background:
+            radial-gradient(circle at 88% 8%, rgba(36,87,214,.085), transparent 350px),
+            linear-gradient(90deg, #eef2f8 0 var(--app-sidebar-width), transparent var(--app-sidebar-width)),
+            var(--page-bg);
+    }
+
+    .navbar {
+        background:
+            linear-gradient(180deg, rgba(255,255,255,.98), rgba(248,250,255,.97));
+        box-shadow: 14px 0 38px rgba(17,31,63,.075);
+    }
+
+    .nav-links {
+        justify-content: flex-start;
+        padding-top: clamp(105px, 16vh, 170px);
+    }
+
+    .nav-links::before {
+        content: "KEY CLUB";
+        position: absolute;
+        top: 34px;
+        left: 23px;
+        color: var(--blue-dark);
+        font-size: .82rem;
+        font-weight: 900;
+        letter-spacing: 1.7px;
+    }
+
+    .nav-links::after {
+        content: "STUDENT HUB";
+        position: absolute;
+        top: 57px;
+        left: 23px;
+        color: var(--text-soft);
+        font-size: .58rem;
+        font-weight: 800;
+        letter-spacing: 1.4px;
+    }
+
+    .nav-links a {
+        border: 1px solid transparent;
+    }
+
+    .nav-links a:hover {
+        border-color: rgba(36,87,214,.08);
+        background: rgba(234,240,255,.78);
+    }
+
+    .nav-links a[href="index.html"] {
+        border-color: rgba(255,255,255,.18);
+        background: linear-gradient(135deg, var(--blue-dark), var(--blue));
+    }
+
+    .nav-links a[href="index.html"]::after {
+        top: 50%;
+        bottom: auto;
+        left: 7px;
+        width: 3px;
+        height: 22px;
+        transform: translateY(-50%);
+    }
+
+    .main-content {
+        padding-bottom: 42px;
+    }
+
+    .feed-heading {
+        margin-bottom: 18px;
+    }
+}
+
+@media (max-width: 700px) {
+    .header-label {
+        min-height: 25px;
+        padding: 5px 9px;
+    }
+
+    .welcome-card::before {
+        height: 3px;
+    }
+}
+
+@media (max-width: 520px) {
+    .header {
+        border-radius: 0 0 28px 28px;
+    }
+
+    .post,
+    .welcome-card {
+        box-shadow: 0 12px 30px rgba(24,39,75,.09);
+    }
+
+    .post-actions {
+        overflow-x: auto;
+        scrollbar-width: none;
+    }
+
+    .post-actions::-webkit-scrollbar {
+        display: none;
+    }
+
+    .post-action {
+        min-width: 82px;
+    }
+
+    .comment-modal {
+        padding: 0;
+        align-items: flex-end;
+    }
+
+    .comment-modal-content {
+        width: 100%;
+        max-width: none;
+        max-height: min(88svh, 760px);
+        border-radius: 24px 24px 0 0;
+    }
+
+    .comment-modal-content::before {
+        content: "";
+        display: block;
+        width: 42px;
+        height: 4px;
+        margin: 9px auto 0;
+        border-radius: 999px;
+        background: #d8deea;
+    }
+}
+
+@media (forced-colors: active) {
+    .post-category {
+        border-color: CanvasText;
+    }
+}
+
+.header-content {
+    text-align: center;
+}
+
+.header h1,
+.header-description {
+    margin-left: auto;
+    margin-right: auto;
 }
