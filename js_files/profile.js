@@ -114,6 +114,10 @@ if (!currentUser.profileImage) {
     localStorage.setItem('userinfo', JSON.stringify(userInfo));
 }
 
+if(currentUser.profileImage === 'images/proifles/avatar1.png1'){
+    currentUser.description = 'Arise.'
+    profileDescription.textConent = currentUser.description
+}
 const userNameProfile = document.querySelector('#username');
 const descriptionProfile = document.querySelector('#description');
 const profileImageElement = document.querySelector('.profile-header img');
