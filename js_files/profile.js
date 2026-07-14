@@ -4,14 +4,21 @@
 
 const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
 const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
-const currentUser = userInfo[userSetEmail]
-
-
+let currentUser = userInfo[userSetEmail]
 
 if(!currentUser){
     window.location.href = 'login.html'
 }
 
+//logout logic
+
+const logoutButton = document.querySelector('#logout-button');
+
+logoutButton.addEventListener('click',()=>{
+    currentUser = null
+    localStorage.removeItem('currentUser')
+    window.location.href = 'login.html';
+})
 
 
 // QR code generation system

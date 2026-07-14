@@ -71,6 +71,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
         }
 
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
+    localStorage.setItem('currentUser', JSON.stringify(userSetEmail))
     window.location.href ='profile.html'
 
 })

@@ -105,6 +105,12 @@ body > a[href="landingpage.html"] {
     min-width: 0;
 }
 
+.profile-buttons {
+    display: flex;
+    gap: 12px;
+    margin-top: 20px;
+}
+
 .profile-header img {
     width: clamp(104px, 9vw, 138px);
     height: clamp(104px, 9vw, 138px);
@@ -164,6 +170,36 @@ body > a[href="landingpage.html"] {
 .edit-profile-button:hover {
     border-color: rgba(255, 255, 255, 0.7);
     background: rgba(255, 255, 255, 0.23);
+    transform: translateY(-2px);
+}
+
+.logout-button {
+    min-height: 44px;
+    padding: 11px 20px;
+
+    border: 1px solid rgba(244, 185, 66, 0.6);
+    border-radius: 13px;
+
+    background: rgba(244, 185, 66, 0.2);
+    color: #ffffff;
+
+    font: inherit;
+    font-size: 0.84rem;
+    font-weight: 850;
+
+    cursor: pointer;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+
+    transition:
+        transform 0.2s ease,
+        background 0.2s ease,
+        border-color 0.2s ease;
+}
+
+.logout-button:hover {
+    border-color: rgba(244, 185, 66, 0.9);
+    background: rgba(244, 185, 66, 0.35);
     transform: translateY(-2px);
 }
 
