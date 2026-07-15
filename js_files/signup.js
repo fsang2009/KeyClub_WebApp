@@ -30,6 +30,17 @@ const blockedWords = [
   "nigg",
   "fuck",
   "fuc",
+  "fck",
+  "crap",
+  "crip",
+  "slt",
+  "messi",
+  "motherfuc",
+  "motherf",
+  "mother",
+  "father",
+  "dad",
+  "motherfck",
   "nig",
   "shi",
   "fuh",
@@ -68,6 +79,8 @@ const blockedWords = [
   "tosser",
   "twat",
   "prick",
+  "aaa",
+
 
   // Racial / ethnic slurs
   "nigger",
@@ -106,6 +119,17 @@ const blockedWords = [
   "orgasm",
   "rape",
   "rapist",
+  "hentai",
+  "henta",
+  "bitc",
+  "btch",
+  "bch",
+  "fag",
+  "lionel",
+  "lione",
+  "trump",
+  
+  
 
   // Violence / hate
   "hitler",
@@ -136,15 +160,51 @@ const blockedWords = [
   "lmfao",
   "rofl",
   "xd",
+  
 
   // Custom
   "jedi",
   "jeditaw"
+    ,"crap", "bastard", "idiot", "jerk", "hell", "damn",
+
 ];
 
 
+let displayNameTimer = null
+const userDisplayErrorMessage = document.querySelector('#displayname-check-signup-error');
+userDisplayName.addEventListener('input',(event)=>{
+        clearTimeout(displayNameTimer);
+    userDisplayErrorMessage.style.display='none';
+    userDisplayErrorMessage.textContent= '';
+    let val = event.target.value;
+    let trueFalse = isInappropriate(val);
+    if(trueFalse === true){
+        userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Please use an appropriate name.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
+    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
+         userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'You are worst than Adolf Hitler.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
+    const wordLength = val.split('').length;
+    if(wordLength>15){
+        userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Character limit exceeded.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
 
-
+})
 let firstNameTimer = null;
 userFirstName.addEventListener('input',(event)=>{
     clearTimeout(firstNameTimer);
@@ -160,7 +220,14 @@ userFirstName.addEventListener('input',(event)=>{
             errorMessageFirstNameCheck.textContent = ''
         }, 3000);
     }
-    
+    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
+         errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'You are worst than Adolf Hitler.'
+        firstNameTimer = setTimeout(()=>{
+            errorMessageFirstNameCheck.style.display ='none';
+            errorMessageFirstNameCheck.textContent = ''
+        }, 3000);
+    }
     const wordLength = val.split('').length;
     if(wordLength>15){
         errorMessageFirstNameCheck.style.display ='block';
@@ -176,8 +243,8 @@ userFirstName.addEventListener('input',(event)=>{
 let lastNameTimer = null;
 userLastName.addEventListener('input',(event)=>{
     clearTimeout(firstNameTimer);
-    errorMessageFirstNameCheck.style.display='none';
-    errorMessageFirstNameCheck.textContent= '';
+    errorMessageLastNameCheck.style.display='none';
+    errorMessageLastNameCheck.textContent= '';
     let val = event.target.value;
     let trueFalse = isInappropriate(val);
     if(trueFalse === true){
@@ -212,6 +279,12 @@ const isInappropriate = (inputName)=>{
     },'')
 
     const superCleansedWord = cleansedWord.replace(/(.)\1+/g, '$1');
+    
+    if((inputName === 'ass')||(inputName.replace(/(.)\1+/g, '$1$1') === 'ass') ||(inputName.includes('aaa') || (inputName.includes('sss')))
+    
+){
+        return true;
+    }
     return blockedWords.reduce((acc, current)=>{
         if(superCleansedWord.includes(current)){
             acc = true;
@@ -377,6 +450,26 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
         }, 3000);
         return
     }
+
+    const displayNameVal = isInappropriate(userSetDisplayName);
+    if(displayNameVal){
+         userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Please use an appropriate name.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
+
+    const displayNameLength = userSetDisplayName.split('').length;
+    if(displayNameLength>15){
+        userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Character limit exceeded.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
     
         userInfo[userSetEmail] = userInfo[userSetEmail] || {};
         userInfo[userSetEmail] ={
@@ -390,7 +483,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             signedUpEvents: {},
             hours: 0,
             points: 0,
-            likedPosts: []
+            likedPosts: [],
         }
 
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
