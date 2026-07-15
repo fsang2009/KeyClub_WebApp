@@ -239,3 +239,101 @@
   padding-top: 8px;
   margin-top: 4px;
 }
+
+/* --- Search Bar Styling --- */
+.search-container {
+  margin-bottom: 20px;
+  width: 100%;
+}
+
+.search-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  max-width: 400px; /* Limits the search bar width so it doesn't span too wide on desktop */
+}
+
+/* Position the search icon absolute inside the wrapper */
+.search-icon {
+  position: absolute;
+  left: 14px;
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  pointer-events: none; /* Makes sure clicks pass through to the input */
+}
+
+/* The actual search input field */
+#studentSearchInput {
+  width: 100%;
+  padding: 12px 12px 12px 40px; /* Leaves room on the left for the icon */
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--text-primary);
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+/* Focus state matching the rest of your app's inputs */
+#studentSearchInput:focus {
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15);
+}
+
+#studentSearchInput::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.8;
+}
+
+/* --- Modal Overlay (The background dim) --- */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(15, 23, 42, 0.3); /* Subtle dimming background */
+  backdrop-filter: blur(8px);       /* Blurs the background content */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;                     /* Keeps it on top of everything */
+  
+  /* Hides it by default */
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+/* --- Active State (When triggered by JS) --- */
+.modal-overlay.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* --- Modal Card (The white dialog box itself) --- */
+.modal-card {
+  background: #ffffff;
+  border: 1px solid #e2e8f0;
+  width: 100%;
+  max-width: 500px;
+  max-height: 80vh;
+  overflow-y: auto;
+  border-radius: 16px;
+  padding: 32px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  position: relative;
+  
+  /* Start slightly shifted down for a clean slide-up effect */
+  transform: translateY(20px);
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Slide up when active */
+.modal-overlay.active .modal-card {
+  transform: translateY(0);
+}

@@ -29,6 +29,19 @@
     <p>Track student participation, hours, and involvement history.</p>
   </div>
 
+<div class="search-container">
+  <div class="search-input-wrapper">
+    <span class="search-icon">🔍</span>
+    <input 
+      type="text" 
+      id="studentSearchInput" 
+      placeholder="Search students by name or email..." 
+      autocomplete="off"
+    />
+  </div>
+</div>
+
+
   <div class="table-container">
     <table class="students-table">
       <thead>
@@ -39,44 +52,10 @@
           <th class="text-right">History</th>
         </tr>
       </thead>
-      <tbody>
-        <tr>
-          <td>
-            <div class="student-profile">
-              <img class="student-avatar" src="https://via.placeholder.com/40" alt="Student avatar">
-              <div class="student-details">
-                <span class="student-name">Alex Rivera</span>
-                <span class="student-email">alex.rivera@school.edu</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge points-badge">320 pts</span></td>
-          <td><span class="hours-text">24.5 hrs</span></td>
-          <td class="text-right">
-            <button class="btn-history-trigger" data-student-id="1" data-student-name="Alex Rivera">
-              View History
-            </button>
-          </td>
-        </tr>
+      <tbody id= "studentsContainer">
+        
+        
 
-        <tr>
-          <td>
-            <div class="student-profile">
-              <img class="student-avatar" src="https://via.placeholder.com/40" alt="Student avatar">
-              <div class="student-details">
-                <span class="student-name">Taylor Chen</span>
-                <span class="student-email">taylor.chen@school.edu</span>
-              </div>
-            </div>
-          </td>
-          <td><span class="badge points-badge">180 pts</span></td>
-          <td><span class="hours-text">12.0 hrs</span></td>
-          <td class="text-right">
-            <button class="btn-history-trigger" data-student-id="2" data-student-name="Taylor Chen">
-              View History
-            </button>
-          </td>
-        </tr>
       </tbody>
     </table>
   </div>
@@ -91,6 +70,8 @@
             <a href="studentlist.html">Student Directory</a>
         </div>
     </section>
+
+
 <div id="historyModal" class="modal-overlay">
   <div class="modal-card">
     <button id="closeHistoryModalBtn" class="close-btn">&times;</button>
