@@ -337,7 +337,7 @@ const eventGrid = document.querySelector('.upcoming-events-grid');
 const renderEvents  = ()=>{
     let html = ''
     eventData.forEach((event)=>{
-        const formattedDate = new Date(event.date).toLocaleDateString('en-US', { 
+        const formattedDate = new Date(event.date.replace(/-/g, '/')).toLocaleDateString('en-US', { 
     year: 'numeric', 
     month: 'long', 
     day: 'numeric' 
@@ -355,7 +355,7 @@ const renderEvents  = ()=>{
                         </span>
 
                         <h3>${event.title}</h3>
-                        <p>${event.time} – ${event.endTime} PM</p>
+                        <p>${event.time} – ${event.endTime}</p>
                         <p>${event.location}</p>
                     </div>
                 </article>`

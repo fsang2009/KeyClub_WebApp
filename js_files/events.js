@@ -97,6 +97,28 @@ const renderEvent = () =>{
     eventArea.innerHTML = html
 }
 
+// time converter VV
+function convertTo12Hour(timeString) {
+    if (!timeString) return ''; // Handle empty input gracefully
+
+    // Split the "HH:MM" string into numbers
+    let [hours, minutes] = timeString.split(':').map(Number);
+    
+    // Determine AM or PM suffix
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    
+    // Convert 24-hour format to 12-hour format
+    hours = hours % 12;
+    hours = hours ? hours : 12; // The hour '0' should be '12'
+    
+    // Ensure minutes always have a leading zero if under 10
+    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
+    
+    return `${hours}:${formattedMinutes} ${ampm}`;
+}
+
+
+
 const addEvent = ()=>{
     addEventButton.addEventListener('click', ()=>{
 
@@ -126,8 +148,8 @@ const addEvent = ()=>{
                         id: currentEventID,
                         title: currentTitle,
                         description: currentDescription,
-                        time: currentTime,
-                        endTime: currentEndTime,
+                        time: convertTo12Hour(currentTime),
+                        endTime: convertTo12Hour(currentEndTime),
                         date: currentDate,
                         location: currentLocation
                     };
@@ -145,8 +167,8 @@ const addEvent = ()=>{
                     id: crypto.randomUUID(),
                     title: currentTitle,
                     description: currentDescription,
-                    time: currentTime,
-                    endTime: currentEndTime,
+                    time: convertTo12Hour(currentTime),
+                    endTime: convertTo12Hour(currentEndTime),
                     date: currentDate,
                     location: currentLocation
                 })

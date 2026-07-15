@@ -262,3 +262,20 @@ deletePostButtons.forEach((button)=>{
     });
 })
 
+//render events in modal 
+const selectPostEvent = document.querySelector('#eventSelect');
+
+const renderEventsInModal = ()=>{
+    const eventData = JSON.parse(localStorage.getItem('eventData')) || [];
+    selectPostEvent.innerHTML = '<option value="">Select event</option>'
+    if(eventData){
+        eventData.forEach((event)=>{
+            const option = document.createElement('option');
+            option.value = event.id
+            option.textContent= event.title
+            selectPostEvent.appendChild(option);
+        })
+    }
+}
+
+document.addEventListener('DOMContentLoaded', renderEventsInModal)
