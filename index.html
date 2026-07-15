@@ -51,7 +51,8 @@
             <div class="feed-heading">
                 <div>
                     <p class="section-label">Club Feed</p>
-                    <h2>Latest Updates</h2>
+                    <h2>Latest Updates</h2> 
+                    <button class="welcome-button" id ="create-post-button"> Create Post </button>
                 </div>
 
                 <button class="filter-button" type="button">
@@ -59,175 +60,76 @@
                 </button>
             </div>
 
-
-            <article class="post featured-post">
-
-                <div class="post-header">
-                    <div class="user">
-                        <img
-                            class="user-avatar"
-                            src="https://via.placeholder.com/50"
-                            alt="Southport Key Club avatar"
-                        >
-
-                        <div class="user-information">
-                            <p class="user-name">Southport Key Club</p>
-                            <p class="post-time">Today at 9:30 AM</p>
-                        </div>
-                    </div>
-
-                    <span class="post-category announcement-category">
-                        Announcement
-                    </span>
-                </div>
-
-
-                <div class="post-content">
-                    <h3>Welcome to the new Key Club dashboard!</h3>
-
-                    <p>
-                        This page will be your main place for club announcements,
-                        upcoming events, volunteer opportunities, and important updates.
-                    </p>
-                </div>
-
-
-                <div class="post-actions">
-                    <button class="post-action" type="button">
-                        <span class="like-button">♡</span>
-                        Like
-                    </button>
-
-                    <button class="post-action comment-button" type="button">
-                        <span>💬</span>
-                        Comment
-                    </button>
-
-                </div>
-
-            </article>
-
-
-            <article class="post">
-
-                <div class="post-header">
-                    <div class="user">
-                        <img
-                            class="user-avatar"
-                            src="https://via.placeholder.com/50"
-                            alt="Officer avatar"
-                        >
-
-                        <div class="user-information">
-                            <p class="user-name">John Doe</p>
-                            <p class="post-time">Yesterday at 4:15 PM</p>
-                        </div>
-                    </div>
-
-                    <span class="post-category event-category">
-                        Event
-                    </span>
-                </div>
-
-
-                <div class="post-content">
-                    <h3>Beach Cleanup Sign-Ups Are Open</h3>
-
-                    <p>
-                        Join us this Saturday for a community beach cleanup.
-                        Members can earn three service hours by participating.
-                    </p>
-
-                    <div class="event-preview">
-                        <div class="event-preview-date">
-                            <span>Jul</span>
-                            <strong>15</strong>
-                        </div>
-
-                        <div class="event-preview-details">
-                            <h4>Beach Cleanup</h4>
-                            <p>9:00 AM – 12:00 PM</p>
-                            <p>Southport Beach</p>
-                        </div>
-
-                        <a href="events.html" class="event-preview-button">
-                            View
-                        </a>
-                    </div>
-                </div>
-
-
-                <div class="post-actions">
-                    <button class="post-action" type="button">
-                        <span class="like-button">♡</span>
-                        Like
-                    </button>
-
-                    <button class="post-action comment-button" type="button">
-                        <span>💬</span>
-                        Comment
-                    </button>
-
-                </div>
-
-            </article>
-
-
-            <article class="post">
-
-                <div class="post-header">
-                    <div class="user">
-                        <img
-                            class="user-avatar"
-                            src="https://via.placeholder.com/50"
-                            alt="Member avatar"
-                        >
-
-                        <div class="user-information">
-                            <p class="user-name">Jane Smith</p>
-                            <p class="post-time">Monday at 2:40 PM</p>
-                        </div>
-                    </div>
-
-                    <span class="post-category member-category">
-                        Member Post
-                    </span>
-                </div>
-
-
-                <div class="post-content">
-                    <h3>Thank You, Volunteers!</h3>
-
-                    <p>
-                        Thank you to everyone who helped with the food pantry last weekend.
-                        Together, we collected more than 300 food items for local families.
-                    </p>
-                </div>
-
-
-                <div class="post-stats">
-                    <span>18 likes</span>
-                    <span>4 comments</span>
-                </div>
-
-
-                <div class="post-actions">
-                    <button class="post-action" type="button">
-                        <span class="like-button">♡</span>
-                        Like
-                    </button>
-
-                    <button class="post-action comment-button" type="button">
-                        <span>💬</span>
-                        Comment
-                    </button>
-
-                </div>
-
-            </article>
-
+        <section class="feed-section" id= "post-section">
+            <!--posts go here-->
+        </section>
+        
         </section>
 
+        <div id="postModal" class="modal-overlay">
+  <div class="modal-card" id="create-post-modal">
+    <button id="closeModalBtn" class="close-btn">&times;</button>
+    
+    <div class="modal-header">
+      <h2>Create a Post</h2>
+      <p>Share an update, image, or video to your event.</p>
+    </div>
+
+    <form class="modal-form">
+      <div class="input-group">
+        <label for="postTitle">Post Title</label>
+        <input type="text" id="postTitle" placeholder="Give your post a catchy title..." required />
+      </div>
+
+      <div class="input-group">
+        <label for="eventSelect">Select Event</label>
+        <div class="select-wrapper">
+          <select id="eventSelect">
+            <option value="" disabled selected>Choose an event...</option>
+            <option value="hackathon">Summer Hackathon 2026</option>
+            <option value="workshop">JavaScript Workshop</option>
+            <option value="meetup">Python Study Group</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="postDesc">Description</label>
+        <textarea id="postDesc" rows="4" placeholder="What's on your mind?..." required></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>Add Media (Image or Video)</label>
+        <label for="mediaUpload" class="file-upload-label">
+          <span class="upload-icon">📁</span>
+          <span class="upload-text">Click to upload or drag & drop</span>
+          <span class="upload-limit">PNG, JPG, MP4 up to 50MB</span>
+          <input type="file" id="mediaUpload" accept="image/*,video/*" />
+        </label>
+      </div>
+
+      <div class="input-group">
+        <label for="postTypeSelect">Post Type</label>
+        <div class="select-wrapper">
+          <select id="postTypeSelect" required>
+            <option value="" disabled selected>Select post type...</option>
+            <option value="announcement">Announcement</option>
+            <option value="event">Event</option>
+            <option value="member-post">Member Post</option>
+            <option value="reminder">Reminder</option>
+          </select>
+        </div>
+      </div>
+
+
+        <p class="error-message" id="postErrorMessage"></p>
+      <div class="modal-actions">
+        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="postPublish">Publish Post</button>
+      </div>
+    </form>
+  </div>
+</div>
     </main>
 
 

@@ -199,8 +199,8 @@ renderSignedUpEvents();
 const studentHoursEntry = document.querySelector('#studentHours');
 const studentPointsEntry = document.querySelector('#studentPoints');
 
-const studentHours = currentUser.hours;
-const studentPoints = currentUser.points;
+const studentHours = currentUser?.hours || 0;
+const studentPoints = currentUser?.points || 0;
 
 studentHoursEntry.textContent = `Hours: ${studentHours}`;
 studentPointsEntry.textContent = `Points: ${studentPoints}`;

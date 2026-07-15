@@ -89,6 +89,9 @@ const manualUserSignInOut = ()=>{
     const timeLeft = timeToDecimal(left.value);
     const studentEventChosen = eventChosen.value
     const selectedEvent = eventData.find(e=>e.id === studentEventChosen);
+    if(!selectedEvent){
+        return;
+    }
     const studentEventChosenTitle = selectedEvent.title
     const chosenStudentEmail = studentEmail.value;
     if(timeArrived ==='' || timeLeft === '' || studentEventChosen ==='' || chosenStudentEmail=== ''){
@@ -250,7 +253,7 @@ function onScanSuccess(decodedText, decodedResult) {
         timeArrived: otherTimeNow, 
         timeLeft: null,
         hours: null, 
-        date: now.toLocaleDateString
+        date: now.toLocaleDateString()
     }
     attendanceRecords.push(newRecord);
     localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));

@@ -236,7 +236,7 @@ deleteEventButton.addEventListener('click', () => {
 /* EDIT EVENT FUNCTION */
 const editEventButton = document.querySelector('#editEventButton');
 editEventButton.addEventListener('click', () => {
-    // Get current event data
+  
     let eventData = JSON.parse(localStorage.getItem('eventData')) || [];
     const currentEvent = eventData.find(event => event.id === currentEventID);
 
@@ -252,7 +252,7 @@ editEventButton.addEventListener('click', () => {
         // Open add event modal
         addEventModal.classList.add('active');
 
-        // Change submit button to "Update Event"
+        
         const submitEventButton = addEventModal.querySelector('.submit-event-button');
         submitEventButton.textContent = 'Update Event';
         submitEventButton.dataset.editMode = 'true';
