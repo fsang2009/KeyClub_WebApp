@@ -484,6 +484,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             hours: 0,
             points: 0,
             likedPosts: [],
+            eventsCompleted: []
         }
 
     localStorage.setItem('userinfo', JSON.stringify(userInfo))

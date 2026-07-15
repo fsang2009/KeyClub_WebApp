@@ -52,11 +52,11 @@ studentListContainer.addEventListener('click',(event)=>{
             currentUserEmail = event.target.dataset.studentId;
             
             const user = userInfo[currentUserEmail]
-            console.log(user.signedUpEvents);
+            console.log('user events:', user.eventsCompleted);
             historyModal.classList.add('active');
             loadHistoryModal();
         } else {
-            console.log('studnt id does not exist. ')
+            console.log('student id does not exist. ')
             return;
         }
     }
@@ -69,7 +69,11 @@ const loadHistoryModal = ()=>{
     if(currentUserEmail !== null){
         const user = userInfo[currentUserEmail];
         studentName.textContent = `${user.firstname} ${user.lastname}`
-        renderEventHistory();
+        if(user.eventsCompleted){
+            renderEventHistory();
+        } else{
+          return;
+        }
     }
 
 }
@@ -83,35 +87,22 @@ const closeHistoryModal = document.querySelector('#closeHistoryModalBtn')
 closeHistoryModal.addEventListener('click',()=>{
     currentUserEmail = null;
     studentName.textContent ='';
+    historyContainer.innerHTML = ''
     historyModal.classList.remove('active');
+    
 })
 
 // render student events
 const historyContainer = document.querySelector('.history-scroll-container');
 
 const renderEventHistory =()=>{
-    const eventData = JSON.parse(localStorage.getItem('eventData'));
-    console.log('eventData:', eventData)
     const user = userInfo[currentUserEmail];
     console.log('user:', user);
     console.log('userInfo', userInfo);
-    const eventIds = Object.keys(user.signedUpEvents).reduce((acc,current)=>{
-        acc.push(current);
-        return acc;
-    }, [])
-    console.log('eventIds:', eventIds);
-
-    const eventList = eventData.reduce((acc,current)=>{
-        if(eventIds.includes(current.id)){
-            acc.push(current);
-        }
-        return acc;
-    },[])
-
-    console.log(eventList)
+    const userEventsCompleted = user.eventsCompleted
     let eventHTML = ''
 
-    eventList.forEach((event)=>{
+    userEventsCompleted.forEach((event)=>{
         eventHTML += ` <div class="history-event-card">
         <div class="event-card-header">
           <span class="event-type-badge meetup">event type</span>

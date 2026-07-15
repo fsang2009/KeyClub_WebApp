@@ -127,8 +127,14 @@ const manualUserSignInOut = ()=>{
 
    }
 
-        userInfo[chosenStudentEmail].hours += timeSpent;
-        userInfo[chosenStudentEmail].points += timeSpent;
+   const user =   userInfo[chosenStudentEmail]
+     user.eventsCompleted = user.eventsCompleted || [];
+        user.hours += timeSpent;
+        user.points += timeSpent;
+        user.eventsCompleted.push(selectedEvent);
+
+
+
         successMessage.textContent = 'Student Successfully Logged!'
         successMessage.style.display ='block';
     successTime = setTimeout(()=>{
@@ -267,6 +273,22 @@ function onScanSuccess(decodedText, decodedResult) {
         localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
         
     } else{
+        const studentEventChosen = otherEventChosen.value
+        if(studentEventChosen === ''){
+        console.log('Event Not Chosen!')
+        cameraErrorMessage.style.display='block';
+        cameraErrorMessage.textContent ='Please select an event'
+        cameraErrorMessageTime = setTimeout(()=>{
+            cameraErrorMessage.style.display='none';
+            cameraErrorMessage.textContent = ''
+        },2000)
+        return;
+    }
+    const selectedEvent = eventData.find(e=>e.id == studentEventChosen);
+    if (!selectedEvent) {
+    console.error("Selected event not found in database.");
+    return;
+}
         const user =  usersSignedIn.find(user=>user.user === decodedText);
         const now = new Date();
         const timeNow = now.toLocaleTimeString('en-GB', {
@@ -283,6 +305,7 @@ function onScanSuccess(decodedText, decodedResult) {
 
         userInfo[decodedText].hours += timeSpent;
         userInfo[decodedText].points += timeSpent;
+        userInfo[decodedText].eventsCompleted.push(selectedEvent)
         
         const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.timeLeft === null);
         record.timeLeft = otherTimeNow;
