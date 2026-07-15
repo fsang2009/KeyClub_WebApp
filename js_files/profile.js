@@ -204,3 +204,6 @@ const studentPoints = currentUser?.points || 0;
 
 studentHoursEntry.textContent = `Hours: ${studentHours}`;
 studentPointsEntry.textContent = `Points: ${studentPoints}`;
+
+const firstandlastname = document.querySelector('#firstandlastname');
+firstandlastname.textContent = `${currentUser.firstname} ${currentUser.lastname}`

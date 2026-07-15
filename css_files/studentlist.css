@@ -1,0 +1,241 @@
+/* --- Global / Light Mode Variables --- */
+:root {
+  --page-bg: #f8fafc;
+  --panel-bg: #ffffff;
+  --border-color: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #64748b;
+  --accent-color: #3b82f6;
+  --accent-hover: #2563eb;
+  --accent-light: rgba(59, 130, 246, 0.05);
+  
+  /* Category Colors (matched to your post categories) */
+  --announcement-color: #f59e0b;
+  --event-color: #10b981;
+  --meetup-color: #6366f1;
+}
+
+/* Page Container styling */
+.students-page-container {
+  max-width: 1000px;
+  margin: 40px auto;
+  padding: 0 20px;
+  font-family: system-ui, -apple-system, sans-serif;
+}
+
+.page-header h1 {
+  color: var(--text-primary);
+  font-size: 1.8rem;
+  margin-bottom: 4px;
+}
+
+.page-header p {
+  color: var(--text-secondary);
+  font-size: 0.95rem;
+  margin-bottom: 24px;
+}
+
+/* --- Table Container & Card styling --- */
+.table-container {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 12px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+}
+
+.students-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.students-table th {
+  background: #f1f5f9;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 14px 24px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.students-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  vertical-align: middle;
+}
+
+.students-table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+.students-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+/* Student Profile layout in cell */
+.student-profile {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.student-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.student-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.student-name {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.student-email {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+
+/* Badges and Text formatting */
+.badge {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.points-badge {
+  background: #eff6ff;
+  color: #1d4ed8;
+}
+
+.hours-text {
+  font-weight: 500;
+}
+
+.text-right {
+  text-align: right;
+}
+
+/* History Trigger Button */
+.btn-history-trigger {
+  background: #ffffff;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+  padding: 8px 14px;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-history-trigger:hover {
+  background: var(--accent-light);
+  border-color: var(--accent-color);
+  color: var(--accent-color);
+}
+
+/* --- History Modal Specifics --- */
+.history-scroll-container {
+  max-height: 380px; /* Limits the height of the events list */
+  overflow-y: auto;  /* Turns on vertical scrolling */
+  padding-right: 6px;
+  margin: 16px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* Styled scrollbar for a custom look */
+.history-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+.history-scroll-container::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 8px;
+}
+.history-scroll-container::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 8px;
+}
+.history-scroll-container::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+
+/* Individual Event Cards in the Scroll Area */
+.history-event-card {
+  background: #f8fafc;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.event-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.event-type-badge {
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.event-type-badge.announcement {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--announcement-color);
+}
+.event-type-badge.event {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--event-color);
+}
+.event-type-badge.meetup {
+  background: rgba(99, 102, 241, 0.1);
+  color: var(--meetup-color);
+}
+
+.event-date {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.history-event-card h4 {
+  margin: 4px 0 2px 0;
+  color: var(--text-primary);
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
+.history-event-card p {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.event-card-footer {
+  display: flex;
+  gap: 16px;
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  border-top: 1px dashed var(--border-color);
+  padding-top: 8px;
+  margin-top: 4px;
+}
