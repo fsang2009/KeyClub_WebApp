@@ -19,7 +19,7 @@ const errorMessageLastNameCheck = document.querySelector('#lastname-check-signup
 
 let errorMessageTimer = null
 
-// filter out inappropriate names (make your own algorithm)
+// filter out inappropriate names (make own algorithm)
 const filterConverter = {
    '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', 
   '7': 't', '8': 'b', '$': 's', '@': 'a', '!': 'i'
@@ -28,6 +28,7 @@ const filterConverter = {
 const blockedWords = [
   // General profanity
   "nigg",
+  "fuck",
   "fuc",
   "nig",
   "shi",
@@ -141,6 +142,9 @@ const blockedWords = [
   "jeditaw"
 ];
 
+
+
+
 let firstNameTimer = null;
 userFirstName.addEventListener('input',(event)=>{
     clearTimeout(firstNameTimer);
@@ -157,12 +161,49 @@ userFirstName.addEventListener('input',(event)=>{
         }, 3000);
     }
     
+    const wordLength = val.split('').length;
+    if(wordLength>15){
+        errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'Character limit exceeded.'
+        firstNameTimer = setTimeout(()=>{
+            errorMessageFirstNameCheck.style.display ='none';
+            errorMessageFirstNameCheck.textContent = ''
+        }, 3000);
+    }
+})
+
+
+let lastNameTimer = null;
+userLastName.addEventListener('input',(event)=>{
+    clearTimeout(firstNameTimer);
+    errorMessageFirstNameCheck.style.display='none';
+    errorMessageFirstNameCheck.textContent= '';
+    let val = event.target.value;
+    let trueFalse = isInappropriate(val);
+    if(trueFalse === true){
+        errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Please use an appropriate name.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+    }
+    const wordLength = val.split('').length;
+    if(wordLength>15){
+        errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Character limit exceeded.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+    }
+    
 })
 
 const isInappropriate = (inputName)=>{
     if (!inputName){ return false}
 
-    const filteredWord = inputName.toLowerCase().normalized("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
+    const filteredWord = inputName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Remove accents
     .replace(/[^a-z0-9$@!]/g, "");
 
     const cleansedWord = filteredWord.split('').reduce((acc, current)=>{
@@ -217,7 +258,9 @@ userEmail.addEventListener('input',(event)=>{
         ||(val.includes('yahoo'))
         ||(val.includes('icloud'))
         ||(val.includes('outlook'))
-        ||(val.includes('proton')))){
+        ||(val.includes('proton'))
+        ||(val.includes('hotmail'))
+        ||(val.includes('aol')))){
             errorMessageEmailCheck.textContent = 'Please enter your school email address'
         errorMessageEmailCheck.style.display = 'block'
         currentErrorMessageTimer = setTimeout(()=>{
@@ -248,7 +291,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
     || userSetSchool === ''|| userSetGrade === '' || userSetDisplayName === '' 
     || userSetPassword === '' || userConfirmedPassword === ''
     )){
-        errorMessageFill.textContent = 'Please Fill in all Boxes'
+        errorMessageFill.textContent = 'Please fill in all boxes'
         errorMessageFill.style.display = 'block'
         errorMessageTimer = setTimeout(()=>{
             errorMessageFill.textContent = ''
@@ -279,7 +322,9 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
         ||(email.includes('yahoo'))
         ||(email.includes('icloud'))
         ||(email.includes('outlook'))
-        ||(email.includes('proton')))){
+        ||(email.includes('proton'))
+        ||(email.includes('hotmail'))
+        ||(email.includes('aol')))){
         errorMessageEmailCheck.textContent = 'Please enter your school email address'
         errorMessageEmailCheck.style.display = 'block'
         errorMessageTimer = setTimeout(()=>{
@@ -288,6 +333,51 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
         }, 4300)
         return;
     }
+    
+    const firstNameVal = isInappropriate(userSetFirstName)
+    const lastNameVal = isInappropriate(userSetLastName);
+
+    if(firstNameVal === true){
+         errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'Please use an appropriate name.'
+        firstNameTimer = setTimeout(()=>{
+            errorMessageFirstNameCheck.style.display ='none';
+            errorMessageFirstNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
+    
+    const wordLength = userSetFirstName.split('').length;
+    if(wordLength>15){
+        errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'Character limit exceeded.'
+        firstNameTimer = setTimeout(()=>{
+            errorMessageFirstNameCheck.style.display ='none';
+            errorMessageFirstNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
+
+    if(lastNameVal === true){
+         errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Please use an appropriate name.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
+    const lastNameLength = userSetLastName.split('').length;
+    if(lastNameLength>15){
+        errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Character limit exceeded.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
+    
         userInfo[userSetEmail] = userInfo[userSetEmail] || {};
         userInfo[userSetEmail] ={
             firstname: userSetFirstName,
@@ -299,7 +389,8 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             password: userSetPassword,
             signedUpEvents: {},
             hours: 0,
-            points: 0
+            points: 0,
+            likedPosts: []
         }
 
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
