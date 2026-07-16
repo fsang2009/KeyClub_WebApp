@@ -110,8 +110,8 @@ const renderEventHistory =()=>{
         </div>
         <h4>${event.title}</h4>
         <div class="event-card-footer">
-          <span>Points: <strong>pts</strong></span>
-          <span>Hours: <strong>hrs</strong></span>
+          <span>Points: <strong>${event.timeSpent}pts</strong></span>
+          <span>Hours: <strong>${event.timeSpent}</strong></span>
         </div>
       </div>`
     })

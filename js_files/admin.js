@@ -127,14 +127,8 @@ const manualUserSignInOut = ()=>{
 
    }
 
-   const user =   userInfo[chosenStudentEmail]
-     user.eventsCompleted = user.eventsCompleted || [];
-        user.hours += timeSpent;
-        user.points += timeSpent;
-        user.eventsCompleted.push(selectedEvent);
-
-
-
+        userInfo[chosenStudentEmail].hours += timeSpent;
+        userInfo[chosenStudentEmail].points += timeSpent;
         successMessage.textContent = 'Student Successfully Logged!'
         successMessage.style.display ='block';
     successTime = setTimeout(()=>{
@@ -259,6 +253,7 @@ function onScanSuccess(decodedText, decodedResult) {
         timeArrived: otherTimeNow, 
         timeLeft: null,
         hours: null, 
+        eventId: studentEventChosen,
         date: now.toLocaleDateString()
     }
     attendanceRecords.push(newRecord);
@@ -274,21 +269,6 @@ function onScanSuccess(decodedText, decodedResult) {
         
     } else{
         const studentEventChosen = otherEventChosen.value
-        if(studentEventChosen === ''){
-        console.log('Event Not Chosen!')
-        cameraErrorMessage.style.display='block';
-        cameraErrorMessage.textContent ='Please select an event'
-        cameraErrorMessageTime = setTimeout(()=>{
-            cameraErrorMessage.style.display='none';
-            cameraErrorMessage.textContent = ''
-        },2000)
-        return;
-    }
-    const selectedEvent = eventData.find(e=>e.id == studentEventChosen);
-    if (!selectedEvent) {
-    console.error("Selected event not found in database.");
-    return;
-}
         const user =  usersSignedIn.find(user=>user.user === decodedText);
         const now = new Date();
         const timeNow = now.toLocaleTimeString('en-GB', {
@@ -305,13 +285,23 @@ function onScanSuccess(decodedText, decodedResult) {
 
         userInfo[decodedText].hours += timeSpent;
         userInfo[decodedText].points += timeSpent;
-        userInfo[decodedText].eventsCompleted.push(selectedEvent)
         
-        const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.timeLeft === null);
+        const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.eventId === studentEventChosen);
+                if (record.timeLeft){
+
+                    cameraErrorMessage.style.display='block';
+                    cameraErrorMessage.textContent ='User has already attended the event.'
+                    cameraErrorMessageTime = setTimeout(()=>{
+            cameraErrorMessage.style.display='none';
+            cameraErrorMessage.textContent = ''
+        },2000)
+                    return;
+                }
         record.timeLeft = otherTimeNow;
         record.hours = timeSpent;
         localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-
+        console.log('user time left:', record.timeLeft);
+        console.log('value that record.timeleft is saving:', otherTimeNow)
         renderAttendanceList();
         localStorage.setItem('userinfo', JSON.stringify(userInfo));
 
@@ -319,7 +309,7 @@ function onScanSuccess(decodedText, decodedResult) {
         
         usersSignedIn = usersSignedIn.filter(user=> user.user !== decodedText);
         localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
-
+        
         renderUsersLogged();
 
     
