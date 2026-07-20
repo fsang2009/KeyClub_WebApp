@@ -80,6 +80,12 @@ const blockedWords = [
   "twat",
   "prick",
   "aaa",
+  "fuq",
+  "fawq",
+  "shiii",
+  "faq",
+  "fuc",
+  "fc",
 
 
   // Racial / ethnic slurs
@@ -186,15 +192,15 @@ userDisplayName.addEventListener('input',(event)=>{
             userDisplayErrorMessage.textContent = ''
         }, 3000);
     }
-    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
-         userDisplayErrorMessage.style.display ='block';
-        userDisplayErrorMessage.textContent = 'You are worst than Adolf Hitler.'
+    const wordLength = val.split('').length;
+    if(wordLength<15){
+        userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Please add more characters.'
         firstNameTimer = setTimeout(()=>{
             userDisplayErrorMessage.style.display ='none';
             userDisplayErrorMessage.textContent = ''
         }, 3000);
     }
-    const wordLength = val.split('').length;
     if(wordLength>15){
         userDisplayErrorMessage.style.display ='block';
         userDisplayErrorMessage.textContent = 'Character limit exceeded.'
@@ -220,15 +226,16 @@ userFirstName.addEventListener('input',(event)=>{
             errorMessageFirstNameCheck.textContent = ''
         }, 3000);
     }
-    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
-         errorMessageFirstNameCheck.style.display ='block';
-        errorMessageFirstNameCheck.textContent = 'You are worst than Adolf Hitler.'
+
+    const wordLength = val.split('').length;
+    if(wordLength<2){
+        errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'Please add more characters.'
         firstNameTimer = setTimeout(()=>{
             errorMessageFirstNameCheck.style.display ='none';
             errorMessageFirstNameCheck.textContent = ''
         }, 3000);
     }
-    const wordLength = val.split('').length;
     if(wordLength>15){
         errorMessageFirstNameCheck.style.display ='block';
         errorMessageFirstNameCheck.textContent = 'Character limit exceeded.'
@@ -256,6 +263,14 @@ userLastName.addEventListener('input',(event)=>{
         }, 3000);
     }
     const wordLength = val.split('').length;
+    if(wordLength<2){
+        errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Please add more characters.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+    }
     if(wordLength>15){
         errorMessageLastNameCheck.style.display ='block';
         errorMessageLastNameCheck.textContent = 'Character limit exceeded.'
@@ -422,6 +437,15 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
     }
     
     const wordLength = userSetFirstName.split('').length;
+    if(wordLength<2){
+        errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'Please add more characters.'
+        firstNameTimer = setTimeout(()=>{
+            errorMessageFirstNameCheck.style.display ='none';
+            errorMessageFirstNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
     if(wordLength>15){
         errorMessageFirstNameCheck.style.display ='block';
         errorMessageFirstNameCheck.textContent = 'Character limit exceeded.'
@@ -442,6 +466,15 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
         return
     }
     const lastNameLength = userSetLastName.split('').length;
+    if(lastNameLength<2){
+        errorMessageLastNameCheck.style.display ='block';
+        errorMessageLastNameCheck.textContent = 'Please add more characters.'
+        lastNameTimer = setTimeout(()=>{
+            errorMessageLastNameCheck.style.display ='none';
+            errorMessageLastNameCheck.textContent = ''
+        }, 3000);
+        return
+    }
     if(lastNameLength>15){
         errorMessageLastNameCheck.style.display ='block';
         errorMessageLastNameCheck.textContent = 'Character limit exceeded.'
@@ -463,6 +496,14 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
     }
 
     const displayNameLength = userSetDisplayName.split('').length;
+    if(displayNameLength<2){
+        userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'Please add more characters.'
+        firstNameTimer = setTimeout(()=>{
+            userDisplayErrorMessage.style.display ='none';
+            userDisplayErrorMessage.textContent = ''
+        }, 3000);
+    }
     if(displayNameLength>15){
         userDisplayErrorMessage.style.display ='block';
         userDisplayErrorMessage.textContent = 'Character limit exceeded.'

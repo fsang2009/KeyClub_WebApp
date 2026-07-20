@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southport Key Club - Leaderboard</title>
+   
+    <link rel="stylesheet" href="css_files/common.css">
+    <link rel="stylesheet" href="css_files/leaderboard.css">
+    <script src="js_files/leaderboard.js" defer></script>
+</head>
+<body>
+    <section class="header">
+        <div class="header-content">
+            <h1>Leaderboard</h1>
+            <p class="header-description">Top performers across all schools</p>
+        </div>
+    </section>
+
+
+    <section class="main-content">
+        <div class="leaderboard-container">
+            <!-- Tab Navigation -->
+            <div class="tab-navigation">
+                <button class="tab-button active" data-tab="schools">School Rankings</button>
+                <button class="tab-button" data-tab="students">Student Rankings</button>
+            </div>
+
+
+            <!-- Schools Leaderboard -->
+            <div class="tab-content active" id="schools-tab">
+                <div class="leaderboard-header">
+                    <h2>School Rankings</h2>
+                    <div class="filter-dropdown">
+                        <select id="schoolFilter">
+                            <option value="all">All Schools</option>
+                            <option value="month">This Month</option>
+                            <option value="semester">This Semester</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="leaderboard-list" id="schoolLeaderboard">
+                    <!-- School rankings will be dynamically inserted here -->
+                   
+                    <!-- Sample school leaderboard item template (for JavaScript reference) -->
+                    <!--
+                    <div class="school-leaderboard-item rank-1">
+                        <div class="school-rank-badge gold">1st</div>
+                        <div class="school-info">
+                            <h3 class="school-name">Southport High School</h3>
+                            <p class="school-stats"><span class="hours">150</span> hours • <span class="student-count">25</span> students</p>
+                        </div>
+                        <div class="school-progress-bar">
+                            <div class="progress-fill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="school-leaderboard-item rank-2">
+                        <div class="school-rank-badge silver">2nd</div>
+                        <div class="school-info">
+                            <h3 class="school-name">Perry Meridian High School</h3>
+                            <p class="school-stats"><span class="hours">120</span> hours • <span class="student-count">20</span> students</p>
+                        </div>
+                        <div class="school-progress-bar">
+                            <div class="progress-fill" style="width: 80%;"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="school-leaderboard-item rank-3">
+                        <div class="school-rank-badge bronze">3rd</div>
+                        <div class="school-info">
+                            <h3 class="school-name">Other School</h3>
+                            <p class="school-stats"><span class="hours">90</span> hours • <span class="student-count">15</span> students</p>
+                        </div>
+                        <div class="school-progress-bar">
+                            <div class="progress-fill" style="width: 60%;"></div>
+                        </div>
+                    </div>
+
+
+                    <div class="school-leaderboard-item">
+                        <div class="school-rank">4th</div>
+                        <div class="school-info">
+                            <h3 class="school-name">Another School</h3>
+                            <p class="school-stats"><span class="hours">75</span> hours • <span class="student-count">12</span> students</p>
+                        </div>
+                        <div class="school-progress-bar">
+                            <div class="progress-fill" style="width: 50%;"></div>
+                        </div>
+                    </div>
+                    -->
+                </div>
+                <!-- Pagination Controls -->
+                <div class="pagination-controls">
+                    <button class="pagination-button" id="prevPage" disabled>
+                        <span>&larr;</span> Previous
+                    </button>
+                    <div class="pagination-numbers" id="paginationNumbers">
+                        <!-- Page numbers will be dynamically inserted here -->
+                    </div>
+                    <button class="pagination-button" id="nextPage">
+                        Next <span>&rarr;</span>
+                    </button>
+                </div>
+            </div>
+
+
+            <!-- Students Leaderboard -->
+            <div class="tab-content" id="students-tab">
+                <div class="leaderboard-header">
+                    <h2>Student Rankings</h2>
+                    <div class="filter-dropdown">
+                        <select id="studentFilter">
+                            <option value="all">All Time</option>
+                            <option value="month">This Month</option>
+                            <option value="semester">This Semester</option>
+                            <option value="year">This Year</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="leaderboard-list" id="studentLeaderboard">
+                    <!-- Student rankings will be dynamically inserted here -->
+                </div>
+            </div>
+        </div>
+
+
+        <!-- Top Performers Highlight -->
+        <div class="top-performers-section">
+            <h2 class="section-title">Top Performers</h2>
+            <div class="top-performers-grid">
+                <div class="top-performer-card gold">
+                    <div class="rank-badge">1st</div>
+                    <div class="performer-avatar">
+                        <img src="images/profile.png" alt="Top Student">
+                    </div>
+                    <h3 class="performer-name">Student Name</h3>
+                    <p class="performer-school">School Name</p>
+                    <div class="performer-stats">
+                        <p class="stat-item"><span class="stat-value">150</span> Hours</p>
+                        <p class="stat-item"><span class="stat-value">300</span> Points</p>
+                    </div>
+                </div>
+                <div class="top-performer-card silver">
+                    <div class="rank-badge">2nd</div>
+                    <div class="performer-avatar">
+                        <img src="images/profile.png" alt="Top Student">
+                    </div>
+                    <h3 class="performer-name">Student Name</h3>
+                    <p class="performer-school">School Name</p>
+                    <div class="performer-stats">
+                        <p class="stat-item"><span class="stat-value">120</span> Hours</p>
+                        <p class="stat-item"><span class="stat-value">240</span> Points</p>
+                    </div>
+                </div>
+                <div class="top-performer-card bronze">
+                    <div class="rank-badge">3rd</div>
+                    <div class="performer-avatar">
+                        <img src="images/profile.png" alt="Top Student">
+                    </div>
+                    <h3 class="performer-name">Student Name</h3>
+                    <p class="performer-school">School Name</p>
+                    <div class="performer-stats">
+                        <p class="stat-item"><span class="stat-value">100</span> Hours</p>
+                        <p class="stat-item"><span class="stat-value">200</span> Points</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+    <section class="navbar" id="nav-bar">
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="profile.html">Profile</a>
+            <a href="admin.html">Admin</a>
+            <a href="leaderboard.html" aria-current="page">Leaderboard</a>
+            <a href="studentlist.html">Student Directory</a>
+        </div>
+    </section>
+</body>
+</html>
+
+
+

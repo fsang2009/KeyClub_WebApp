@@ -1,0 +1,764 @@
+/* =====================================================
+   COLOR VARIABLES
+===================================================== */
+:root {
+    --blue-dark: #173a82;
+    --blue: #2457d6;
+    --blue-light: #6383f2;
+    --white: #ffffff;
+    --gray-light: #f8f9fa;
+    --gray: #e9ecef;
+    --border: #dee2e6;
+    --text-dark: #212529;
+    --text-muted: #6c757d;
+    --shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --gold: #ffd700;
+    --silver: #c0c0c0;
+    --bronze: #cd7f32;
+}
+
+
+/* =====================================================
+   BODY & LAYOUT
+===================================================== */
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: var(--gray-light);
+    color: var(--text-dark);
+}
+
+
+.main-content {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 40px 24px;
+}
+
+
+/* =====================================================
+   HEADER
+===================================================== */
+.header {
+    background: linear-gradient(135deg, #173a82 0%, #2457d6 55%, #6383f2 100%);
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--white);
+}
+
+
+.header-content h1 {
+    margin: 0 0 12px;
+    font-size: 2.5rem;
+    font-weight: 700;
+}
+
+
+.header-description {
+    margin: 0;
+    font-size: 1.1rem;
+    opacity: 0.9;
+}
+
+
+/* =====================================================
+   LEADERBOARD CONTAINER
+===================================================== */
+.leaderboard-container {
+    background: var(--white);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 32px;
+    margin-bottom: 32px;
+}
+
+
+/* =====================================================
+   TAB NAVIGATION
+===================================================== */
+.tab-navigation {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 16px;
+}
+
+
+.tab-button {
+    padding: 12px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 12px;
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.tab-button:hover {
+    background: var(--gray-light);
+    color: var(--blue-dark);
+}
+
+
+.tab-button.active {
+    background: var(--blue);
+    color: var(--white);
+}
+
+
+/* =====================================================
+   TAB CONTENT
+===================================================== */
+.tab-content {
+    display: none;
+}
+
+
+.tab-content.active {
+    display: block;
+}
+
+
+/* =====================================================
+   LEADERBOARD HEADER
+===================================================== */
+.leaderboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+}
+
+
+.leaderboard-header h2 {
+    margin: 0;
+    color: var(--blue-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+
+.filter-dropdown select {
+    padding: 10px 16px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--white);
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+}
+
+
+.filter-dropdown select:hover {
+    border-color: var(--blue);
+}
+
+
+/* =====================================================
+   LEADERBOARD LIST
+===================================================== */
+.leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+
+/* School Leaderboard Items */
+.school-leaderboard-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--gray-light);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+
+.school-leaderboard-item:hover {
+    background: var(--gray);
+    transform: translateY(-2px);
+}
+
+
+.school-leaderboard-item.rank-1 {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 2px solid var(--gold);
+}
+
+
+.school-leaderboard-item.rank-2 {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.15) 0%, rgba(192, 192, 192, 0.05) 100%);
+    border: 2px solid var(--silver);
+}
+
+
+.school-leaderboard-item.rank-3 {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.15) 0%, rgba(205, 127, 50, 0.05) 100%);
+    border: 2px solid var(--bronze);
+}
+
+
+/* Rank Badges */
+.school-rank-badge {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+.school-rank-badge.gold {
+    background: var(--gold);
+    color: var(--text-dark);
+    box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+
+.school-rank-badge.silver {
+    background: var(--silver);
+    color: var(--text-dark);
+    box-shadow: 0 4px 12px rgba(192, 192, 192, 0.4);
+}
+
+
+.school-rank-badge.bronze {
+    background: var(--bronze);
+    color: var(--white);
+    box-shadow: 0 4px 12px rgba(205, 127, 50, 0.4);
+}
+
+
+.school-rank {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--blue);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+
+/* School Info */
+.school-info {
+    flex: 1;
+    min-width: 0;
+}
+
+
+.school-name {
+    margin: 0 0 6px;
+    color: var(--text-dark);
+    font-size: 1.1rem;
+    font-weight: 700;
+}
+
+
+.school-stats {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+
+.school-stats .hours {
+    color: var(--blue);
+    font-weight: 700;
+}
+
+
+.school-stats .student-count {
+    color: var(--blue-light);
+    font-weight: 600;
+}
+
+
+/* Progress Bar */
+.school-progress-bar {
+    width: 120px;
+    height: 8px;
+    background: var(--white);
+    border-radius: 4px;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+
+.progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--blue) 0%, var(--blue-light) 100%);
+    border-radius: 4px;
+    transition: width 0.3s ease;
+}
+
+
+.school-leaderboard-item.rank-1 .progress-fill {
+    background: linear-gradient(90deg, var(--gold) 0%, #ffd700 100%);
+}
+
+
+.school-leaderboard-item.rank-2 .progress-fill {
+    background: linear-gradient(90deg, var(--silver) 0%, #c0c0c0 100%);
+}
+
+
+.school-leaderboard-item.rank-3 .progress-fill {
+    background: linear-gradient(90deg, var(--bronze) 0%, #cd7f32 100%);
+}
+
+
+/* Student Leaderboard Items (original) */
+.leaderboard-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 24px;
+    background: var(--gray-light);
+    border-radius: 16px;
+    transition: all 0.2s ease;
+}
+
+
+.leaderboard-item:hover {
+    background: var(--gray);
+    transform: translateY(-2px);
+}
+
+
+.leaderboard-item.rank-1 {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 2px solid var(--gold);
+}
+
+
+.leaderboard-item.rank-2 {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.1) 0%, rgba(192, 192, 192, 0.05) 100%);
+    border: 2px solid var(--silver);
+}
+
+
+.leaderboard-item.rank-3 {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.1) 0%, rgba(205, 127, 50, 0.05) 100%);
+    border: 2px solid var(--bronze);
+}
+
+
+.leaderboard-info {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex: 1;
+}
+
+
+.rank-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--blue);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+
+.leaderboard-item.rank-1 .rank-number {
+    background: var(--gold);
+    color: var(--text-dark);
+}
+
+
+.leaderboard-item.rank-2 .rank-number {
+    background: var(--silver);
+    color: var(--text-dark);
+}
+
+
+.leaderboard-item.rank-3 .rank-number {
+    background: var(--bronze);
+    color: var(--white);
+}
+
+
+.leaderboard-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--white);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+
+.leaderboard-details {
+    flex: 1;
+}
+
+
+.leaderboard-name {
+    margin: 0 0 4px;
+    color: var(--text-dark);
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+
+.leaderboard-school {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+
+.leaderboard-stats {
+    display: flex;
+    gap: 24px;
+    align-items: center;
+}
+
+
+.stat-display {
+    text-align: center;
+}
+
+
+.stat-value {
+    display: block;
+    color: var(--blue);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+
+.stat-label {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+
+/* =====================================================
+   TOP PERFORMERS SECTION
+===================================================== */
+.top-performers-section {
+    background: var(--white);
+    border-radius: 24px;
+    box-shadow: var(--shadow);
+    padding: 32px;
+}
+
+
+.section-title {
+    margin: 0 0 24px;
+    color: var(--blue-dark);
+    font-size: 1.5rem;
+    font-weight: 700;
+}
+
+
+.top-performers-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+}
+
+
+.top-performer-card {
+    position: relative;
+    background: var(--gray-light);
+    border-radius: 20px;
+    padding: 32px 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+
+.top-performer-card:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+
+.top-performer-card.gold {
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 215, 0, 0.05) 100%);
+    border: 2px solid var(--gold);
+}
+
+
+.top-performer-card.silver {
+    background: linear-gradient(135deg, rgba(192, 192, 192, 0.15) 0%, rgba(192, 192, 192, 0.05) 100%);
+    border: 2px solid var(--silver);
+}
+
+
+.top-performer-card.bronze {
+    background: linear-gradient(135deg, rgba(205, 127, 50, 0.15) 0%, rgba(205, 127, 50, 0.05) 100%);
+    border: 2px solid var(--bronze);
+}
+
+
+.rank-badge {
+    position: absolute;
+    top: -12px;
+    left: 50%;
+    transform: translateX(-50%);
+    padding: 8px 20px;
+    background: var(--blue-dark);
+    color: var(--white);
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+
+.top-performer-card.gold .rank-badge {
+    background: var(--gold);
+    color: var(--text-dark);
+}
+
+
+.top-performer-card.silver .rank-badge {
+    background: var(--silver);
+    color: var(--text-dark);
+}
+
+
+.top-performer-card.bronze .rank-badge {
+    background: var(--bronze);
+    color: var(--white);
+}
+
+
+.performer-avatar {
+    width: 100px;
+    height: 100px;
+    margin: 16px auto;
+    border-radius: 50%;
+    overflow: hidden;
+    border: 4px solid var(--white);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+
+.performer-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.performer-name {
+    margin: 16px 0 8px;
+    color: var(--text-dark);
+    font-size: 1.2rem;
+    font-weight: 700;
+}
+
+
+.performer-school {
+    margin: 0 0 16px;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+}
+
+
+.performer-stats {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+}
+
+
+.stat-item {
+    margin: 0;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+}
+
+
+.stat-item .stat-value {
+    display: block;
+    color: var(--blue);
+    font-size: 1.4rem;
+    font-weight: 700;
+}
+
+
+/* =====================================================
+   PAGINATION CONTROLS
+===================================================== */
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+}
+
+
+.pagination-button {
+    padding: 10px 20px;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+
+.pagination-button:hover:not(:disabled) {
+    background: var(--blue-light);
+    border-color: var(--blue);
+    color: var(--white);
+}
+
+
+.pagination-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    background: var(--gray-light);
+}
+
+
+.pagination-numbers {
+    display: flex;
+    gap: 8px;
+}
+
+
+.pagination-number {
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--white);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-dark);
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+
+.pagination-number:hover {
+    background: var(--gray-light);
+    border-color: var(--blue);
+}
+
+
+.pagination-number.active {
+    background: var(--blue);
+    color: var(--white);
+    border-color: var(--blue);
+}
+
+
+/* =====================================================
+   RESPONSIVE DESIGN
+===================================================== */
+@media (max-width: 768px) {
+    .main-content {
+        padding: 24px 16px;
+    }
+
+
+    .leaderboard-container,
+    .top-performers-section {
+        padding: 24px 16px;
+    }
+
+
+    .leaderboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+
+    .leaderboard-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+
+    .leaderboard-info {
+        width: 100%;
+    }
+
+
+    .leaderboard-stats {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+
+    .top-performers-grid {
+        grid-template-columns: 1fr;
+    }
+
+
+    .tab-navigation {
+        flex-direction: column;
+    }
+
+
+    .tab-button {
+        width: 100%;
+    }
+
+
+    .pagination-controls {
+        flex-wrap: wrap;
+    }
+
+
+    .pagination-button {
+        padding: 8px 16px;
+        font-size: 0.85rem;
+    }
+
+
+    .pagination-number {
+        width: 36px;
+        height: 36px;
+        font-size: 0.85rem;
+    }
+}
+
+
+
