@@ -1,4 +1,4 @@
-console.log('Admin.js loaded');
+
 const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
 const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
 console.log('userSetEmail:', userSetEmail);
@@ -7,7 +7,6 @@ const currentUser = userInfo[userSetEmail]
 console.log('currentUser:', currentUser);
 
 if(!currentUser){
-    console.log('No current user, redirecting to login');
     window.location.href = 'login.html' // Temporarily disabled for debugging
 }
 
@@ -216,7 +215,15 @@ let cameraErrorMessageTime = null;
 const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config, /* verbose= */ false);
 let statusTextTimer = null;
 // 4. Define what happens on success
+let studentScanned = false;
 function onScanSuccess(decodedText, decodedResult) {
+    if(studentScanned === false){
+        studentScanned = true;
+    } 
+    setTimeout(()=>{
+        studentScanned = false;
+    }, 1000);
+    
     clearTimeout(cameraErrorMessageTime)
     clearTimeout(statusTextTimer)
     if (!usersSignedIn.some(record=> record.user === decodedText)){
@@ -243,6 +250,8 @@ function onScanSuccess(decodedText, decodedResult) {
     console.error("Selected event not found in database.");
     return;
 }
+
+          
     const studentEventChosenTitle = selectedEvent.title
     
         usersSignedIn.push({user: decodedText, timeEntered: timeNow, timeExited: null});
@@ -257,6 +266,19 @@ function onScanSuccess(decodedText, decodedResult) {
         date: now.toLocaleDateString()
     }
     attendanceRecords.push(newRecord);
+
+    const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.eventId === studentEventChosen);
+                if (record.timeLeft !== null){
+
+                    cameraErrorMessage.style.display='block';
+                    cameraErrorMessage.textContent ='User has already attended the event.'
+                    cameraErrorMessageTime = setTimeout(()=>{
+            cameraErrorMessage.style.display='none';
+            cameraErrorMessage.textContent = ''
+        },2000)
+                    return;
+                }
+
     localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
         renderUsersLogged();
         statusText.textContent = "Entry time Logged!";
@@ -268,6 +290,15 @@ function onScanSuccess(decodedText, decodedResult) {
         localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
         
     } else{
+        if(studentScanned === true){
+            cameraErrorMessage.style.display='block';
+                    cameraErrorMessage.textContent ='Please wait before scanning again.'
+                    cameraErrorMessageTime = setTimeout(()=>{
+            cameraErrorMessage.style.display='none';
+            cameraErrorMessage.textContent = ''
+        },2000)
+                    return;
+        }
         const studentEventChosen = otherEventChosen.value
         const user =  usersSignedIn.find(user=>user.user === decodedText);
         const now = new Date();

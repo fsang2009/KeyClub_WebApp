@@ -193,7 +193,7 @@ userDisplayName.addEventListener('input',(event)=>{
         }, 3000);
     }
     const wordLength = val.split('').length;
-    if(wordLength<15){
+    if(wordLength<2){
         userDisplayErrorMessage.style.display ='block';
         userDisplayErrorMessage.textContent = 'Please add more characters.'
         firstNameTimer = setTimeout(()=>{

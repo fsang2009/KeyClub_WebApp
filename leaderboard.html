@@ -22,8 +22,8 @@
         <div class="leaderboard-container">
             <!-- Tab Navigation -->
             <div class="tab-navigation">
-                <button class="tab-button active" data-tab="schools">School Rankings</button>
-                <button class="tab-button" data-tab="students">Student Rankings</button>
+                <button class="tab-button active" data-tab="schools" id ="school-ranking-button">School Rankings</button>
+                <button class="tab-button" data-tab="students" id ="student-ranking-button">Student Rankings</button>
             </div>
 
 
@@ -31,14 +31,14 @@
             <div class="tab-content active" id="schools-tab">
                 <div class="leaderboard-header">
                     <h2>School Rankings</h2>
-                    <div class="filter-dropdown">
+                    <!--<div class="filter-dropdown">
                         <select id="schoolFilter">
                             <option value="all">All Schools</option>
                             <option value="month">This Month</option>
                             <option value="semester">This Semester</option>
                             <option value="year">This Year</option>
                         </select>
-                    </div>
+                    </div> I will add this feature later. Note.-->
                 </div>
                 <div class="leaderboard-list" id="schoolLeaderboard">
                     <!-- School rankings will be dynamically inserted here -->
@@ -178,10 +178,9 @@
             <a href="index.html">Home</a>
             <a href="events.html">Events</a>
             <a href="calendar.html">Calendar</a>
-            <a href="leaderboard.html">Leaderboard</a>
+            <a href="leaderboard.html" aria-current="page">Leaderboard</a>
             <a href="profile.html">Profile</a>
             <a href="admin.html">Admin</a>
-            <a href="leaderboard.html" aria-current="page">Leaderboard</a>
             <a href="studentlist.html">Student Directory</a>
         </div>
     </section>
