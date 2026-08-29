@@ -1,3 +1,7 @@
+import { createUserWithEmailAndPassword } from "firebase/auth"
+import { auth, database } from './firebaseConfig.js'
+import { collection, getDoc, doc, setDoc  } from "firebase/firestore";
+
 const userFirstName = document.querySelector('#first-name');
 const userLastName = document.querySelector('#last-name');
 const userEmail = document.querySelector('#email');
@@ -16,9 +20,9 @@ const errorMessagePasswordCheck = document.querySelector('#password-check-signup
 const errorMessageEmailCheck = document.querySelector('#email-check-signup-error');
 const errorMessageFirstNameCheck = document.querySelector('#firstname-check-signup-error');
 const errorMessageLastNameCheck = document.querySelector('#lastname-check-signup-error');
+const errorMessageRegisterCheck = document.querySelector('#register-error-check');
 
 let errorMessageTimer = null
-
 // filter out inappropriate names (make own algorithm)
 const filterConverter = {
    '0': 'o', '1': 'i', '3': 'e', '4': 'a', '5': 's', 
@@ -80,12 +84,6 @@ const blockedWords = [
   "twat",
   "prick",
   "aaa",
-  "fuq",
-  "fawq",
-  "shiii",
-  "faq",
-  "fuc",
-  "fc",
 
 
   // Racial / ethnic slurs
@@ -171,6 +169,7 @@ const blockedWords = [
   // Custom
   "jedi",
   "jeditaw"
+
     ,"crap", "bastard", "idiot", "jerk", "hell", "damn",
 
 ];
@@ -192,15 +191,15 @@ userDisplayName.addEventListener('input',(event)=>{
             userDisplayErrorMessage.textContent = ''
         }, 3000);
     }
-    const wordLength = val.split('').length;
-    if(wordLength<2){
-        userDisplayErrorMessage.style.display ='block';
-        userDisplayErrorMessage.textContent = 'Please add more characters.'
+    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
+         userDisplayErrorMessage.style.display ='block';
+        userDisplayErrorMessage.textContent = 'You are worst than Adolf Hitler.'
         firstNameTimer = setTimeout(()=>{
             userDisplayErrorMessage.style.display ='none';
             userDisplayErrorMessage.textContent = ''
         }, 3000);
     }
+    const wordLength = val.split('').length;
     if(wordLength>15){
         userDisplayErrorMessage.style.display ='block';
         userDisplayErrorMessage.textContent = 'Character limit exceeded.'
@@ -226,16 +225,16 @@ userFirstName.addEventListener('input',(event)=>{
             errorMessageFirstNameCheck.textContent = ''
         }, 3000);
     }
-
-    const wordLength = val.split('').length;
-    if(wordLength<2){
-        errorMessageFirstNameCheck.style.display ='block';
-        errorMessageFirstNameCheck.textContent = 'Please add more characters.'
+    
+    if((val.toLowerCase().includes('emili'))||(val.toLowerCase() === 'Marko')){
+         errorMessageFirstNameCheck.style.display ='block';
+        errorMessageFirstNameCheck.textContent = 'You are worst than Adolf Hitler.'
         firstNameTimer = setTimeout(()=>{
             errorMessageFirstNameCheck.style.display ='none';
             errorMessageFirstNameCheck.textContent = ''
         }, 3000);
     }
+    const wordLength = val.split('').length;
     if(wordLength>15){
         errorMessageFirstNameCheck.style.display ='block';
         errorMessageFirstNameCheck.textContent = 'Character limit exceeded.'
@@ -249,7 +248,9 @@ userFirstName.addEventListener('input',(event)=>{
 
 let lastNameTimer = null;
 userLastName.addEventListener('input',(event)=>{
-    clearTimeout(firstNameTimer);
+    clearTimeout(lastNameTimer);
+    errorMessageFirstNameCheck.style.display='none';
+    errorMessageFirstNameCheck.textContent= '';
     errorMessageLastNameCheck.style.display='none';
     errorMessageLastNameCheck.textContent= '';
     let val = event.target.value;
@@ -263,14 +264,6 @@ userLastName.addEventListener('input',(event)=>{
         }, 3000);
     }
     const wordLength = val.split('').length;
-    if(wordLength<2){
-        errorMessageLastNameCheck.style.display ='block';
-        errorMessageLastNameCheck.textContent = 'Please add more characters.'
-        lastNameTimer = setTimeout(()=>{
-            errorMessageLastNameCheck.style.display ='none';
-            errorMessageLastNameCheck.textContent = ''
-        }, 3000);
-    }
     if(wordLength>15){
         errorMessageLastNameCheck.style.display ='block';
         errorMessageLastNameCheck.textContent = 'Character limit exceeded.'
@@ -279,7 +272,7 @@ userLastName.addEventListener('input',(event)=>{
             errorMessageLastNameCheck.textContent = ''
         }, 3000);
     }
-    
+
 })
 
 const isInappropriate = (inputName)=>{
@@ -306,23 +299,22 @@ const isInappropriate = (inputName)=>{
         }
         return acc
     }, false)
-    
+
 
 }
 
 
-/*update code
-*/
+
 
 
 
 function normalizeEmail(email) {
   // 1. Convert to lowercase
   let normalized = email.toLowerCase();
-  
+
   // 2. Separate local part (before @) and domain part (after @)
   let [localPart, domain] = normalized.split('@');
-  
+
   // 3. Normalize Gmail and iCloud (ignore tags and dots for Gmail)
   if (domain === 'gmail.com' || domain === 'googlemail.com') {
     // Remove dots before the @
@@ -330,7 +322,7 @@ function normalizeEmail(email) {
     // Remove the '+' tag and anything following it
     localPart = localPart.split('+')[0];
   }
-  
+
   return `${localPart}@${domain}`;
 }
 let currentErrorMessageTimer = null
@@ -360,11 +352,13 @@ userEmail.addEventListener('input',(event)=>{
         }
     }, 100)
 
-    
+
 
 })
 
-document.getElementById('signup-form').addEventListener('submit',(event)=>{
+document.getElementById('signup-form').addEventListener('submit', async (event)=>{ 
+    clearTimeout(firstNameTimer);
+    clearTimeout(lastNameTimer);
     clearTimeout(errorMessageTimer);
     event.preventDefault();
     const userSetFirstName = userFirstName.value.trim();
@@ -493,6 +487,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             userDisplayErrorMessage.style.display ='none';
             userDisplayErrorMessage.textContent = ''
         }, 3000);
+        return
     }
 
     const displayNameLength = userSetDisplayName.split('').length;
@@ -503,6 +498,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             userDisplayErrorMessage.style.display ='none';
             userDisplayErrorMessage.textContent = ''
         }, 3000);
+        return
     }
     if(displayNameLength>15){
         userDisplayErrorMessage.style.display ='block';
@@ -511,6 +507,7 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             userDisplayErrorMessage.style.display ='none';
             userDisplayErrorMessage.textContent = ''
         }, 3000);
+        return
     }
     
         userInfo[userSetEmail] = userInfo[userSetEmail] || {};
@@ -521,7 +518,6 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             school: userSetSchool,
             grade: userSetGrade,
             username: userSetDisplayName,
-            password: userSetPassword,
             signedUpEvents: {},
             hours: 0,
             points: 0,
@@ -529,8 +525,100 @@ document.getElementById('signup-form').addEventListener('submit',(event)=>{
             eventsCompleted: []
         }
 
+    try{const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        userSetEmail,
+        userSetPassword
+
+
+    )
+
+
+    const user = userCredential.user;
+    const userID = user.uid
+    console.log(`Firebase user: ${user} and user ID: ${userID}`)
+
+
+    const docRef = doc(database, "schools", userSetSchool, "users", userID);
+    const data = {
+        firstname: userSetFirstName,
+        lastname: userSetLastName,
+        email: userSetEmail,
+        school: userSetSchool,
+        grade: userSetGrade,
+        username: userSetDisplayName,
+        signedUpEvents: {},
+        hours: 0,
+        points: 0,
+        likedPosts: [],
+        eventsCompleted: []
+    }
+
+    await setDoc(
+        docRef, 
+        data
+    )
+      window.location.href ='profile.html'
+    /*
+    auth/invalid-email
+auth/weak-password
+auth/network-request-failed
+auth/too-many-requests
+    */
+    }catch(error){
+       console.log(error.message);
+        /* if (error.code === 'auth/email-already-in-use'){
+            errorMessageEmailCheck.textContent = 'Email address already used by an account. '
+        errorMessageEmailCheck.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessageEmailCheck.textContent = ''
+            errorMessageEmailCheck.style.display='none'
+        }, 4300)
+        return;
+        }
+        else if (error.code ==='auth/invalid-email'){
+            errorMessageEmailCheck.textContent = 'Invalid Email, please try again.'
+        errorMessageEmailCheck.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessageEmailCheck.textContent = ''
+            errorMessageEmailCheck.style.display='none'
+        }, 4300)
+        return;
+        }
+        else if(error.code === 'auth/weak-password'){
+            errorMessagePasswordCheck.textContent = 'Password must be atleast 6 characters long.'
+        errorMessagePasswordCheck.style.display = 'block'
+        errorMessageTimer = setTimeout(()=>{
+            errorMessagePasswordCheck.textContent = '';
+            errorMessagePasswordCheck.style.display ='none';
+        }, 4300)
+        return;
+        }
+        else if(error.code === 'auth/network-request-failed'){
+            errorMessageRegisterCheck.style.display= 'block';
+            errorMessageRegisterCheck.textContent = 'Network failed, please try again.';
+            errorMessageTimer = setTimeout(()=>{
+                errorMessageRegisterCheck.style.display='none';
+                errorMessageRegisterCheck.textContent = '';
+            }, 4300);
+            return
+        }
+        else if (error.code === 'auth/too-many-requests'){
+            errorMessageRegisterCheck.style.display = 'block';
+            errorMessageRegisterCheck.textContent= 'Attempt failed, please try again.';
+            errorMessageTimer = setTimeout(()=>{
+                errorMessageRegisterCheck.style.display = 'none';
+                errorMessageRegisterCheck.textContent = '';
+            },4300)
+        }
+    } finally{
+        console.log('Succesfully finished Registration cycle.')
+    }
+        */
+    }
+    
     localStorage.setItem('userinfo', JSON.stringify(userInfo))
     localStorage.setItem('currentUser', JSON.stringify(userSetEmail))
-    window.location.href ='profile.html'
+
 
 })

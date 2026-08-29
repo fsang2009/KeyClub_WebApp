@@ -19,7 +19,7 @@
     >
 
     <link rel="stylesheet" href="css_files/signup.css">
-    <script src ="js_files/signup.js" defer></script>
+    <script src ="js_files/signup.js" type ="module" defer></script>
 </head>
 
 <body>
@@ -250,11 +250,11 @@
                                         Select your school
                                     </option>
 
-                                    <option value="Southport High School">
+                                    <option value="southport_high_school">
                                         Southport High School
                                     </option>
 
-                                    <option value="Perry Meridian">
+                                    <option value="perry_meridian_high_school">
                                         Perry Meridian High School
                                     </option>
 
@@ -335,7 +335,7 @@
                             <label for="password">Password</label>
 
                             <span class="password-requirement">
-                                At least 8 characters
+                                At least 6 characters
                             </span>
 
                         </div>
@@ -349,7 +349,7 @@
                                 id="password"
                                 name="password"
                                 placeholder="Create a secure password"
-                                minlength="8"
+                                minlength="6"
                                 autocomplete="new-password"
                                 required
                             >
@@ -364,9 +364,9 @@
                             </button>
 
                         </div>
-
+                        
                     </div>
-
+                    
 
                     <div class="form-group">
 
@@ -383,7 +383,7 @@
                                 id="confirm-password"
                                 name="confirmPassword"
                                 placeholder="Enter your password again"
-                                minlength="8"
+                                minlength="6"
                                 autocomplete="new-password"
                                 required
                             >
@@ -430,6 +430,7 @@
                         <span class="button-arrow">→</span>
 
                     </button>
+                     <div class="error-message" id="register-error-check" style="display: none;"></div>
 
 
                     <p class="login-prompt">
