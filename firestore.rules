@@ -1,0 +1,191 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function supportedSchool(schoolId) {
+      // The app currently only supports Southport. Change this when another school is actually added.
+      return schoolId == "southport_high_school";
+    }
+
+    function hasProfile(schoolId) {
+      return signedIn()
+        && exists(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid));
+    }
+
+    function admin(schoolId) {
+      // The browser can hide admin buttons, but this is the rule that actually protects the database.
+      return supportedSchool(schoolId)
+        && hasProfile(schoolId)
+        && (
+          get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.role == "admin"
+          || get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.isAdmin == true
+        );
+    }
+
+    function ownProfile(userId) {
+      return signedIn() && request.auth.uid == userId;
+    }
+
+    function hasValidSignupAccess(schoolId, userId) {
+      // The temporary document can only be created when the submitted code matches
+      // the code stored on the school document. The browser never needs to read that code.
+      return exists(/databases/$(database)/documents/schools/$(schoolId)/signupAccess/$(userId));
+    }
+
+    function validNewMember(schoolId, userId) {
+      return supportedSchool(schoolId)
+        && ownProfile(userId)
+        && hasValidSignupAccess(schoolId, userId)
+        && request.resource.data.keys().hasOnly([
+          "uid",
+          "firstname",
+          "lastname",
+          "email",
+          "school",
+          "grade",
+          "username",
+          "description",
+          "profileImage",
+          "role",
+          "isAdmin",
+          "signedUpEvents",
+          "hours",
+          "points",
+          "likedPosts",
+          "eventsCompleted",
+          "createdAt"
+        ])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.email == request.auth.token.email
+        && request.resource.data.school == schoolId
+        && request.resource.data.role == "member"
+        && request.resource.data.isAdmin == false
+        && request.resource.data.hours == 0
+        && request.resource.data.points == 0
+        && request.resource.data.grade in ["9", "10", "11", "12"]
+        && request.resource.data.firstname is string
+        && request.resource.data.lastname is string
+        && request.resource.data.username is string
+        && request.resource.data.description is string
+        && request.resource.data.profileImage is string
+        && request.resource.data.signedUpEvents is map
+        && request.resource.data.likedPosts is list
+        && request.resource.data.eventsCompleted is list;
+    }
+
+    function safeMemberUpdate() {
+      // Members can change their profile and event signups, but never their own role, hours, or points.
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "username",
+        "description",
+        "profileImage",
+        "signedUpEvents",
+        "likedPosts",
+        "eventsCompleted"
+      ]);
+    }
+
+    function signedUpForEvent(schoolId, eventId) {
+      return hasProfile(schoolId)
+        && get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.signedUpEvents[eventId] == true;
+    }
+
+    match /schools/{schoolId}/signupAccess/{userId} {
+      // A signup code is checked here instead of hardcoding it in signup.js.
+      // That keeps the real school code out of the downloadable website files.
+      allow create: if supportedSchool(schoolId)
+        && ownProfile(userId)
+        && request.resource.data.keys().hasOnly(["uid", "school", "code", "createdAt"])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.school == schoolId
+        && request.resource.data.code is string
+        && request.resource.data.code == get(/databases/$(database)/documents/schools/$(schoolId)).data.code;
+
+      // The student already knows the code they typed, but there is no reason to expose
+      // these temporary documents to the rest of the club.
+      allow read, update: if false;
+      allow delete: if supportedSchool(schoolId) && ownProfile(userId);
+    }
+
+    match /schools/{schoolId}/users/{userId} {
+      // Members need the directory/leaderboard, so signed-in members can read other member profiles.
+      allow read: if supportedSchool(schoolId) && signedIn();
+
+      // Signup can only create the caller's own normal member account.
+      allow create: if validNewMember(schoolId, userId) || admin(schoolId);
+
+      // Admins can manage records. Members can only change the harmless fields listed above.
+      allow update: if admin(schoolId)
+        || (supportedSchool(schoolId) && ownProfile(userId) && safeMemberUpdate());
+
+      allow delete: if admin(schoolId);
+    }
+
+    match /schools/{schoolId}/events/{eventId} {
+      allow read: if supportedSchool(schoolId) && signedIn();
+      allow create, update, delete: if admin(schoolId);
+
+      match /messages/{messageId} {
+        allow read: if admin(schoolId) || signedUpForEvent(schoolId, eventId);
+
+        allow create: if signedUpForEvent(schoolId, eventId)
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+
+        // Chat messages are not editable after sending. Admins can remove them when needed.
+        allow update: if false;
+        allow delete: if admin(schoolId);
+      }
+    }
+
+    match /schools/{schoolId}/attendance/{attendanceId} {
+      // The current student-directory history uses these records. Only signed-in club members can see them.
+      allow read: if supportedSchool(schoolId) && signedIn();
+
+      // Attendance affects service hours and points, so only an admin may write it.
+      allow create, update, delete: if admin(schoolId);
+    }
+
+    match /schools/{schoolId}/posts/{postId} {
+      allow read: if supportedSchool(schoolId) && signedIn();
+      allow create, update, delete: if admin(schoolId);
+
+      match /likes/{userId} {
+        allow read: if supportedSchool(schoolId) && signedIn();
+
+        allow create: if supportedSchool(schoolId)
+          && ownProfile(userId)
+          && request.resource.data.userUid == request.auth.uid;
+
+        allow update: if false;
+        allow delete: if supportedSchool(schoolId) && ownProfile(userId);
+      }
+
+      match /comments/{commentId} {
+        allow read: if supportedSchool(schoolId) && signedIn();
+
+        allow create: if supportedSchool(schoolId)
+          && signedIn()
+          && request.resource.data.authorUid == request.auth.uid
+          && request.resource.data.text is string
+          && request.resource.data.text.size() > 0
+          && request.resource.data.text.size() <= 500;
+
+        allow update: if false;
+        allow delete: if admin(schoolId)
+          || (signedIn() && resource.data.authorUid == request.auth.uid);
+      }
+    }
+
+    // Anything we did not explicitly allow above stays private.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

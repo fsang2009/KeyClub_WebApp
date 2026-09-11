@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function supportedSchool(schoolId) {
+      return schoolId == "southport_high_school";
+    }
+
+    function admin(schoolId) {
+      return supportedSchool(schoolId)
+        && signedIn()
+        && firestore.exists(/databases/(default)/documents/schools/$(schoolId)/users/$(request.auth.uid))
+        && (
+          firestore.get(/databases/(default)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.role == "admin"
+          || firestore.get(/databases/(default)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.isAdmin == true
+        );
+    }
+
+    function validPostMedia() {
+      return request.resource.size <= 50 * 1024 * 1024
+        && request.resource.contentType.matches("(image|video)/.*");
+    }
+
+    match /schools/{schoolId}/posts/{postId}/{fileName} {
+      // Feed media is only visible to signed-in members.
+      allow read: if supportedSchool(schoolId) && signedIn();
+
+      // Only admins can upload/replace post media, with the same size/type limits as the UI.
+      allow create, update: if admin(schoolId) && validPostMedia();
+      allow delete: if admin(schoolId);
+    }
+
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}

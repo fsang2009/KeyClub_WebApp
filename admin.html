@@ -7,79 +7,71 @@
 
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/admin.css">
-    <script src="js_files/admin.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    <script src="https://unpkg.com/html5-qrcode"></script>
+
+    <!-- Pin the scanner version so an upstream update does not randomly break attendance. -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+    <script type="module" src="js_files/admin.js" defer></script>
 </head>
 <body>
-    <section class="header">
+    <p id="adminAccessMessage" style="padding: 24px; text-align: center; font-weight: 700;">Checking admin access...</p>
+
+    <section class="header" data-admin-page hidden>
         <div class="header-content">
             <h1>Admin Dashboard</h1>
             <p class="header-description">Scan QR codes to track event attendance</p>
         </div>
     </section>
 
-    <section class="main-content">
+    <section class="main-content" data-admin-page hidden>
         <div class="admin-dashboard">
             <div class="scan-section">
                 <h2 class="section-title">QR Code Scanner</h2>
                 <div class="scanner-container">
-                    <div class="scanner-viewport" id="scannerViewport">
-                       <div id="qr-reader" style="width: 100%;"></div>
-                    </div>
-                    <p class="scanner-status" style="text-align: center; margin: 15px 0; font-weight: bold; color: black;">Ready to scan</p>
-                    <div class="scanner-controls">
-                        <button id="startScanButton" class="scan-button">Start Camera</button>
-                        <button id="stopScanButton" class="scan-button secondary">Stop Camera</button>
-                        <div class="form-group" style= "display:flex; flex-direction: column; align-items: center;">
-                            <label for="cameraEvent">Event</label>
-                            <select id="cameraEvent">
+                    <div class="form-group">
+                        <label for="cameraEvent">Event</label>
+                        <select id="cameraEvent">
+                            <option value="">Select event</option>
                         </select>
-                        <p class="error-message" id="cameraErrorMessage"></p>
                     </div>
+
+                    <div class="scanner-viewport" id="scannerViewport">
+                        <div id="qr-reader" style="width: 100%;"></div>
+                    </div>
+
+                    <p class="scanner-status" role="status" aria-live="polite" style="text-align: center; margin: 15px 0; font-weight: bold; color: black;">Ready to scan</p>
+                    <p class="error-message" id="cameraErrorMessage" role="alert" aria-live="assertive"></p>
+
+                    <div class="scanner-controls">
+                        <button id="startScanButton" type="button" class="scan-button">Start Camera</button>
+                        <button id="stopScanButton" type="button" class="scan-button secondary">Stop Camera</button>
                     </div>
                 </div>
-            <div class="userScannedLogContainer">
-                <div class ="userScannedLog" id ="userScannedLogBox">
-                    <!-- user logs go here-->
+
+                <div class="userScannedLogContainer">
+                    <div class="userScannedLog" id="userScannedLogBox">
+                        <p>No members currently checked in.</p>
+                    </div>
                 </div>
-            </div> 
             </div>
 
             <div class="attendance-section">
                 <h2 class="section-title">Recent Attendance</h2>
                 <div class="attendance-list" id="attendanceList">
-                    <p class="empty-state">No attendance records yet</p>
+                    <p class="empty-state">Loading attendance...</p>
                 </div>
-                <button class ="scan-button" style="margin-top: 20px;" id="clearLogHistory">Clear History</button>
             </div>
-
-            <!-- Attendance item template (for JavaScript reference) -->
-            <template id="attendanceTemplate">
-                <div class="attendance-item">
-                    <div class="attendance-info">
-                        <h3 class="attendance-name">Student Name</h3>
-                        <p class="attendance-email">student@email.com</p>
-                        <p class="attendance-event">Event Name</p>
-                    </div>
-                    <div class="attendance-details">
-                        <p class="attendance-time">Time: 2:00 PM - 4:00 PM</p>
-                        <p class="attendance-hours">Hours: 2.0</p>
-                        <p class="attendance-date">Date: 2024-07-15</p>
-                    </div>
-                </div>
-            </template>
 
             <div class="manual-entry-section">
                 <h2 class="section-title">Manual Entry</h2>
                 <div class="manual-entry-form">
                     <div class="form-group">
                         <label for="manualEmail">Student Email</label>
-                        <input type="email" id="manualEmail" placeholder="Enter student email">
+                        <input type="email" id="manualEmail" autocomplete="off" placeholder="Enter student email">
                     </div>
                     <div class="form-group">
                         <label for="manualEvent">Event</label>
                         <select id="manualEvent">
+                            <option value="">Select event</option>
                         </select>
                     </div>
                     <div class="form-group">
@@ -90,18 +82,18 @@
                         <label for="manualTimeLeaving">Time Leaving</label>
                         <input type="time" id="manualTimeLeaving">
                     </div>
-                    <p class="error-message" id="manualErrorMessage"></p>
-                    <p class="success-message" id="manualSuccessMessage"></p>
+                    <p class="error-message" id="manualErrorMessage" role="alert" aria-live="assertive"></p>
+                    <p class="success-message" id="manualSuccessMessage" role="status" aria-live="polite"></p>
                     <div class="button-group">
-                        <button id="manualSubmitButton" class="submit-button">Mark Attendance</button>
-                        <button id="manualClearButton" class="clear-button">Clear</button>
+                        <button id="manualSubmitButton" type="button" class="submit-button">Mark Attendance</button>
+                        <button id="manualClearButton" type="button" class="clear-button">Clear</button>
                     </div>
                 </div>
             </div>
         </div>
     </section>
 
-    <section class="navbar" id="nav-bar">
+    <section class="navbar" id="nav-bar" data-admin-page hidden>
         <div class="nav-links" id="nav-bar-nav-links">
             <a href="index.html">Home</a>
             <a href="events.html">Events</a>
@@ -112,6 +104,5 @@
             <a href="studentlist.html">Student Directory</a>
         </div>
     </section>
-    
 </body>
 </html>

@@ -7,7 +7,7 @@
 
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/home.css">
-    <script src ="js_files/home.js" defer></script>
+    <script type="module" src="js_files/home.js"></script>
 
     <title>Southport Key Club - Home</title>
 </head>
@@ -52,10 +52,10 @@
                 <div>
                     <p class="section-label">Club Feed</p>
                     <h2>Latest Updates</h2> 
-                    <button class="welcome-button" id ="create-post-button"> Create Post </button>
+                    <button class="welcome-button" id="create-post-button" type="button" data-admin-only hidden>Create Post</button>
                 </div>
 
-                <button class="filter-button" type="button">
+                <button class="filter-button" id="feedSortButton" type="button">
                     Recent
                 </button>
             </div>
@@ -75,27 +75,24 @@
       <p>Share an update, image, or video to your event.</p>
     </div>
 
-    <form class="modal-form">
+    <form class="modal-form" id="postForm">
       <div class="input-group">
         <label for="postTitle">Post Title</label>
-        <input type="text" id="postTitle" placeholder="Give your post a catchy title..." required />
+        <input type="text" id="postTitle" maxlength="120" placeholder="Give your post a clear title..." required />
       </div>
 
       <div class="input-group">
         <label for="eventSelect">Select Event</label>
         <div class="select-wrapper">
           <select id="eventSelect">
-            <option value="" disabled selected>Choose an event...</option>
-            <option value="hackathon">Summer Hackathon 2026</option>
-            <option value="workshop">JavaScript Workshop</option>
-            <option value="meetup">Python Study Group</option>
+            <option value="">No related event</option>
           </select>
         </div>
       </div>
 
       <div class="input-group">
         <label for="postDesc">Description</label>
-        <textarea id="postDesc" rows="4" placeholder="What's on your mind?..." required></textarea>
+        <textarea id="postDesc" rows="4" maxlength="2000" placeholder="What should members know?" required></textarea>
       </div>
 
       <div class="input-group">
@@ -104,7 +101,7 @@
           <span class="upload-icon">📁</span>
           <span class="upload-text">Click to upload or drag & drop</span>
           <span class="upload-limit">PNG, JPG, MP4 up to 50MB</span>
-          <input type="file" id="mediaUpload" accept="image/*,video/*" />
+          <input type="file" id="mediaUpload" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" />
         </label>
       </div>
 
@@ -122,7 +119,7 @@
       </div>
 
 
-        <p class="error-message" id="postErrorMessage"></p>
+        <p class="error-message" id="postErrorMessage" role="status" aria-live="polite"></p>
       <div class="modal-actions">
         <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
         <button type="submit" class="btn btn-primary" id="postPublish">Publish Post</button>
@@ -140,7 +137,7 @@
             <a href="calendar.html">Calendar</a>
             <a href="leaderboard.html">Leaderboard</a>
             <a href="profile.html">Profile</a>
-            <a href="admin.html">Admin</a>
+            <a href="admin.html" data-admin-only hidden>Admin</a>
             <a href="studentlist.html">Student Directory</a>
         </div>
     </section>
@@ -155,7 +152,7 @@
             <div class="comment-modal-body">
             </div>
             <div class="comment-modal-footer">
-                <input type="text" class="comment-input" placeholder="Write a comment...">
+                <input type="text" class="comment-input" maxlength="500" placeholder="Write a comment...">
                 <button class="comment-send-button">Send</button>
             </div>
         </div>

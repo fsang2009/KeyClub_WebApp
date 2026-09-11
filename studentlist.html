@@ -2,92 +2,89 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1.0"
-    >
-
-    <title>Southport Keyclub - Student list</title>
+    <title>Southport Key Club - Student Directory</title>
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-
     <link
         href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=League+Spartan:wght@600;700;800&display=swap"
         rel="stylesheet"
     >
 
     <link rel="stylesheet" href="css_files/common.css">
-    <link rel="stylesheet" href ="css_files/studentlist.css">
-    <script src ="js_files/studentlist.js" defer></script>
+    <link rel="stylesheet" href="css_files/studentlist.css">
+    <script type="module" src="js_files/studentlist.js" defer></script>
 </head>
+<body>
+    <main class="students-page-container">
+        <div class="page-header">
+            <h1>Student Directory</h1>
+            <p>Track student participation, hours, and involvement history.</p>
+        </div>
 
-<main class="students-page-container">
-  <div class="page-header">
-    <h1>Student Directory</h1>
-    <p>Track student participation, hours, and involvement history.</p>
-  </div>
+        <div class="search-container">
+            <div class="search-input-wrapper">
+                <span class="search-icon" aria-hidden="true">🔍</span>
+                <input
+                    type="search"
+                    id="studentSearchInput"
+                    placeholder="Search students by name..."
+                    autocomplete="off"
+                    aria-label="Search students"
+                >
+            </div>
+        </div>
 
-<div class="search-container">
-  <div class="search-input-wrapper">
-    <span class="search-icon">🔍</span>
-    <input 
-      type="text" 
-      id="studentSearchInput" 
-      placeholder="Search students by name..." 
-      autocomplete="off"
-    />
-  </div>
-</div>
+        <div class="table-container">
+            <table class="students-table">
+                <thead>
+                    <tr>
+                        <th>Student</th>
+                        <th>Points</th>
+                        <th>Hours</th>
+                        <th class="text-right">History</th>
+                    </tr>
+                </thead>
+                <tbody id="studentsContainer">
+                    <tr>
+                        <td colspan="4">Loading students...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
 
-
-  <div class="table-container">
-    <table class="students-table">
-      <thead>
-        <tr>
-          <th>Student</th>
-          <th>Points</th>
-          <th>Hours</th>
-          <th class="text-right">History</th>
-        </tr>
-      </thead>
-      <tbody id= "studentsContainer">
-        
-        
-
-      </tbody>
-    </table>
-  </div>
-</main>
-<section class="navbar" id="nav-bar">
+    <section class="navbar" id="nav-bar">
         <div class="nav-links" id="nav-bar-nav-links">
             <a href="index.html">Home</a>
             <a href="events.html">Events</a>
             <a href="calendar.html">Calendar</a>
-            <a href ="leaderboard.html">Leaderboard</a>
+            <a href="leaderboard.html">Leaderboard</a>
             <a href="profile.html">Profile</a>
-            <a href="admin.html">Admin</a>
+            <a href="admin.html" data-admin-only hidden>Admin</a>
             <a href="studentlist.html" aria-current="page">Student Directory</a>
         </div>
     </section>
 
+    <div
+        id="historyModal"
+        class="modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="modalStudentName"
+    >
+        <div class="modal-card">
+            <button id="closeHistoryModalBtn" class="close-btn" type="button" aria-label="Close history">&times;</button>
 
-<div id="historyModal" class="modal-overlay">
-  <div class="modal-card">
-    <button id="closeHistoryModalBtn" class="close-btn">&times;</button>
-    
-    <div class="modal-header">
-      <h2 id="modalStudentName"><span id="studentNameTarget">Student</span>'s Event History</h2>
-      <p>A log of all completed events and logged sessions.</p>
+            <div class="modal-header">
+                <h2 id="modalStudentName"><span id="studentNameTarget">Student</span>'s Event History</h2>
+                <p>A log of completed events and attendance sessions.</p>
+            </div>
+
+            <div class="history-scroll-container" id="historyContainer"></div>
+        </div>
     </div>
-
-    <div class="history-scroll-container">
-        
-      <div class="history-event-card">
-        
-    </div>
-
-
-  </div>
-</div>
+</body>
+</html>

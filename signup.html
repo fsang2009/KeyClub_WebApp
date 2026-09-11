@@ -33,7 +33,7 @@
             <div class="brand-background-circle circle-two"></div>
             <div class="brand-background-circle circle-three"></div>
 
-            <a href="../index.html" class="brand">
+            <a href="landingpage.html" class="brand">
 
                 <div class="brand-icon">
                     <span>K</span>
@@ -138,7 +138,7 @@
 
             <div class="mobile-header">
 
-                <a href="../index.html" class="mobile-brand">
+                <a href="landingpage.html" class="mobile-brand">
 
                     <div class="mobile-brand-icon">K</div>
 
@@ -166,7 +166,7 @@
 
                 </div>
 
-                <div class="error-message" id="fill-signup-error" style="display: none;"></div>
+                <div class="error-message" role="alert" aria-live="polite" id="fill-signup-error" style="display: none;"></div>
 
                 <form class="signup-form" id="signup-form">
 
@@ -183,10 +183,12 @@
                                     name="firstName"
                                     placeholder="Maya"
                                     autocomplete="given-name"
+                                    minlength="2"
+                                    maxlength="30"
                                     required
                                 >
                             </div>
-                               <div class="error-message" id="firstname-check-signup-error" style="display: none;"></div>
+                               <div class="error-message" role="alert" aria-live="polite" id="firstname-check-signup-error" style="display: none;"></div>
 
                         </div>
 
@@ -202,10 +204,12 @@
                                     name="lastName"
                                     placeholder="Johnson"
                                     autocomplete="family-name"
+                                    minlength="2"
+                                    maxlength="30"
                                     required
                                 >
                             </div>
-                               <div class="error-message" id="lastname-check-signup-error" style="display: none;"></div>
+                               <div class="error-message" role="alert" aria-live="polite" id="lastname-check-signup-error" style="display: none;"></div>
                         </div>
 
                     </div>
@@ -232,7 +236,7 @@
 
                     </div>
 
-                     <div class="error-message" id="email-check-signup-error" style="display: none;"></div>
+                     <div class="error-message" role="alert" aria-live="polite" id="email-check-signup-error" style="display: none;"></div>
                     <div class="input-row">
 
                         <div class="form-group">
@@ -300,6 +304,40 @@
                     </div>
 
 
+                    <div class="form-group" id="school-code-group" hidden>
+
+                        <label for="school-code">School access code</label>
+
+                        <div class="input-wrapper">
+
+                            <span class="input-icon">#</span>
+
+                            <input
+                                type="password"
+                                id="school-code"
+                                name="schoolCode"
+                                placeholder="Enter your club's access code"
+                                autocomplete="off"
+                                maxlength="64"
+                            >
+
+                        </div>
+
+                        <div
+                            class="error-message"
+                            role="alert"
+                            aria-live="polite"
+                            id="school-code-signup-error"
+                            style="display: none;"
+                        ></div>
+
+                        <span class="input-helper">
+                            Ask a Key Club officer if you do not know your school's code.
+                        </span>
+
+                    </div>
+
+
                     <div class="form-group">
 
                         <label for="username">Display name</label>
@@ -313,14 +351,14 @@
                                 id="username"
                                 name="username"
                                 placeholder="Choose an appropriate display name"
-                                minlength="3"
-                                maxlength="24"
+                                minlength="2"
+                                maxlength="15"
                                 autocomplete="nickname"
                                 required
                             >
 
                         </div>
-                             <div class="error-message" id="displayname-check-signup-error" style="display: none;"></div>
+                             <div class="error-message" role="alert" aria-live="polite" id="displayname-check-signup-error" style="display: none;"></div>
                         <span class="input-helper">
                             This is the name other club members will see.
                         </span>
@@ -400,7 +438,7 @@
                         </div>
 
                     </div>
-                <div class="error-message" id="password-check-signup-error" style="display: none;"></div>
+                <div class="error-message" role="alert" aria-live="polite" id="password-check-signup-error" style="display: none;"></div>
 
                     <label class="agreement">
 
@@ -414,10 +452,7 @@
                         <span class="custom-checkbox"></span>
 
                         <span class="agreement-text">
-                            I agree to the
-                            <a href="#">community guidelines</a>
-                            and
-                            <a href="#">privacy policy</a>.
+                            I agree to use KeyConnect responsibly and follow my club's community guidelines.
                         </span>
 
                     </label>
@@ -430,7 +465,7 @@
                         <span class="button-arrow">→</span>
 
                     </button>
-                     <div class="error-message" id="register-error-check" style="display: none;"></div>
+                     <div class="error-message" role="alert" aria-live="polite" id="register-error-check" style="display: none;"></div>
 
 
                     <p class="login-prompt">

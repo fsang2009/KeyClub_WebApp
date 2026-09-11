@@ -6,15 +6,14 @@
     <title>Southport Key Club - Events</title>
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/events.css">
-    <script src="js_files/events.js" defer></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script type="module" src="js_files/events.js" defer></script>
 </head>
 <body>
     <section class="header">
-        <div class ="header-title">
+        <div class="header-title">
             <h1>Southport Key Club</h1>
         </div>
-        <div class ="header-subtitle">
+        <div class="header-subtitle">
             <p>Events</p>
         </div>
     </section>
@@ -22,19 +21,19 @@
     <section class="main-content">
         <div class="events-header">
             <h2>Upcoming Events</h2>
-            <button class="add-event-button">+ Add Event</button>
+            <button class="add-event-button" data-admin-only hidden>+ Add Event</button>
         </div>
         <div class="event-grid">
-            
+            <p class="empty-state">Loading events...</p>
         </div>
     </section>
 
-    <!-- Event Modal -->
+    <!-- Event details -->
     <div class="modal" id="eventModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2 id="modalEventTitle">Event Title</h2>
-                <button class="modal-close">&times;</button>
+                <button class="modal-close" type="button" aria-label="Close event details">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="event-details">
@@ -59,43 +58,49 @@
                         <p id="modalEventDescription" class="detail-value">Description</p>
                     </div>
                 </div>
+
                 <div class="signup-section">
-                    <button class="signup-button" id="signupButton">Sign Up for Event</button>
+                    <button class="signup-button" id="signupButton" type="button">Sign Up for Event</button>
+                    <a
+                        class="signup-button"
+                        id="externalSignupLink"
+                        href="#"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        hidden
+                    >Open Organization Signup</a>
                     <p class="signup-status" id="signupStatus"></p>
                 </div>
-                <div class="event-management-section">
-                    <button class="edit-event-button" id="editEventButton">Edit Event</button>
-                    <button class="delete-event-button" id="deleteEventButton">Delete Event</button>
+
+                <div class="event-management-section" data-admin-only hidden>
+                    <button class="edit-event-button" id="editEventButton" type="button">Edit Event</button>
+                    <button class="delete-event-button" id="deleteEventButton" type="button">Delete Event</button>
                 </div>
+
                 <div class="chat-section" id="chatSection" style="display: none;">
                     <h3>Event Chat</h3>
-                    <div class="chat-messages" id="chatMessages">
-                        <div class="chat-message">
-                            <span class="chat-user">Admin:</span>
-                            <span class="chat-text">Welcome to the event chat! Use this space to coordinate with other participants.</span>
-                        </div>
-                    </div>
+                    <div class="chat-messages" id="chatMessages"></div>
                     <div class="chat-input">
-                        <input type="text" id="chatInput" placeholder="Type a message...">
-                        <button class="chat-send">Send</button>
+                        <input type="text" id="chatInput" maxlength="500" placeholder="Type a message...">
+                        <button class="chat-send" type="button">Send</button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Add Event Modal -->
+    <!-- Admin-only event editor -->
     <div class="modal" id="addEventModal">
         <div class="modal-content add-event-modal-content">
             <div class="modal-header">
-                <h2>Add New Event</h2>
-                <button class="modal-close add-event-close">&times;</button>
+                <h2 id="eventEditorTitle">Add New Event</h2>
+                <button class="modal-close add-event-close" type="button" aria-label="Close event editor">&times;</button>
             </div>
             <div class="modal-body" id="add-event-modal-body">
                 <form class="add-event-form">
                     <div class="form-group">
                         <label for="eventTitle">Event Title</label>
-                        <input type="text" id="eventTitle" placeholder="Enter event title" required>
+                        <input type="text" id="eventTitle" maxlength="100" placeholder="Enter event title" required>
                     </div>
                     <div class="form-group">
                         <label for="eventDate">Date</label>
@@ -111,12 +116,22 @@
                     </div>
                     <div class="form-group">
                         <label for="eventLocation">Location</label>
-                        <input type="text" id="eventLocation" placeholder="Enter event location" required>
+                        <input type="text" id="eventLocation" maxlength="150" placeholder="Enter event location" required>
                     </div>
                     <div class="form-group">
                         <label for="eventDescription">Description</label>
-                        <textarea id="eventDescription" placeholder="Enter event description" rows="4" required></textarea>
+                        <textarea id="eventDescription" maxlength="1500" placeholder="Enter event description" rows="4" required></textarea>
                     </div>
+                    <div class="form-group">
+                        <label for="eventSignupLink">Organization signup link <span aria-hidden="true">(optional)</span></label>
+                        <input
+                            type="url"
+                            id="eventSignupLink"
+                            placeholder="https://example.org/volunteer-signup"
+                        >
+                        <small>If you add a link, members will be sent there instead of using KeyConnect's normal signup button.</small>
+                    </div>
+                    <p id="eventFormMessage" class="error-message" role="status" aria-live="polite" style="display: none;"></p>
                     <button type="submit" class="submit-event-button">Create Event</button>
                 </form>
             </div>
@@ -126,11 +141,11 @@
     <section class="navbar" id="nav-bar">
         <div class="nav-links" id="nav-bar-nav-links">
             <a href="index.html">Home</a>
-            <a href="events.html">Events</a>
+            <a href="events.html" aria-current="page">Events</a>
             <a href="calendar.html">Calendar</a>
             <a href="leaderboard.html">Leaderboard</a>
             <a href="profile.html">Profile</a>
-            <a href="admin.html">Admin</a>
+            <a href="admin.html" data-admin-only hidden>Admin</a>
             <a href="studentlist.html">Student Directory</a>
         </div>
     </section>
