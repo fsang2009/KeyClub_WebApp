@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+
+    <title>Southport Key Club - Home</title>
+  <script type="module" crossorigin src="/assets/index-BZZokppq.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-B667zrrd.css">
+</head>
+
+<body class="home-body">
+
+    <section class="header">
+        <div class="header-content">
+            <p class="header-label">Welcome Back</p>
+            <h1>Southport Key Club</h1>
+            <p class="header-description">
+                Stay connected with club updates, service opportunities, and member announcements.
+            </p>
+        </div>
+    </section>
+
+
+    <main class="main-content">
+
+        <section class="welcome-card">
+            <div class="welcome-icon">
+                <span>KC</span>
+            </div>
+
+            <div class="welcome-text">
+                <p class="section-label">Your Club Dashboard</p>
+                <h2>Ready to make a difference?</h2>
+                <p>
+                    Check the latest announcements, upcoming events, and service opportunities.
+                </p>
+            </div>
+
+            <a href="events.html" class="welcome-button">
+                View Events
+            </a>
+        </section>
+
+
+        <section class="feed-section">
+
+            <div class="feed-heading">
+                <div>
+                    <p class="section-label">Club Feed</p>
+                    <h2>Latest Updates</h2> 
+                    <button class="welcome-button" id="create-post-button" type="button" data-admin-only hidden>Create Post</button>
+                </div>
+
+                <button class="filter-button" id="feedSortButton" type="button">
+                    Recent
+                </button>
+            </div>
+
+        <section class="feed-section" id= "post-section">
+            <!--posts go here-->
+        </section>
+
+        </section>
+
+        <div id="postModal" class="modal-overlay">
+  <div class="modal-card" id="create-post-modal">
+    <button id="closeModalBtn" class="close-btn">&times;</button>
+    
+    <div class="modal-header">
+      <h2>Create a Post</h2>
+      <p>Share an update, image, or video to your event.</p>
+    </div>
+
+    <form class="modal-form" id="postForm">
+      <div class="input-group">
+        <label for="postTitle">Post Title</label>
+        <input type="text" id="postTitle" maxlength="120" placeholder="Give your post a clear title..." required />
+      </div>
+
+      <div class="input-group">
+        <label for="eventSelect">Select Event</label>
+        <div class="select-wrapper">
+          <select id="eventSelect">
+            <option value="">No related event</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="input-group">
+        <label for="postDesc">Description</label>
+        <textarea id="postDesc" rows="4" maxlength="2000" placeholder="What should members know?" required></textarea>
+      </div>
+
+      <div class="input-group">
+        <label>Add Media (Image or Video)</label>
+        <label for="mediaUpload" class="file-upload-label">
+          <span class="upload-icon">📁</span>
+          <span class="upload-text">Click to upload or drag & drop</span>
+          <span class="upload-limit">PNG, JPG, MP4 up to 50MB</span>
+          <input type="file" id="mediaUpload" accept="image/jpeg,image/png,image/webp,image/gif,video/mp4,video/webm,video/quicktime" />
+        </label>
+      </div>
+
+      <div class="input-group">
+        <label for="postTypeSelect">Post Type</label>
+        <div class="select-wrapper">
+          <select id="postTypeSelect" required>
+            <option value="" disabled selected>Select post type...</option>
+            <option value="announcement">Announcement</option>
+            <option value="event">Event</option>
+            <option value="member-post">Member Post</option>
+            <option value="reminder">Reminder</option>
+          </select>
+        </div>
+      </div>
+
+
+        <p class="error-message" id="postErrorMessage" role="status" aria-live="polite"></p>
+      <div class="modal-actions">
+        <button type="button" id="cancelBtn" class="btn btn-secondary">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="postPublish">Publish Post</button>
+      </div>
+    </form>
+  </div>
+</div>
+    </main>
+
+
+    <section class="navbar" id="nav-bar">
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="profile.html">Profile</a>
+            <a href="admin.html" data-admin-only hidden>Admin</a>
+            <a href="studentlist.html">Student Directory</a>
+        </div>
+    </section>
+
+    <!-- Comment Modal -->
+    <div class="comment-modal" id="commentModal">
+        <div class="comment-modal-content">
+            <div class="comment-modal-header">
+                <h3>Comments</h3>
+                <button class="comment-modal-close" id="closeCommentModal">&times;</button>
+            </div>
+            <div class="comment-modal-body">
+            </div>
+            <div class="comment-modal-footer">
+                <input type="text" class="comment-input" maxlength="500" placeholder="Write a comment...">
+                <button class="comment-send-button">Send</button>
+            </div>
+        </div>
+    </div>
+
+</body>
+</html>
