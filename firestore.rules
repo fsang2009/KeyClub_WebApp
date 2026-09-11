@@ -129,6 +129,61 @@ service cloud.firestore {
       allow read: if supportedSchool(schoolId) && signedIn();
       allow create, update, delete: if admin(schoolId);
 
+      match /reservations/{reservationId} {
+        // Reservations power member limits and shift slots. Members can only reserve or release their own spots.
+        allow read: if supportedSchool(schoolId) && signedIn();
+
+        allow create: if supportedSchool(schoolId)
+          && signedIn()
+          && request.resource.data.keys().hasOnly([
+            "uid",
+            "type",
+            "slotNumber",
+            "shiftId",
+            "createdAt"
+          ])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.type in ["member", "general", "shift"]
+          && request.resource.data.slotNumber is int
+          && request.resource.data.shiftId is string
+          && (
+            !("signupLink" in get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data)
+            || get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.signupLink == ""
+          )
+          && (
+            (
+              request.resource.data.type == "member"
+              && (
+                !("memberLimit" in get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data)
+                || get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.memberLimit == 0
+              )
+              && request.resource.data.slotNumber == 0
+              && request.resource.data.shiftId == ""
+            )
+            || (
+              request.resource.data.type == "general"
+              && ("memberLimit" in get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data)
+              && get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.memberLimit > 0
+              && request.resource.data.slotNumber > 0
+              && request.resource.data.slotNumber <= get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.memberLimit
+              && request.resource.data.shiftId == ""
+            )
+            || (
+              request.resource.data.type == "shift"
+              && request.resource.data.slotNumber > 0
+              && ("shiftCapacities" in get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data)
+              && (request.resource.data.shiftId in get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.shiftCapacities)
+              && get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.shiftCapacities[request.resource.data.shiftId] is int
+              && request.resource.data.slotNumber <= get(/databases/$(database)/documents/schools/$(schoolId)/events/$(eventId)).data.shiftCapacities[request.resource.data.shiftId]
+            )
+          );
+
+        // A reserved slot cannot be reassigned in place. Cancel it and reserve a different slot instead.
+        allow update: if false;
+        allow delete: if admin(schoolId)
+          || (supportedSchool(schoolId) && signedIn() && resource.data.uid == request.auth.uid);
+      }
+
       match /messages/{messageId} {
         allow read: if admin(schoolId) || signedUpForEvent(schoolId, eventId);
 

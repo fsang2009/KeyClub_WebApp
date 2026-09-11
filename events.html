@@ -6,8 +6,6 @@
     <title>Southport Key Club - Events</title>
     <link rel="stylesheet" href="css_files/common.css">
     <link rel="stylesheet" href="css_files/events.css">
-        <link rel="icon" type="image/png" href="assets/images/logos/keyconnect.png">
-
     <script type="module" src="js_files/events.js" defer></script>
 </head>
 <body>
@@ -61,8 +59,15 @@
                     </div>
                 </div>
 
-                <div class="signup-section">
+                <div class="signup-section" id="internalSignupSection">
+                    <div id="shiftSignupSection" class="shift-signup-section" hidden>
+                        <h3>Choose your shift(s)</h3>
+                        <p class="shift-help">You can select more than one shift if your schedule allows it.</p>
+                        <div id="shiftChoices" class="shift-choices"></div>
+                    </div>
+
                     <button class="signup-button" id="signupButton" type="button">Sign Up for Event</button>
+                    <button class="cancel-signup-button" id="cancelSignupButton" type="button" hidden>Cancel Signup</button>
                     <a
                         class="signup-button"
                         id="externalSignupLink"
@@ -73,6 +78,14 @@
                     >Open Organization Signup</a>
                     <p class="signup-status" id="signupStatus"></p>
                 </div>
+
+                <section class="signup-roster-section" id="signupRosterSection" hidden>
+                    <div class="signup-roster-heading">
+                        <h3>Who’s Signed Up</h3>
+                        <span id="signupRosterSummary"></span>
+                    </div>
+                    <div id="signupRosterContent" class="signup-roster-content"></div>
+                </section>
 
                 <div class="event-management-section" data-admin-only hidden>
                     <button class="edit-event-button" id="editEventButton" type="button">Edit Event</button>
@@ -131,8 +144,38 @@
                             id="eventSignupLink"
                             placeholder="https://example.org/volunteer-signup"
                         >
-                        <small>If you add a link, members will be sent there instead of using KeyConnect's normal signup button.</small>
+                        <small>If you add a link, KeyConnect's member limit and shift signup are turned off for this event.</small>
                     </div>
+
+                    <section id="internalSignupOptions" class="internal-signup-options">
+                        <div class="form-group">
+                            <label for="eventMemberLimit">Overall member limit <span aria-hidden="true">(optional)</span></label>
+                            <input
+                                type="number"
+                                id="eventMemberLimit"
+                                min="1"
+                                max="5000"
+                                inputmode="numeric"
+                                placeholder="Leave blank for unlimited"
+                            >
+                            <small>This is the total number of unique members who can sign up. Shift slot limits still apply separately.</small>
+                        </div>
+
+                        <div class="shift-editor-section">
+                            <div class="shift-editor-header">
+                                <div>
+                                    <h3>Shifts</h3>
+                                    <p>Add as many shifts as you need. Each shift gets its own role, time, and number of slots.</p>
+                                </div>
+                                <button type="button" class="add-shift-button" id="addShiftButton">+ Add Shift</button>
+                            </div>
+                            <div id="shiftEditor" class="shift-editor"></div>
+                            <p id="signupConfigLockMessage" class="form-note" hidden>
+                                Signup settings are locked because members have already signed up. You can still edit the event details above.
+                            </p>
+                        </div>
+                    </section>
+
                     <p id="eventFormMessage" class="error-message" role="status" aria-live="polite" style="display: none;"></p>
                     <button type="submit" class="submit-event-button">Create Event</button>
                 </form>
