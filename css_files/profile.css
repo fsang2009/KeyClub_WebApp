@@ -674,3 +674,101 @@ body > a[href="landingpage.html"] {
         transform: none;
     }
 }
+/* =====================================================
+   PROFILE HERO LAYOUT FIX
+   Keep the avatar and profile text in one stable block.
+===================================================== */
+
+@media (min-width: 701px) {
+    .header {
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 340px);
+        grid-template-areas: "profile qr";
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .profile-header {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: clamp(24px, 3vw, 42px);
+
+        width: 100%;
+        max-width: 680px;
+        min-width: 0;
+    }
+
+    .profile-header img {
+        flex: none;
+        width: clamp(116px, 10vw, 145px);
+        height: clamp(116px, 10vw, 145px);
+    }
+
+    .profile-copy {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .profile-header h1 {
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+
+        overflow-wrap: break-word;
+        word-break: normal;
+
+        font-size: clamp(2.35rem, 4.6vw, 4.7rem);
+        line-height: 1;
+    }
+
+    .profile-full-name {
+        width: 100%;
+        margin: 10px 0 0;
+
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.98rem;
+        font-weight: 700;
+    }
+
+    .description {
+        width: 100%;
+        max-width: 520px;
+        margin: 14px 0 0;
+    }
+
+    .profile-buttons {
+        margin-top: 20px;
+    }
+
+    .qr-code-center {
+        justify-self: end;
+    }
+}
+
+@media (max-width: 700px) {
+    .profile-copy {
+        display: flex;
+        width: 100%;
+        min-width: 0;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .profile-header h1 {
+        width: 100%;
+        overflow-wrap: break-word;
+        word-break: normal;
+    }
+
+    .profile-full-name {
+        margin: 8px 0 0;
+        color: rgba(255, 255, 255, 0.92);
+        font-size: 0.95rem;
+        font-weight: 700;
+        text-align: center;
+    }
+
+    .description {
+        margin-top: 12px;
+    }
+}
