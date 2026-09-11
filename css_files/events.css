@@ -1108,3 +1108,72 @@ This centers the modal-content even in that case.
         grid-column: auto;
     }
 }
+
+/* =====================================================
+   SHIFT EDITOR LAYOUT FIX
+   The event editor needs more horizontal room than the normal event modal.
+===================================================== */
+
+.add-event-modal-content {
+    width: min(94vw, 860px);
+    max-width: 860px;
+}
+
+.shift-editor-row {
+    grid-template-columns:
+        minmax(180px, 1.6fr)
+        minmax(120px, 1fr)
+        minmax(120px, 1fr)
+        minmax(85px, 0.65fr)
+        auto;
+    gap: 12px;
+}
+
+.shift-field label {
+    white-space: nowrap;
+}
+
+.remove-shift-button {
+    min-width: 88px;
+    white-space: nowrap;
+}
+
+/* On tablets, let the role use a full row and keep the time fields readable. */
+@media (max-width: 760px) {
+    .add-event-modal-content {
+        width: min(100%, 620px);
+    }
+
+    .shift-editor-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        align-items: end;
+    }
+
+    .shift-field:first-child {
+        grid-column: 1 / -1;
+    }
+
+    .remove-shift-button {
+        width: 100%;
+    }
+}
+
+/* On phones, one field per row is much easier to fill out. */
+@media (max-width: 480px) {
+    .shift-editor-header {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .add-shift-button {
+        width: 100%;
+    }
+
+    .shift-editor-row {
+        grid-template-columns: 1fr;
+    }
+
+    .shift-field:first-child {
+        grid-column: auto;
+    }
+}
