@@ -1,350 +1,615 @@
-// First select the element
-const eventCard = document.querySelectorAll('.event')
+import { onAuthStateChanged } from "firebase/auth";
+import {
+    addDoc,
+    collection,
+    deleteDoc,
+    deleteField,
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    orderBy,
+    query,
+    serverTimestamp,
+    setDoc,
+    updateDoc,
+    writeBatch
+} from "firebase/firestore";
+import { auth, database } from "./firebaseConfig.js";
 
-const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
-const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
-const currentUser = userInfo[userSetEmail]
+const SCHOOL_ID = "southport_high_school";
 
-if(!currentUser){
-    window.location.href = 'login.html'
+const eventArea = document.querySelector(".event-grid");
+const eventModal = document.querySelector("#eventModal");
+const addEventModal = document.querySelector("#addEventModal");
+const addEventButton = document.querySelector(".add-event-button");
+const signUpButton = document.querySelector("#signupButton");
+const externalSignupLink = document.querySelector("#externalSignupLink");
+const editEventButton = document.querySelector("#editEventButton");
+const deleteEventButton = document.querySelector("#deleteEventButton");
+const submitEventButton = document.querySelector(".submit-event-button");
+const eventForm = document.querySelector(".add-event-form");
+const eventFormMessage = document.querySelector("#eventFormMessage");
+const eventEditorTitle = document.querySelector("#eventEditorTitle");
+
+const eventTitle = document.querySelector("#eventTitle");
+const eventDate = document.querySelector("#eventDate");
+const eventTime = document.querySelector("#eventTime");
+const eventEndTime = document.querySelector("#eventEndTime");
+const eventLocation = document.querySelector("#eventLocation");
+const eventDescription = document.querySelector("#eventDescription");
+const eventSignupLink = document.querySelector("#eventSignupLink");
+
+const chatSection = document.querySelector("#chatSection");
+const chatMessages = document.querySelector("#chatMessages");
+const chatInput = document.querySelector("#chatInput");
+const chatSendButton = document.querySelector(".chat-send");
+
+let firebaseUser = null;
+let currentProfile = null;
+let currentProfileRef = null;
+let currentEventID = "";
+let eventData = [];
+let isAdmin = false;
+let eventsUnsubscribe = null;
+let chatUnsubscribe = null;
+
+function redirectToLogin() {
+    window.location.replace("login.html");
 }
 
-if (!currentUser.signedUpEvents) {
-    currentUser.signedUpEvents = {};
-    localStorage.setItem('userinfo', JSON.stringify(userInfo));
+function userIsAdmin(profile) {
+    // Admin accounts are marked in Firestore with role: "admin" (or isAdmin: true for older accounts).
+    // Hiding buttons is only the UI layer. Firestore rules are what actually block unauthorized writes.
+    return profile?.role === "admin" || profile?.isAdmin === true;
 }
 
-
-/*<div class="event" data-event-id="2">
-                <h2>Food Drive</h2>
-                <p>Help collect food donations for local families in need.</p>
-                <button class="event-view-button">Sign Up & View</button>
-            </div>*/
-let currentEventID = ''
-/* ADD EVENT SECTION */
-const addEventButton = document.querySelector('.add-event-button');
-const addEventModal = document.querySelector('#addEventModal')
-const eventTitle = document.querySelector('#eventTitle');
-const eventDate = document.querySelector('#eventDate');
-const eventTime = document.querySelector('#eventTime');
-const eventEndTime = document.querySelector('#eventEndTime');
-const eventLocation = document.querySelector('#eventLocation');
-const eventDescription = document.querySelector('#eventDescription');
-const eventArea = document.querySelector('.event-grid');
-
-let eventData = JSON.parse(localStorage.getItem('eventData')) || []
-
-eventArea.addEventListener('click', (e)=>{
-    if(e.target.classList.contains('event-view-button')){
-        const eventcard = e.target.closest('.event');
-        const eventId = eventcard.dataset.eventId;
-        currentEventID = eventId 
-        openModal(eventId);
-        
-    }
-})
-
-
-
-const modalCloseButton = document.querySelector('.modal-close');
-modalCloseButton.addEventListener('click', ()=>{
-    setTimeout(() => {
-        currentEventID = ''
-        document.getElementById('eventModal').style.display = 'none';
-    }, 200);
-})
-
-
-
-
-const openModal = (eventId) =>{
-    currentEventID = eventId
-    const event = eventData.find(e => e.id === eventId);
-
-    document.getElementById('modalEventTitle').textContent = event.title;
-    document.getElementById('modalEventDate').textContent = event.date;
-    document.getElementById('modalEventTime').textContent = event.time;
-    document.getElementById('modalEventEndTime').textContent = event.endTime;
-    document.getElementById('modalEventLocation').textContent = event.location;
-    document.getElementById('modalEventDescription').textContent = event.description;
-
-    document.getElementById('eventModal').style.display = 'block';
-
-    if(currentUser.signedUpEvents[currentEventID] === true){
-        signUpButton.textContent = "Cancel Signup";
-    signUpButton.classList.add('signed-up');
-    toggleMessages(currentEventID)
-    renderChats();
-    } else{ 
-         signUpButton.textContent = "Sign Up for Event";
-    signUpButton.classList.remove('signed-up');
-    toggleMessages(currentEventID)
-    }
-
-
-}
-
-
-const renderEvent = () =>{ 
-    let html = ''
-    eventData.forEach((event)=>{
-        html += `<div class="event" data-event-id="${event.id}">
-                <h2>${event.title}</h2>
-                <p>${event.description}</p>
-                <button class="event-view-button">Sign Up & View</button>
-            </div>`
-    })
-    eventArea.innerHTML = html
-}
-
-// time converter VV
-function convertTo12Hour(timeString) {
-    if (!timeString) return ''; // Handle empty input gracefully
-
-    // Split the "HH:MM" string into numbers
-    let [hours, minutes] = timeString.split(':').map(Number);
-    
-    // Determine AM or PM suffix
-    const ampm = hours >= 12 ? 'PM' : 'AM';
-    
-    // Convert 24-hour format to 12-hour format
-    hours = hours % 12;
-    hours = hours ? hours : 12; // The hour '0' should be '12'
-    
-    // Ensure minutes always have a leading zero if under 10
-    const formattedMinutes = minutes < 10 ? '0' + minutes : minutes;
-    
-    return `${hours}:${formattedMinutes} ${ampm}`;
-}
-
-
-
-const addEvent = ()=>{
-    addEventButton.addEventListener('click', ()=>{
-
-    addEventModal.classList.add('active');
-    const exitButton = addEventModal.querySelector('.modal-close');
-    const submitEventButton = addEventModal.querySelector('.submit-event-button');
-    
-    
-    /* SUBMIT EVENT EVENT LISTENER*/
-    submitEventButton.addEventListener('click',(event)=>{
-        event.preventDefault();
-        console.log('hi')
-        const currentTitle = eventTitle.value;
-        const currentDate = eventDate.value;
-        const currentTime = eventTime.value;
-        const currentEndTime = eventEndTime.value;
-        const currentLocation = eventLocation.value;
-        const currentDescription = eventDescription.value;
-
-        if(currentTitle && currentDate && currentTime && currentEndTime && currentLocation && currentDescription){
-            // Check if we're in edit mode
-            if (submitEventButton.dataset.editMode === 'true') {
-                // Update existing event
-                const eventIndex = eventData.findIndex(event => event.id === currentEventID);
-                if (eventIndex !== -1) {
-                    eventData[eventIndex] = {
-                        id: currentEventID,
-                        title: currentTitle,
-                        description: currentDescription,
-                        time: convertTo12Hour(currentTime),
-                        endTime: convertTo12Hour(currentEndTime),
-                        date: currentDate,
-                        location: currentLocation
-                    };
-                }
-                // Reset edit mode
-                submitEventButton.dataset.editMode = 'false';
-                submitEventButton.textContent = 'Create Event';
-                addEventModal.classList.remove('active');
-                // Close event details modal if open
-                document.getElementById('eventModal').style.display = 'none';
-                currentEventID = '';
-            } else {
-                // Create new event
-                eventData.push({
-                    id: crypto.randomUUID(),
-                    title: currentTitle,
-                    description: currentDescription,
-                    time: convertTo12Hour(currentTime),
-                    endTime: convertTo12Hour(currentEndTime),
-                    date: currentDate,
-                    location: currentLocation
-                })
-                addEventModal.classList.remove('active')
-            }
-        }
-        renderEvent();
-        localStorage.setItem('eventData', JSON.stringify(eventData));
-    })
-
-    /* CLOSE MODAL EVENT LISTENER */
-    exitButton.addEventListener('click',()=>{
-        setTimeout(()=>{
-            addEventModal.classList.remove('active');
-            // Reset edit mode if closing without saving
-            submitEventButton.dataset.editMode = 'false';
-            submitEventButton.textContent = 'Create Event';
-        }, 200)
-    })
-    
-})
-}
-
-
-
-addEvent()
-renderEvent()
-
-/* USER SIGNING UP FUNCTION */
-const signUpButton = document.querySelector('.signup-button')
-let lateMSG = null
-signUpButton.addEventListener('click',()=>{
-        clearTimeout(lateMSG)
-        
-        if(!currentUser.signedUpEvents[currentEventID])   {
-             lateMSG = setTimeout(()=>{
-                signUpButton.textContent = "Cancel Signup"
-            }, 3000)
-            signUpButton.textContent = "Signed Up! 🥳"
-            signUpButton.classList.add('signed-up');
-             currentUser.signedUpEvents[currentEventID] = true;
-            localStorage.setItem('userinfo',JSON.stringify(userInfo))
-            toggleMessages(currentEventID)
-            
-        }
-     else{
-            signUpButton.textContent = 'Sign Up';
-            signUpButton.classList.remove('signed-up');
-            delete currentUser.signedUpEvents[currentEventID];
-            localStorage.setItem('userinfo', JSON.stringify(userInfo));
-             toggleMessages(currentEventID)
-    }
-})
-
-/* DELETE EVENT FUNCTION */
-const eventModal = document.querySelector('#eventModal')
-const deleteEventButton = document.querySelector('#deleteEventButton');
-deleteEventButton.addEventListener('click', () => {
-    // Remove event from eventData
-    console.log('this is the deleteButton')
-    eventData = eventData.filter(event => event.id !== currentEventID);
-    
-
-    // Clean up signups for this event from all users
-    Object.values(userInfo).forEach(user => {
-        if (user.signedUpEvents && 
-            user.signedUpEvents[currentEventID] 
-        ) {
-            delete user.signedUpEvents[currentEventID];
-        }
+function showAdminControls(allowed) {
+    document.querySelectorAll("[data-admin-only]").forEach((element) => {
+        element.hidden = !allowed;
     });
-    localStorage.setItem('userinfo', JSON.stringify(userInfo));
+}
 
-    // Clean up chat messages for this event
-    const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
-    delete eventChats[currentEventID];
-    localStorage.setItem('eventChats', JSON.stringify(eventChats));
+function syncLegacyProfileCache() {
+    // Older pages still read localStorage, so keep a temporary cache until those pages are migrated too.
+    if (!firebaseUser || !currentProfile) return;
 
-    // Re-render events and close modal
-    
-    eventModal.style.display='none';
-    currentEventID = '';
-    renderEvent();
-    localStorage.setItem('eventData', JSON.stringify(eventData));
-});
-
-/* EDIT EVENT FUNCTION */
-const editEventButton = document.querySelector('#editEventButton');
-editEventButton.addEventListener('click', () => {
-  
-    let eventData = JSON.parse(localStorage.getItem('eventData')) || [];
-    const currentEvent = eventData.find(event => event.id === currentEventID);
-
-    if (currentEvent) {
-        // Populate add event form with current data
-        eventTitle.value = currentEvent.title;
-        eventDate.value = currentEvent.date;
-        eventTime.value = currentEvent.time;
-        eventEndTime.value = currentEvent.endTime;
-        eventLocation.value = currentEvent.location;
-        eventDescription.value = currentEvent.description;
-
-        // Open add event modal
-        addEventModal.classList.add('active');
-
-        
-        const submitEventButton = addEventModal.querySelector('.submit-event-button');
-        submitEventButton.textContent = 'Update Event';
-        submitEventButton.dataset.editMode = 'true';
+    let users = {};
+    try {
+        users = JSON.parse(localStorage.getItem("userinfo")) || {};
+    } catch {
+        users = {};
     }
-});
 
-//const eventChats = {"event-id-1": [{user:"You", text: "Yo"}], "event-id-2"}
+    const email = (firebaseUser.email || currentProfile.email || "").toLowerCase();
+    if (!email) return;
 
-//MESSAGING FUNCTIONS
-const toggleMessages = (eventID)=>{
-    const chatBox = document.querySelector('.chat-section')
-    const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
-    if (currentUser.signedUpEvents[eventID]){
-        chatBox.style.display = 'block'
-        eventChats[eventID] = eventChats[eventID] || [];
+    users[email] = {
+        ...users[email],
+        ...currentProfile,
+        email
+    };
 
+    localStorage.setItem("userinfo", JSON.stringify(users));
+    localStorage.setItem("currentUser", JSON.stringify(email));
+}
+
+function syncLegacyEventCache() {
+    // Calendar, home, profile and admin still use this cache for now.
+    localStorage.setItem("eventData", JSON.stringify(eventData));
+}
+
+function convertTo12Hour(timeString) {
+    if (!timeString) return "";
+
+    const [hoursText, minutesText] = timeString.split(":");
+    let hours = Number(hoursText);
+    const minutes = Number(minutesText);
+    if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return timeString;
+
+    const suffix = hours >= 12 ? "PM" : "AM";
+    hours %= 12;
+    if (hours === 0) hours = 12;
+
+    return `${hours}:${String(minutes).padStart(2, "0")} ${suffix}`;
+}
+
+function convertTo24Hour(timeString) {
+    if (!timeString) return "";
+    if (/^\d{2}:\d{2}$/.test(timeString)) return timeString;
+
+    const match = timeString.match(/^(\d{1,2}):(\d{2})\s*(AM|PM)$/i);
+    if (!match) return "";
+
+    let hours = Number(match[1]);
+    const minutes = match[2];
+    const suffix = match[3].toUpperCase();
+
+    if (suffix === "AM" && hours === 12) hours = 0;
+    if (suffix === "PM" && hours !== 12) hours += 12;
+
+    return `${String(hours).padStart(2, "0")}:${minutes}`;
+}
+
+function timeToMinutes(timeString) {
+    if (!timeString) return NaN;
+    const [hours, minutes] = timeString.split(":").map(Number);
+    return (hours * 60) + minutes;
+}
+
+function cleanSignupLink(value) {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+
+    try {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+        return url.href;
+    } catch {
+        return null;
+    }
+}
+
+function showEventFormMessage(message, type = "error") {
+    eventFormMessage.textContent = message;
+    eventFormMessage.dataset.type = type;
+    eventFormMessage.style.display = message ? "block" : "none";
+}
+
+function resetEventForm() {
+    eventForm.reset();
+    submitEventButton.dataset.editMode = "false";
+    submitEventButton.textContent = "Create Event";
+    eventEditorTitle.textContent = "Add New Event";
+    showEventFormMessage("");
+}
+
+function createEventCard(event) {
+    const card = document.createElement("div");
+    card.className = "event";
+    card.dataset.eventId = event.id;
+
+    const title = document.createElement("h2");
+    title.textContent = event.title || "Untitled Event";
+
+    const description = document.createElement("p");
+    description.textContent = event.description || "";
+
+    const button = document.createElement("button");
+    button.className = "event-view-button";
+    button.textContent = event.signupLink ? "View & Sign Up" : "Sign Up & View";
+
+    card.append(title, description, button);
+    return card;
+}
+
+function renderEvents() {
+    eventArea.replaceChildren();
+
+    if (eventData.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "No upcoming events yet.";
+        eventArea.append(empty);
+        return;
+    }
+
+    eventData.forEach((event) => eventArea.append(createEventCard(event)));
+}
+
+function stopChatListener() {
+    if (chatUnsubscribe) {
+        chatUnsubscribe();
+        chatUnsubscribe = null;
+    }
+    chatMessages.replaceChildren();
+}
+
+function renderChatMessage(message) {
+    const row = document.createElement("div");
+    row.className = "chat-message";
+
+    const user = document.createElement("span");
+    user.className = "chat-user";
+    user.textContent = `${message.username || "Member"}: `;
+
+    const text = document.createElement("span");
+    text.className = "chat-text";
+    text.textContent = message.text || "";
+
+    row.append(user, text);
+    return row;
+}
+
+function startChatListener(eventId) {
+    stopChatListener();
+
+    const messagesRef = collection(
+        database,
+        "schools",
+        SCHOOL_ID,
+        "events",
+        eventId,
+        "messages"
+    );
+
+    const messagesQuery = query(messagesRef, orderBy("createdAt", "asc"));
+
+    chatUnsubscribe = onSnapshot(messagesQuery, (snapshot) => {
+        chatMessages.replaceChildren();
+        snapshot.forEach((messageDoc) => {
+            chatMessages.append(renderChatMessage(messageDoc.data()));
+        });
+    }, (error) => {
+        console.error("Could not load event chat:", error);
+    });
+}
+
+function updateSignupArea(event) {
+    const hasExternalSignup = Boolean(event.signupLink);
+
+    signUpButton.hidden = hasExternalSignup;
+    externalSignupLink.hidden = !hasExternalSignup;
+
+    if (hasExternalSignup) {
+        externalSignupLink.href = event.signupLink;
+        chatSection.style.display = "none";
+        stopChatListener();
+        return;
+    }
+
+    externalSignupLink.removeAttribute("href");
+
+    const signedUp = currentProfile?.signedUpEvents?.[event.id] === true;
+    signUpButton.textContent = signedUp ? "Cancel Signup" : "Sign Up for Event";
+    signUpButton.classList.toggle("signed-up", signedUp);
+
+    if (signedUp) {
+        chatSection.style.display = "block";
+        startChatListener(event.id);
     } else {
-        chatBox.style.display = 'none'
+        chatSection.style.display = "none";
+        stopChatListener();
     }
-
 }
 
+function openEventModal(eventId) {
+    const event = eventData.find((item) => item.id === eventId);
+    if (!event) return;
 
-//Send message function
-const sendMessageButton = document.querySelector('.chat-send');
-const messages = document.querySelector('#chatInput'); 
+    currentEventID = eventId;
 
-let messageEmpty = null
-   
-    sendMessageButton.addEventListener('click',()=>{
-        clearTimeout(messageEmpty)
-         const eventChats = JSON.parse(localStorage.getItem('eventChats')) || {};
-        const userMessages = messages.value;
-        eventChats[currentEventID] = eventChats[currentEventID] || []; 
-        if(messages.value === ''){
-            messages.placeholder = 'Please Enter a Message'
-            messageEmpty = setTimeout(()=>{
-                messages.placeholder = ''
-            }, 2000)
-            return
+    document.querySelector("#modalEventTitle").textContent = event.title || "Untitled Event";
+    document.querySelector("#modalEventDate").textContent = event.date || "TBA";
+    document.querySelector("#modalEventTime").textContent = event.time || convertTo12Hour(event.time24) || "TBA";
+    document.querySelector("#modalEventEndTime").textContent = event.endTime || convertTo12Hour(event.endTime24) || "TBA";
+    document.querySelector("#modalEventLocation").textContent = event.location || "TBA";
+    document.querySelector("#modalEventDescription").textContent = event.description || "";
+
+    updateSignupArea(event);
+    eventModal.style.display = "block";
+}
+
+function closeEventModal() {
+    currentEventID = "";
+    eventModal.style.display = "none";
+    chatSection.style.display = "none";
+    stopChatListener();
+}
+
+function openAddEventModal() {
+    if (!isAdmin) return;
+    resetEventForm();
+    addEventModal.classList.add("active");
+}
+
+function openEditEventModal() {
+    if (!isAdmin) return;
+
+    const event = eventData.find((item) => item.id === currentEventID);
+    if (!event) return;
+
+    eventTitle.value = event.title || "";
+    eventDate.value = event.date || "";
+    eventTime.value = event.time24 || convertTo24Hour(event.time);
+    eventEndTime.value = event.endTime24 || convertTo24Hour(event.endTime);
+    eventLocation.value = event.location || "";
+    eventDescription.value = event.description || "";
+    eventSignupLink.value = event.signupLink || "";
+
+    submitEventButton.dataset.editMode = "true";
+    submitEventButton.textContent = "Update Event";
+    eventEditorTitle.textContent = "Edit Event";
+    showEventFormMessage("");
+    addEventModal.classList.add("active");
+}
+
+async function saveEvent(event) {
+    if (!isAdmin || !firebaseUser) return;
+
+    event.preventDefault();
+    showEventFormMessage("");
+
+    const signupLink = cleanSignupLink(eventSignupLink.value);
+    if (signupLink === null) {
+        showEventFormMessage("Please enter a full http:// or https:// signup link.");
+        return;
+    }
+
+    if (timeToMinutes(eventEndTime.value) <= timeToMinutes(eventTime.value)) {
+        showEventFormMessage("End time must be later than the start time.");
+        return;
+    }
+
+    const editing = submitEventButton.dataset.editMode === "true";
+    const eventId = editing ? currentEventID : crypto.randomUUID();
+
+    const eventToSave = {
+        id: eventId,
+        title: eventTitle.value.trim(),
+        date: eventDate.value,
+        time24: eventTime.value,
+        endTime24: eventEndTime.value,
+        // Keep these display fields because a few older pages still read them.
+        time: convertTo12Hour(eventTime.value),
+        endTime: convertTo12Hour(eventEndTime.value),
+        location: eventLocation.value.trim(),
+        description: eventDescription.value.trim(),
+        signupLink,
+        updatedAt: serverTimestamp(),
+        updatedBy: firebaseUser.uid
+    };
+
+    if (!editing) {
+        eventToSave.createdAt = serverTimestamp();
+        eventToSave.createdBy = firebaseUser.uid;
+    }
+
+    submitEventButton.disabled = true;
+
+    try {
+        const eventRef = doc(database, "schools", SCHOOL_ID, "events", eventId);
+        await setDoc(eventRef, eventToSave, { merge: editing });
+
+        addEventModal.classList.remove("active");
+        if (editing) closeEventModal();
+        resetEventForm();
+    } catch (error) {
+        console.error("Could not save event:", error);
+        showEventFormMessage("Could not save the event. Please try again.");
+    } finally {
+        submitEventButton.disabled = false;
+    }
+}
+
+async function deleteEventMessages(eventId) {
+    // Firestore does not automatically delete subcollections when an event is deleted.
+    const messagesRef = collection(database, "schools", SCHOOL_ID, "events", eventId, "messages");
+    const snapshot = await getDocs(messagesRef);
+    const docs = snapshot.docs;
+
+    for (let start = 0; start < docs.length; start += 400) {
+        const batch = writeBatch(database);
+        docs.slice(start, start + 400).forEach((messageDoc) => batch.delete(messageDoc.ref));
+        await batch.commit();
+    }
+}
+
+async function deleteCurrentEvent() {
+    if (!isAdmin || !currentEventID) return;
+
+    const eventId = currentEventID;
+    const event = eventData.find((item) => item.id === eventId);
+    const confirmed = window.confirm(`Delete “${event?.title || "this event"}”? This cannot be undone.`);
+    if (!confirmed) return;
+
+    deleteEventButton.disabled = true;
+
+    try {
+        await deleteEventMessages(eventId);
+        await deleteDoc(doc(database, "schools", SCHOOL_ID, "events", eventId));
+        closeEventModal();
+    } catch (error) {
+        console.error("Could not delete event:", error);
+        window.alert("The event could not be deleted. Please try again.");
+    } finally {
+        deleteEventButton.disabled = false;
+    }
+}
+
+async function toggleInternalSignup() {
+    if (!currentEventID || !currentProfileRef || !currentProfile) return;
+
+    const event = eventData.find((item) => item.id === currentEventID);
+    if (!event || event.signupLink) return;
+
+    currentProfile.signedUpEvents = currentProfile.signedUpEvents || {};
+    const alreadySignedUp = currentProfile.signedUpEvents[currentEventID] === true;
+    signUpButton.disabled = true;
+
+    try {
+        if (alreadySignedUp) {
+            await updateDoc(currentProfileRef, {
+                [`signedUpEvents.${currentEventID}`]: deleteField()
+            });
+            delete currentProfile.signedUpEvents[currentEventID];
+        } else {
+            await updateDoc(currentProfileRef, {
+                [`signedUpEvents.${currentEventID}`]: true
+            });
+            currentProfile.signedUpEvents[currentEventID] = true;
         }
-        eventChats[currentEventID].push({
-            user: 'You',
-            message: userMessages
-        })
-        console.log(eventChats[currentEventID])
-        messages.value = ''
-        localStorage.setItem('eventChats', JSON.stringify(eventChats))
-        renderChats();
-        
+
+        syncLegacyProfileCache();
+        updateSignupArea(event);
+    } catch (error) {
+        console.error("Could not update event signup:", error);
+        window.alert("Your signup could not be updated. Please try again.");
+    } finally {
+        signUpButton.disabled = false;
+    }
+}
+
+async function sendChatMessage() {
+    const text = chatInput.value.trim();
+    if (!text || !currentEventID || !firebaseUser || !currentProfile) return;
+
+    const event = eventData.find((item) => item.id === currentEventID);
+    const signedUp = currentProfile.signedUpEvents?.[currentEventID] === true;
+    if (!event || event.signupLink || !signedUp) return;
+
+    chatSendButton.disabled = true;
+
+    try {
+        const messagesRef = collection(
+            database,
+            "schools",
+            SCHOOL_ID,
+            "events",
+            currentEventID,
+            "messages"
+        );
+
+        await addDoc(messagesRef, {
+            uid: firebaseUser.uid,
+            username: currentProfile.username || `${currentProfile.firstname || ""} ${currentProfile.lastname || ""}`.trim() || "Member",
+            text: text.slice(0, 500),
+            createdAt: serverTimestamp()
+        });
+
+        chatInput.value = "";
+    } catch (error) {
+        console.error("Could not send message:", error);
+        window.alert("Your message could not be sent. Please try again.");
+    } finally {
+        chatSendButton.disabled = false;
+    }
+}
+
+async function migrateLegacyEventsIfNeeded(snapshot) {
+    if (!snapshot.empty || !isAdmin) return;
+
+    let legacyEvents = [];
+    try {
+        legacyEvents = JSON.parse(localStorage.getItem("eventData")) || [];
+    } catch {
+        legacyEvents = [];
     }
 
-)
+    if (!Array.isArray(legacyEvents) || legacyEvents.length === 0) return;
 
-
-// Render chat messsages 
-const chatMessages = document.querySelector('.chat-messages')
-const renderChats = ()=>{
-    chatMessages.innerHTML = ''
-    let html = ''
-    const eventChats = JSON.parse(localStorage.getItem('eventChats'))|| {};
-    eventChats[currentEventID]=eventChats[currentEventID] || [];
-    eventChats[currentEventID].forEach((chat)=>{
-        html += `
-         <div class="chat-message">
-                            <span class="chat-user">${chat.user}:</span>
-                            <span class="chat-text">${chat.message}</span>
-                        </div>
-        `
-        
-    })
-    chatMessages.innerHTML = html
+    // This runs only when Firestore has no events. It saves old local events once instead of losing them.
+    for (const oldEvent of legacyEvents) {
+        if (!oldEvent?.id) continue;
+        const eventRef = doc(database, "schools", SCHOOL_ID, "events", String(oldEvent.id));
+        await setDoc(eventRef, {
+            ...oldEvent,
+            signupLink: oldEvent.signupLink || "",
+            migratedAt: serverTimestamp()
+        }, { merge: true });
+    }
 }
+
+function startEventsListener() {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+
+    const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
+    eventsUnsubscribe = onSnapshot(eventsRef, async (snapshot) => {
+        try {
+            await migrateLegacyEventsIfNeeded(snapshot);
+        } catch (error) {
+            console.error("Could not migrate old events:", error);
+        }
+
+        eventData = snapshot.docs
+            .map((eventDoc) => ({ id: eventDoc.id, ...eventDoc.data() }))
+            .sort((a, b) => {
+                const dateCompare = String(a.date || "").localeCompare(String(b.date || ""));
+                if (dateCompare !== 0) return dateCompare;
+                return String(a.time24 || "").localeCompare(String(b.time24 || ""));
+            });
+
+        syncLegacyEventCache();
+        renderEvents();
+
+        if (currentEventID) {
+            const eventStillExists = eventData.some((item) => item.id === currentEventID);
+            if (!eventStillExists) closeEventModal();
+        }
+    }, (error) => {
+        console.error("Could not load events:", error);
+        eventArea.textContent = "Events could not be loaded. Please refresh and try again.";
+    });
+}
+
+async function loadProfile(user) {
+    const profileRef = doc(database, "schools", SCHOOL_ID, "users", user.uid);
+    const profileSnapshot = await getDoc(profileRef);
+    if (!profileSnapshot.exists()) return null;
+
+    return {
+        ref: profileRef,
+        data: profileSnapshot.data()
+    };
+}
+
+eventArea.addEventListener("click", (event) => {
+    const button = event.target.closest(".event-view-button");
+    if (!button) return;
+
+    const card = button.closest(".event");
+    if (card?.dataset.eventId) openEventModal(card.dataset.eventId);
+});
+
+document.querySelector("#eventModal .modal-close").addEventListener("click", closeEventModal);
+document.querySelector(".add-event-close").addEventListener("click", () => {
+    addEventModal.classList.remove("active");
+    resetEventForm();
+});
+
+addEventButton.addEventListener("click", openAddEventModal);
+eventForm.addEventListener("submit", saveEvent);
+editEventButton.addEventListener("click", openEditEventModal);
+deleteEventButton.addEventListener("click", deleteCurrentEvent);
+signUpButton.addEventListener("click", toggleInternalSignup);
+chatSendButton.addEventListener("click", sendChatMessage);
+chatInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") {
+        event.preventDefault();
+        sendChatMessage();
+    }
+});
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        redirectToLogin();
+        return;
+    }
+
+    firebaseUser = user;
+
+    try {
+        const profileResult = await loadProfile(user);
+        if (!profileResult) {
+            redirectToLogin();
+            return;
+        }
+
+        currentProfileRef = profileResult.ref;
+        currentProfile = profileResult.data;
+        currentProfile.signedUpEvents = currentProfile.signedUpEvents || {};
+
+        isAdmin = userIsAdmin(currentProfile);
+        showAdminControls(isAdmin);
+        syncLegacyProfileCache();
+        startEventsListener();
+    } catch (error) {
+        console.error("Could not load the current user:", error);
+        window.alert("Your account could not be loaded. Please refresh and try again.");
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+    stopChatListener();
+});

@@ -1,347 +1,856 @@
-const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
-const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
-let currentUser = userInfo[userSetEmail];
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    orderBy,
+    query,
+    serverTimestamp,
+    setDoc
+} from "firebase/firestore";
+import {
+    deleteObject,
+    getDownloadURL,
+    getStorage,
+    ref,
+    uploadBytes
+} from "firebase/storage";
+import { auth, database } from "./firebaseConfig.js";
 
-if(!currentUser){
-    window.location.href = 'login.html';
+const SCHOOL_ID = "southport_high_school";
+const MAX_MEDIA_SIZE = 50 * 1024 * 1024;
+const ALLOWED_MEDIA_TYPES = new Set([
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "image/gif",
+    "video/mp4",
+    "video/webm",
+    "video/quicktime"
+]);
+
+const storage = getStorage();
+
+const postSection = document.querySelector("#post-section");
+const createPostButton = document.querySelector("#create-post-button");
+const feedSortButton = document.querySelector("#feedSortButton");
+
+const postModal = document.querySelector("#postModal");
+const postForm = document.querySelector("#postForm");
+const closePostModalButton = document.querySelector("#closeModalBtn");
+const cancelPostButton = document.querySelector("#cancelBtn");
+const publishPostButton = document.querySelector("#postPublish");
+const postTitle = document.querySelector("#postTitle");
+const postEventSelect = document.querySelector("#eventSelect");
+const postDescription = document.querySelector("#postDesc");
+const postFileUpload = document.querySelector("#mediaUpload");
+const postType = document.querySelector("#postTypeSelect");
+const postErrorMessage = document.querySelector("#postErrorMessage");
+
+const commentModal = document.querySelector("#commentModal");
+const commentArea = document.querySelector(".comment-modal-body");
+const commentInput = document.querySelector(".comment-input");
+const commentSendButton = document.querySelector(".comment-send-button");
+const commentCloseButton = document.querySelector("#closeCommentModal");
+
+let firebaseUser = null;
+let currentProfile = null;
+let isAdmin = false;
+let postData = [];
+let eventData = [];
+let sortNewestFirst = true;
+let postsUnsubscribe = null;
+let eventsUnsubscribe = null;
+let activeCommentsUnsubscribe = null;
+const postMetaUnsubscribers = new Map();
+const postMeta = new Map();
+const busyLikes = new Set();
+
+function redirectToLogin() {
+    window.location.replace("login.html");
 }
 
-/* COMMENT MODAL SETUP */
-const commentModal = document.querySelector('#commentModal');
-const commentInput = document.querySelectorAll('.comment-input');
-const comments = JSON.parse(localStorage.getItem('comments')) || [];
-const commentSendButton = document.querySelectorAll('.comment-send-button');
-const commentArea = document.querySelectorAll('.comment-modal-body');
+function userIsAdmin(profile) {
+    // Browser checks control what the user sees. Firestore rules are the real security layer.
+    return profile?.role === "admin" || profile?.isAdmin === true;
+}
 
-// Render comments ONLY for the currently active post in the modal
-const renderComment = ()=>{
-    const activePostId = commentModal.dataset.activePostId;
-    let html = '';
-    
-    // Filter comments to show only the ones belonging to the open post
-    const filteredComments = comments.filter(c => c.postId === activePostId);
-
-    filteredComments.forEach((comment)=>{
-        html += `
-        <div class="comment user-comment">
-            <div class="comment-content">
-                <h style="font-weight: bold">${comment.username}</h>
-                <p class="comment-text">${comment.userComment}</p>
-            </div>
-        </div>
-        `;
+function showAdminControls(allowed) {
+    document.querySelectorAll("[data-admin-only]").forEach((element) => {
+        element.hidden = !allowed;
     });
-    commentArea.forEach((commentBox)=>{
-        commentBox.innerHTML = html;
-    });
-};
+}
 
-const sendComment = () =>{
-    commentSendButton.forEach((button)=>{
-        button.addEventListener('click',(event)=>{
-            const parentPost = event.target.closest('.comment-modal-footer');
-            const specificInput = parentPost.querySelector('.comment-input');
-            const userComment = specificInput.value.trim();
-            const activePostId = commentModal.dataset.activePostId;
+function syncLegacyProfileCache() {
+    // A few pages are still being migrated, so keep the old cache current for now.
+    if (!firebaseUser || !currentProfile) return;
 
-            if (userComment === '') return; // Prevent empty comments
+    let users = {};
+    try {
+        users = JSON.parse(localStorage.getItem("userinfo")) || {};
+    } catch {
+        users = {};
+    }
 
-            // Save comment mapped to the unique postId
-            comments.push({
-                postId: activePostId,
-                username: currentUser.username,
-                userComment: userComment
-            });
+    const email = (firebaseUser.email || currentProfile.email || "").trim().toLowerCase();
+    if (!email) return;
 
-            specificInput.value = ''; 
-            renderComment();          // Re-render open modal list
-            renderPost();             // Instantly update count badge on the feed
-            localStorage.setItem('comments', JSON.stringify(comments));
-        });
-    });
-};
+    users[email] = {
+        ...users[email],
+        ...currentProfile,
+        email,
+        uid: firebaseUser.uid
+    };
 
-sendComment();
+    localStorage.setItem("userinfo", JSON.stringify(users));
+    localStorage.setItem("currentUser", JSON.stringify(email));
+}
 
-/* CREATE POST LOGIC */
-const months = [
-    "January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
+function showPostError(message) {
+    postErrorMessage.textContent = message;
+    postErrorMessage.style.display = message ? "block" : "none";
+}
 
-const createPostButton = document.querySelector('#create-post-button');
-const postModal = document.querySelector('#postModal');
-createPostButton.addEventListener('click',()=>{
-    postModal.classList.add('active');
-});
+function openPostModal() {
+    if (!isAdmin) return;
+    showPostError("");
+    postModal.classList.add("active");
+    postTitle.focus();
+}
 
-const postTitle = document.querySelector('#postTitle');
-const postEventSelect = document.querySelector('#eventSelect');
-const postDescription = document.querySelector('#postDesc');
-const postFileUpload = document.querySelector('#mediaUpload');
-const postType = document.querySelector('#postTypeSelect');
+function closePostModal() {
+    postModal.classList.remove("active");
+    postForm.reset();
+    showPostError("");
+}
 
-const errorMessage = document.querySelector('#postErrorMessage');
-let errorMessageTime = null;
+function closeCommentModal() {
+    commentModal.classList.add("closing");
+    commentModal.querySelector(".comment-modal-content")?.classList.add("closing");
 
-let postData = JSON.parse(localStorage.getItem('postData')) || [];
+    window.setTimeout(() => {
+        commentModal.classList.remove("active", "closing");
+        commentModal.querySelector(".comment-modal-content")?.classList.remove("closing");
+        commentModal.dataset.activePostId = "";
+        commentInput.value = "";
+        stopActiveCommentsListener();
+    }, 200);
+}
 
-// HELPER FUNCTION: Convert file to Base64 so it can be saved in LocalStorage
-const fileToBase64 = (file) => {
-    return new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = (error) => reject(error);
-    });
-};
+function formatTimestamp(timestamp) {
+    const date = timestamp?.toDate?.();
+    if (!date) return "Just now";
 
-// NOTICE: Form submission is now async to handle file reading
-postModal.addEventListener('submit', async (event) => {
-    event.preventDefault();
-    clearTimeout(errorMessageTime);
-    const realPostTitle = postTitle.value;
-    const realEventSelect = postEventSelect.value;
-    const realPostDescription = postDescription.value;
-    const realPostType = postType.value;
+    return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+        hour: "numeric",
+        minute: "2-digit"
+    }).format(date);
+}
 
-    if(realPostTitle === ''|| realPostDescription === '' || realPostType === ''){
-        errorMessage.style.display = 'block';
-        errorMessage.textContent = "Please enter title/description";
-        errorMessageTime = setTimeout(()=>{
-            errorMessage.style.display = 'none';
-            errorMessage.textContent = "";
-        }, 3000);
+function getDisplayName(profile) {
+    const fullName = `${profile?.firstname || ""} ${profile?.lastname || ""}`.trim();
+    return profile?.username?.trim() || fullName || "Key Club Admin";
+}
+
+function getPostTypeLabel(type) {
+    const labels = {
+        announcement: "Announcement",
+        event: "Event",
+        "member-post": "Member Post",
+        reminder: "Reminder"
+    };
+
+    return labels[type] || "Update";
+}
+
+function createPostMedia(post) {
+    if (!post.mediaUrl) return null;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "post-media";
+    wrapper.style.marginTop = "12px";
+    wrapper.style.borderRadius = "12px";
+    wrapper.style.overflow = "hidden";
+    wrapper.style.display = "flex";
+    wrapper.style.justifyContent = "center";
+
+    const isVideo = post.mediaType?.startsWith("video/");
+    const media = document.createElement(isVideo ? "video" : "img");
+    media.src = post.mediaUrl;
+    media.style.width = "100%";
+    media.style.height = "auto";
+    media.style.maxHeight = "500px";
+    media.style.objectFit = "contain";
+    media.style.borderRadius = "12px";
+
+    if (isVideo) {
+        media.controls = true;
+        media.preload = "metadata";
+    } else {
+        media.alt = post.title ? `Media for ${post.title}` : "Post media";
+        media.loading = "lazy";
+    }
+
+    wrapper.append(media);
+    return wrapper;
+}
+
+function createPostCard(post) {
+    const meta = postMeta.get(post.id) || { likeCount: 0, commentCount: 0, liked: false };
+
+    const article = document.createElement("article");
+    article.className = "post";
+    article.dataset.postId = post.id;
+
+    const header = document.createElement("div");
+    header.className = "post-header";
+
+    const user = document.createElement("div");
+    user.className = "user";
+
+    const avatar = document.createElement("img");
+    avatar.className = "user-avatar";
+    avatar.src = post.authorPhoto || "assets/images/profiles/avatar1.png";
+    avatar.alt = `${post.authorName || "Key Club"} avatar`;
+
+    const userInformation = document.createElement("div");
+    userInformation.className = "user-information";
+
+    const authorName = document.createElement("p");
+    authorName.className = "user-name";
+    authorName.textContent = post.authorName || "Key Club Admin";
+
+    const postTime = document.createElement("p");
+    postTime.className = "post-time";
+    postTime.textContent = formatTimestamp(post.createdAt);
+
+    userInformation.append(authorName, postTime);
+    user.append(avatar, userInformation);
+
+    const headerActions = document.createElement("div");
+    headerActions.className = "post-header-actions";
+
+    const category = document.createElement("span");
+    category.className = `post-category ${post.type || "announcement"}-category`;
+    category.textContent = getPostTypeLabel(post.type);
+    headerActions.append(category);
+
+    if (isAdmin) {
+        const deleteButton = document.createElement("button");
+        deleteButton.className = "delete-post-btn";
+        deleteButton.type = "button";
+        deleteButton.textContent = "Delete";
+        deleteButton.title = "Delete post";
+        headerActions.append(deleteButton);
+    }
+
+    header.append(user, headerActions);
+
+    const content = document.createElement("div");
+    content.className = "post-content";
+
+    const title = document.createElement("h3");
+    title.textContent = post.title || "Untitled Post";
+
+    const description = document.createElement("p");
+    description.textContent = post.description || "";
+
+    content.append(title, description);
+
+    if (post.eventTitle) {
+        const eventLabel = document.createElement("p");
+        eventLabel.className = "post-time";
+        eventLabel.textContent = `Related event: ${post.eventTitle}`;
+        content.append(eventLabel);
+    }
+
+    const media = createPostMedia(post);
+    if (media) content.append(media);
+
+    const stats = document.createElement("div");
+    stats.className = "post-stats";
+
+    const likes = document.createElement("span");
+    likes.className = "likesDOM";
+    likes.dataset.likesId = post.id;
+    likes.textContent = `${meta.likeCount} Like${meta.likeCount === 1 ? "" : "s"}`;
+
+    const comments = document.createElement("span");
+    comments.dataset.commentsId = post.id;
+    comments.textContent = `${meta.commentCount} comment${meta.commentCount === 1 ? "" : "s"}`;
+
+    stats.append(likes, comments);
+
+    const actions = document.createElement("div");
+    actions.className = "post-actions";
+
+    const likeButton = document.createElement("button");
+    likeButton.className = "post-action like-toggle-btn";
+    likeButton.dataset.likesId = post.id;
+    likeButton.type = "button";
+    likeButton.setAttribute("aria-pressed", String(meta.liked));
+
+    const heart = document.createElement("span");
+    heart.className = "like-button";
+    heart.textContent = meta.liked ? "❤️" : "♡";
+    likeButton.append(heart, document.createTextNode(" Like"));
+
+    const commentButton = document.createElement("button");
+    commentButton.className = "post-action comment-button";
+    commentButton.type = "button";
+    const commentIcon = document.createElement("span");
+    commentIcon.textContent = "💬";
+    commentButton.append(commentIcon, document.createTextNode(" Comment"));
+
+    actions.append(likeButton, commentButton);
+    article.append(header, content, stats, actions);
+    return article;
+}
+
+function renderPosts() {
+    postSection.replaceChildren();
+
+    if (postData.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "No club updates have been posted yet.";
+        postSection.append(empty);
         return;
     }
 
-    // Process media upload if a file was selected
-    let mediaDataUrl = null;
-    let mediaType = null;
-    if (postFileUpload.files && postFileUpload.files[0]) {
-        const file = postFileUpload.files[0];
-        mediaType = file.type; // "image/jpeg", "video/mp4", etc.
-        try {
-            mediaDataUrl = await fileToBase64(file);
-        } catch (e) {
-            console.error("Failed to read file", e);
-        }
-    }
-
-    const now = new Date();
-    const month = now.getMonth();
-    const postMonth = months[month];
-    const postDay = now.getDate();
-    const postYear = now.getFullYear();
-    
-    const postTime = now.toLocaleTimeString('en-US', {
-        hour: 'numeric',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: true
+    const sorted = [...postData].sort((a, b) => {
+        const aTime = a.createdAt?.toMillis?.() || 0;
+        const bTime = b.createdAt?.toMillis?.() || 0;
+        return sortNewestFirst ? bTime - aTime : aTime - bTime;
     });
-    
-    postData.push({
-        title: realPostTitle,
-        event: realEventSelect,
-        description: realPostDescription,
-        type: realPostType,
-        date: `${postMonth} ${postDay} ${postYear}`,
-        time: postTime,
-        id: crypto.randomUUID(),
-        likeCount: 0,
-        media: mediaDataUrl,       // Save media Base64 string
-        mediaType: mediaType       // Save media type
+
+    sorted.forEach((post) => postSection.append(createPostCard(post)));
+}
+
+function updatePostMetaInDom(postId) {
+    const meta = postMeta.get(postId);
+    if (!meta) return;
+
+    const postElement = postSection.querySelector(`[data-post-id="${CSS.escape(postId)}"]`);
+    if (!postElement) return;
+
+    const likes = postElement.querySelector(".likesDOM");
+    const comments = postElement.querySelector(`[data-comments-id="${CSS.escape(postId)}"]`);
+    const likeButton = postElement.querySelector(".like-toggle-btn");
+    const heart = likeButton?.querySelector(".like-button");
+
+    if (likes) likes.textContent = `${meta.likeCount} Like${meta.likeCount === 1 ? "" : "s"}`;
+    if (comments) comments.textContent = `${meta.commentCount} comment${meta.commentCount === 1 ? "" : "s"}`;
+    if (likeButton) likeButton.setAttribute("aria-pressed", String(meta.liked));
+    if (heart) heart.textContent = meta.liked ? "❤️" : "♡";
+}
+
+function stopPostMetaListeners() {
+    postMetaUnsubscribers.forEach(({ likes, comments }) => {
+        likes?.();
+        comments?.();
     });
-    
-    localStorage.setItem('postData', JSON.stringify(postData));
-    renderPost();
-    
-    // Reset form fields
-    postTitle.value = '';
-    postDescription.value = '';
-    postFileUpload.value = '';
-    postEventSelect.selectedIndex = 0;
-    postType.selectedIndex = 0;
+    postMetaUnsubscribers.clear();
+    postMeta.clear();
+}
 
-    postModal.classList.remove('active');
-});
+function startPostMetaListeners(postId) {
+    const likesRef = collection(database, "schools", SCHOOL_ID, "posts", postId, "likes");
+    const commentsRef = collection(database, "schools", SCHOOL_ID, "posts", postId, "comments");
 
-/* RENDER POSTS */
-const postSection = document.querySelector('#post-section');
-
-const renderPost = ()=>{
-    let html = '';
-    postData.forEach((post)=>{
-        // 1. Dynamic Liked State (Persistence on Refresh!)
-        const userLikedList = currentUser.likedPosts || [];
-        const isLiked = userLikedList.includes(post.id);
-        const heartIcon = isLiked ? '❤️' : '♡';
-
-        // 2. Dynamic Comment Count
-        const postCommentsCount = comments.filter(c => c.postId === post.id).length;
-
-        // 3. Clean, Seamless Media Render Check (No black borders, perfectly matches your screenshot!)
-        let mediaHtml = '';
-        if (post.media) {
-            if (post.mediaType && post.mediaType.startsWith('video/')) {
-                mediaHtml = `
-                <div class="post-media" style="margin-top: 12px; border-radius: 12px; overflow: hidden; display: flex; justify-content: center;">
-                    <video src="${post.media}" controls style="width: 100%; height: auto; max-height: 500px; object-fit: contain; border-radius: 12px;"></video>
-                </div>`;
-            } else {
-                mediaHtml = `
-                <div class="post-media" style="margin-top: 12px; border-radius: 12px; overflow: hidden; display: flex; justify-content: center;">
-                    <img src="${post.media}" alt="Uploaded media" style="width: 100%; height: auto; max-height: 500px; object-fit: contain; border-radius: 12px;" />
-                </div>`;
-            }
-        }
-
-        html += `
-        <article class="post" data-post-id="${post.id}">
-            <div class="post-header">
-                <div class="user">
-                    <img class="user-avatar" src="${currentUser.profileImage || 'https://via.placeholder.com/150'}" alt="Member avatar">
-                    <div class="user-information">
-                        <p class="user-name">${currentUser.firstname} ${currentUser.lastname}</p>
-                        <p class="post-time" id="post-date">${post.date}</p>
-                        <p class="post-time" id="post-time">${post.time}</p>
-                    </div>
-                </div>
-
-                <div class="post-header-actions">
-                    <span class="post-category ${post.type.toLowerCase()}-category">
-                        ${post.type}
-                    </span>
-                    <button class="delete-post-btn" style="font-weight: bold" type="button" title="Delete Post">
-                        Delete
-                    </button>
-                </div>
-            </div>
-
-            <div class="post-content">
-                <h3>${post.title}</h3>
-                <p>${post.description}</p>
-                ${mediaHtml} 
-            </div>
-
-            <div class="post-stats">
-                <span class="likesDOM" data-likes-id="${post.id}">${post.likeCount} Likes</span>
-                <span data-comments-id="${post.id}">${postCommentsCount} comment${postCommentsCount !== 1 ? 's' : ''}</span>
-            </div>
-
-            <div class="post-actions">
-                <button class="post-action like-toggle-btn" data-likes-id="${post.id}" type="button">
-                    <span class="like-button">${heartIcon}</span>
-                    Like
-                </button>
-                <button class="post-action comment-button" type="button">
-                    <span>💬</span>
-                    Comment
-                </button>
-            </div>
-        </article>
-        `;
-    });
-    postSection.innerHTML = html;
-};
-
-/* GLOBAL MASTER EVENT DELEGATOR */
-postSection.addEventListener('click', (event) => {
-    const target = event.target;
-
-    // 1. Handle Like Button Click
-    const likeBtn = target.closest('.like-toggle-btn');
-    if (likeBtn) {
-        const id = likeBtn.dataset.likesId;
-        currentUser.likedPosts = currentUser.likedPosts || [];
-        
-        const currentPost = postData.find(p => p.id === id);
-        if (!currentPost) return;
-
-        const emoji = likeBtn.querySelector('.like-button');
-        const postElement = likeBtn.closest('.post');
-        const display = postElement.querySelector('.likesDOM');
-
-        if (currentUser.likedPosts.includes(id)) {
-            // UNLIKE Action
-            emoji.textContent = '♡';
-            if (currentPost.likeCount > 0) currentPost.likeCount -= 1;
-            currentUser.likedPosts = currentUser.likedPosts.filter(postId => postId !== id);
-        } else {
-            // LIKE Action
-            emoji.textContent = '❤️';
-            emoji.classList.add('animate');
-            setTimeout(() => emoji.classList.remove('animate'), 400);
-            currentPost.likeCount += 1;
-            currentUser.likedPosts.push(id);
-        }
-
-        // Save progress back into LocalStorage
-        userInfo[userSetEmail] = currentUser;
-        localStorage.setItem('userinfo', JSON.stringify(userInfo));
-        localStorage.setItem('postData', JSON.stringify(postData));
-        display.textContent = `${currentPost.likeCount} Likes`;
-    }
-
-    // 2. Handle Delete Post Button Click
-    if (target.classList.contains('delete-post-btn')) {
-        const postElement = target.closest('.post');
-        const id = postElement.dataset.postId;
-        
-        postData = postData.filter(post => post.id !== id);
-        localStorage.setItem('postData', JSON.stringify(postData));
-        postElement.remove();
-    }
-
-    // 3. Handle Comment Modal Open Button Click
-    if (target.closest('.comment-button')) {
-        const postElement = target.closest('.post');
-        const id = postElement.dataset.postId;
-        
-        // Setup unique active ID on comment modal
-        commentModal.dataset.activePostId = id;
-        
-        renderComment(); // Load comments linked with this postId
-        commentModal.classList.add('active');
-    }
-});
-
-/* CLOSE MODALS */
-const closePostModalButton = document.querySelector('#closeModalBtn');
-closePostModalButton.addEventListener('click',()=>{
-    postModal.classList.remove('active');
-});
-
-const commentButtonClose = document.querySelectorAll('.comment-modal-close');
-commentButtonClose.forEach((button)=>{
-    button.addEventListener('click',()=>{
-        commentModal.classList.add('closing');
-        commentModal.querySelector('.comment-modal-content').classList.add('closing');
-        setTimeout(() => {
-            commentModal.classList.remove('active', 'closing');
-            commentModal.querySelector('.comment-modal-content').classList.remove('closing');
-        }, 200);
-    });
-});
-
-/* RENDER EVENTS IN MODAL */
-const selectPostEvent = document.querySelector('#eventSelect');
-const renderEventsInModal = ()=>{
-    const eventData = JSON.parse(localStorage.getItem('eventData')) || [];
-    selectPostEvent.innerHTML = '<option value="">Select event</option>';
-    if(eventData){
-        eventData.forEach((event)=>{
-            const option = document.createElement('option');
-            option.value = event.id;
-            option.textContent = event.title;
-            selectPostEvent.appendChild(option);
+    const likesUnsubscribe = onSnapshot(likesRef, (snapshot) => {
+        const previous = postMeta.get(postId) || {};
+        postMeta.set(postId, {
+            ...previous,
+            likeCount: snapshot.size,
+            liked: snapshot.docs.some((likeDoc) => likeDoc.id === firebaseUser?.uid)
         });
-    }
-};
+        updatePostMetaInDom(postId);
+    }, (error) => {
+        console.error(`Could not load likes for post ${postId}:`, error);
+    });
 
-/* ON DOCUMENT READY */
-document.addEventListener('DOMContentLoaded', () => {
-    renderPost();
-    renderEventsInModal();
+    const commentsUnsubscribe = onSnapshot(commentsRef, (snapshot) => {
+        const previous = postMeta.get(postId) || {};
+        postMeta.set(postId, {
+            ...previous,
+            commentCount: snapshot.size
+        });
+        updatePostMetaInDom(postId);
+    }, (error) => {
+        console.error(`Could not load comment count for post ${postId}:`, error);
+    });
+
+    postMetaUnsubscribers.set(postId, {
+        likes: likesUnsubscribe,
+        comments: commentsUnsubscribe
+    });
+}
+
+function startPostsListener() {
+    postsUnsubscribe?.();
+
+    const postsRef = collection(database, "schools", SCHOOL_ID, "posts");
+    const postsQuery = query(postsRef, orderBy("createdAt", "desc"));
+
+    postsUnsubscribe = onSnapshot(postsQuery, (snapshot) => {
+        postData = snapshot.docs.map((postDoc) => ({
+            id: postDoc.id,
+            ...postDoc.data()
+        }));
+
+        stopPostMetaListeners();
+        postData.forEach((post) => startPostMetaListeners(post.id));
+        renderPosts();
+    }, (error) => {
+        console.error("Could not load posts:", error);
+        postSection.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "empty-state";
+        message.textContent = "Could not load club posts. Please refresh and try again.";
+        postSection.append(message);
+    });
+}
+
+function renderEventsInModal() {
+    postEventSelect.replaceChildren();
+
+    const blank = document.createElement("option");
+    blank.value = "";
+    blank.textContent = "No related event";
+    postEventSelect.append(blank);
+
+    const sortedEvents = [...eventData].sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+    sortedEvents.forEach((event) => {
+        const option = document.createElement("option");
+        option.value = event.id;
+        option.textContent = event.title || "Untitled Event";
+        postEventSelect.append(option);
+    });
+}
+
+function startEventsListener() {
+    eventsUnsubscribe?.();
+    const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
+
+    eventsUnsubscribe = onSnapshot(eventsRef, (snapshot) => {
+        eventData = snapshot.docs.map((eventDoc) => ({
+            id: eventDoc.id,
+            ...eventDoc.data()
+        }));
+        renderEventsInModal();
+    }, (error) => {
+        console.error("Could not load events for the post form:", error);
+    });
+}
+
+function validateMedia(file) {
+    if (!file) return "";
+    if (!ALLOWED_MEDIA_TYPES.has(file.type)) {
+        return "Please upload a JPG, PNG, WEBP, GIF, MP4, MOV, or WEBM file.";
+    }
+    if (file.size > MAX_MEDIA_SIZE) {
+        return "Media must be 50 MB or smaller.";
+    }
+    return "";
+}
+
+function safeFileName(fileName) {
+    const clean = fileName.replace(/[^a-zA-Z0-9._-]/g, "_");
+    return clean.slice(-100) || "upload";
+}
+
+async function uploadPostMedia(postId, file) {
+    if (!file) return { mediaUrl: "", mediaType: "", mediaPath: "" };
+
+    const mediaPath = `schools/${SCHOOL_ID}/posts/${postId}/${crypto.randomUUID()}-${safeFileName(file.name)}`;
+    const mediaRef = ref(storage, mediaPath);
+
+    await uploadBytes(mediaRef, file, {
+        contentType: file.type,
+        cacheControl: "public,max-age=3600"
+    });
+
+    const mediaUrl = await getDownloadURL(mediaRef);
+    return {
+        mediaUrl,
+        mediaType: file.type,
+        mediaPath
+    };
+}
+
+async function publishPost() {
+    if (!isAdmin || !firebaseUser || !currentProfile) {
+        showPostError("Only administrators can publish club posts.");
+        return;
+    }
+
+    const title = postTitle.value.trim();
+    const description = postDescription.value.trim();
+    const type = postType.value;
+    const eventId = postEventSelect.value;
+    const file = postFileUpload.files?.[0] || null;
+
+    if (!title || !description || !type) {
+        showPostError("Please add a title, description, and post type.");
+        return;
+    }
+    if (title.length > 120) {
+        showPostError("Post titles must be 120 characters or fewer.");
+        return;
+    }
+    if (description.length > 2000) {
+        showPostError("Post descriptions must be 2,000 characters or fewer.");
+        return;
+    }
+
+    const mediaError = validateMedia(file);
+    if (mediaError) {
+        showPostError(mediaError);
+        return;
+    }
+
+    const selectedEvent = eventData.find((event) => event.id === eventId) || null;
+    const postsRef = collection(database, "schools", SCHOOL_ID, "posts");
+    const postRef = doc(postsRef);
+
+    publishPostButton.disabled = true;
+    publishPostButton.textContent = file ? "Uploading..." : "Publishing...";
+    showPostError("");
+
+    let uploadedMediaPath = "";
+
+    try {
+        const media = await uploadPostMedia(postRef.id, file);
+        uploadedMediaPath = media.mediaPath;
+
+        await setDoc(postRef, {
+            title,
+            description,
+            type,
+            eventId: selectedEvent?.id || "",
+            eventTitle: selectedEvent?.title || "",
+            authorUid: firebaseUser.uid,
+            authorName: getDisplayName(currentProfile),
+            authorPhoto: currentProfile.profileImage || "",
+            mediaUrl: media.mediaUrl,
+            mediaType: media.mediaType,
+            mediaPath: media.mediaPath,
+            createdAt: serverTimestamp()
+        });
+
+        closePostModal();
+    } catch (error) {
+        console.error("Could not publish post:", error);
+
+        if (uploadedMediaPath) {
+            deleteObject(ref(storage, uploadedMediaPath)).catch(() => {});
+        }
+
+        if (error?.code?.startsWith("storage/")) {
+            showPostError("The media upload failed. Check Firebase Storage, or remove the file and publish the post without media.");
+        } else {
+            showPostError("Could not publish the post. Please try again.");
+        }
+    } finally {
+        publishPostButton.disabled = false;
+        publishPostButton.textContent = "Publish Post";
+    }
+}
+
+async function deleteSubcollection(postId, subcollectionName) {
+    const subcollectionRef = collection(
+        database,
+        "schools",
+        SCHOOL_ID,
+        "posts",
+        postId,
+        subcollectionName
+    );
+    const snapshot = await getDocs(subcollectionRef);
+    await Promise.all(snapshot.docs.map((item) => deleteDoc(item.ref)));
+}
+
+async function deletePost(postId) {
+    if (!isAdmin) return;
+
+    const post = postData.find((item) => item.id === postId);
+    if (!post) return;
+
+    const confirmed = window.confirm(`Delete “${post.title || "this post"}”? This cannot be undone.`);
+    if (!confirmed) return;
+
+    const postRef = doc(database, "schools", SCHOOL_ID, "posts", postId);
+
+    try {
+        // Firestore does not remove nested comments/likes automatically, so clean those up first.
+        await Promise.all([
+            deleteSubcollection(postId, "comments"),
+            deleteSubcollection(postId, "likes")
+        ]);
+
+        if (post.mediaPath) {
+            await deleteObject(ref(storage, post.mediaPath)).catch((error) => {
+                if (error?.code !== "storage/object-not-found") throw error;
+            });
+        }
+
+        await deleteDoc(postRef);
+    } catch (error) {
+        console.error("Could not delete post:", error);
+        window.alert("Could not delete this post. Please try again.");
+    }
+}
+
+async function toggleLike(postId) {
+    if (!firebaseUser || busyLikes.has(postId)) return;
+
+    busyLikes.add(postId);
+    const likeRef = doc(
+        database,
+        "schools",
+        SCHOOL_ID,
+        "posts",
+        postId,
+        "likes",
+        firebaseUser.uid
+    );
+
+    try {
+        const existingLike = await getDoc(likeRef);
+        if (existingLike.exists()) {
+            await deleteDoc(likeRef);
+        } else {
+            await setDoc(likeRef, {
+                userUid: firebaseUser.uid,
+                createdAt: serverTimestamp()
+            });
+        }
+    } catch (error) {
+        console.error("Could not update like:", error);
+    } finally {
+        busyLikes.delete(postId);
+    }
+}
+
+function createCommentRow(comment) {
+    const row = document.createElement("div");
+    row.className = "comment user-comment";
+
+    const content = document.createElement("div");
+    content.className = "comment-content";
+
+    const author = document.createElement("p");
+    author.className = "comment-author";
+    author.textContent = comment.username || "Member";
+
+    const text = document.createElement("p");
+    text.className = "comment-text";
+    text.textContent = comment.text || "";
+
+    const time = document.createElement("p");
+    time.className = "comment-time";
+    time.textContent = formatTimestamp(comment.createdAt);
+
+    content.append(author, text, time);
+    row.append(content);
+    return row;
+}
+
+function stopActiveCommentsListener() {
+    activeCommentsUnsubscribe?.();
+    activeCommentsUnsubscribe = null;
+}
+
+function openComments(postId) {
+    stopActiveCommentsListener();
+    commentModal.dataset.activePostId = postId;
+    commentArea.replaceChildren();
+
+    const loading = document.createElement("p");
+    loading.className = "empty-state";
+    loading.textContent = "Loading comments...";
+    commentArea.append(loading);
+
+    const commentsRef = collection(database, "schools", SCHOOL_ID, "posts", postId, "comments");
+    const commentsQuery = query(commentsRef, orderBy("createdAt", "asc"));
+
+    activeCommentsUnsubscribe = onSnapshot(commentsQuery, (snapshot) => {
+        commentArea.replaceChildren();
+
+        if (snapshot.empty) {
+            const empty = document.createElement("p");
+            empty.className = "empty-state";
+            empty.textContent = "No comments yet. Be the first to respond.";
+            commentArea.append(empty);
+            return;
+        }
+
+        snapshot.forEach((commentDoc) => {
+            commentArea.append(createCommentRow(commentDoc.data()));
+        });
+
+        commentArea.scrollTop = commentArea.scrollHeight;
+    }, (error) => {
+        console.error("Could not load comments:", error);
+        commentArea.replaceChildren();
+        const message = document.createElement("p");
+        message.textContent = "Could not load comments.";
+        commentArea.append(message);
+    });
+
+    commentModal.classList.add("active");
+    commentInput.focus();
+}
+
+async function sendComment() {
+    const postId = commentModal.dataset.activePostId;
+    const text = commentInput.value.trim();
+
+    if (!postId || !text || !firebaseUser || !currentProfile) return;
+    if (text.length > 500) {
+        window.alert("Comments must be 500 characters or fewer.");
+        return;
+    }
+
+    commentSendButton.disabled = true;
+
+    try {
+        const commentRef = doc(collection(
+            database,
+            "schools",
+            SCHOOL_ID,
+            "posts",
+            postId,
+            "comments"
+        ));
+
+        await setDoc(commentRef, {
+            text,
+            authorUid: firebaseUser.uid,
+            username: getDisplayName(currentProfile),
+            createdAt: serverTimestamp()
+        });
+
+        commentInput.value = "";
+    } catch (error) {
+        console.error("Could not send comment:", error);
+        window.alert("Could not send your comment. Please try again.");
+    } finally {
+        commentSendButton.disabled = false;
+        commentInput.focus();
+    }
+}
+
+postForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await publishPost();
+});
+
+createPostButton.addEventListener("click", openPostModal);
+closePostModalButton.addEventListener("click", closePostModal);
+cancelPostButton.addEventListener("click", closePostModal);
+
+postModal.addEventListener("click", (event) => {
+    if (event.target === postModal) closePostModal();
+});
+
+commentCloseButton.addEventListener("click", closeCommentModal);
+commentSendButton.addEventListener("click", sendComment);
+commentInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter" && !event.shiftKey) {
+        event.preventDefault();
+        sendComment();
+    }
+});
+
+commentModal.addEventListener("click", (event) => {
+    if (event.target === commentModal) closeCommentModal();
+});
+
+feedSortButton.addEventListener("click", () => {
+    sortNewestFirst = !sortNewestFirst;
+    feedSortButton.textContent = sortNewestFirst ? "Recent" : "Oldest";
+    renderPosts();
+});
+
+postSection.addEventListener("click", async (event) => {
+    const postElement = event.target.closest(".post");
+    if (!postElement) return;
+
+    const postId = postElement.dataset.postId;
+    if (!postId) return;
+
+    if (event.target.closest(".like-toggle-btn")) {
+        await toggleLike(postId);
+        return;
+    }
+
+    if (event.target.closest(".comment-button")) {
+        openComments(postId);
+        return;
+    }
+
+    if (event.target.closest(".delete-post-btn")) {
+        await deletePost(postId);
+    }
+});
+
+document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (postModal.classList.contains("active")) closePostModal();
+    if (commentModal.classList.contains("active")) closeCommentModal();
+});
+
+window.addEventListener("beforeunload", () => {
+    postsUnsubscribe?.();
+    eventsUnsubscribe?.();
+    stopActiveCommentsListener();
+    stopPostMetaListeners();
+});
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        localStorage.removeItem("currentUser");
+        redirectToLogin();
+        return;
+    }
+
+    try {
+        const profileRef = doc(database, "schools", SCHOOL_ID, "users", user.uid);
+        const profileSnapshot = await getDoc(profileRef);
+
+        if (!profileSnapshot.exists()) {
+            console.error("The signed-in user does not have a Firestore profile.");
+            await signOut(auth);
+            redirectToLogin();
+            return;
+        }
+
+        firebaseUser = user;
+        currentProfile = {
+            ...profileSnapshot.data(),
+            uid: user.uid,
+            email: (user.email || profileSnapshot.data().email || "").trim().toLowerCase()
+        };
+        isAdmin = userIsAdmin(currentProfile);
+
+        showAdminControls(isAdmin);
+        syncLegacyProfileCache();
+        startPostsListener();
+        startEventsListener();
+    } catch (error) {
+        console.error("Could not load home page:", error);
+        postSection.replaceChildren();
+        const message = document.createElement("p");
+        message.className = "empty-state";
+        message.textContent = "Could not load your account. Refresh the page or sign in again.";
+        postSection.append(message);
+    }
 });

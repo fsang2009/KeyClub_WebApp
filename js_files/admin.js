@@ -1,444 +1,827 @@
+import { onAuthStateChanged } from "firebase/auth";
+import {
+    collection,
+    doc,
+    getDoc,
+    limit,
+    onSnapshot,
+    orderBy,
+    query,
+    runTransaction,
+    serverTimestamp
+} from "firebase/firestore";
+import { auth, database } from "./firebaseConfig.js";
 
-const userInfo = JSON.parse(localStorage.getItem('userinfo')) || {};
-const userSetEmail = JSON.parse(localStorage.getItem('currentUser'));
-console.log('userSetEmail:', userSetEmail);
-console.log('userInfo:', userInfo);
-const currentUser = userInfo[userSetEmail]
-console.log('currentUser:', currentUser);
+const SCHOOL_ID = "southport_high_school";
+const HOURS_STEP = 0.5;
 
-if(!currentUser){
-    window.location.href = 'login.html' // Temporarily disabled for debugging
+const adminAccessMessage = document.querySelector("#adminAccessMessage");
+const adminPageSections = document.querySelectorAll("[data-admin-page]");
+
+const arrivedInput = document.querySelector("#manualTimeArrived");
+const leftInput = document.querySelector("#manualTimeLeaving");
+const manualEventSelect = document.querySelector("#manualEvent");
+const cameraEventSelect = document.querySelector("#cameraEvent");
+const studentEmailInput = document.querySelector("#manualEmail");
+const manualSubmitButton = document.querySelector("#manualSubmitButton");
+const manualClearButton = document.querySelector("#manualClearButton");
+const manualErrorMessage = document.querySelector("#manualErrorMessage");
+const manualSuccessMessage = document.querySelector("#manualSuccessMessage");
+
+const attendanceList = document.querySelector("#attendanceList");
+const activeCheckinList = document.querySelector("#userScannedLogBox");
+
+const startScanButton = document.querySelector("#startScanButton");
+const stopScanButton = document.querySelector("#stopScanButton");
+const scannerStatus = document.querySelector(".scanner-status");
+const cameraErrorMessage = document.querySelector("#cameraErrorMessage");
+
+let firebaseUser = null;
+let eventData = [];
+let attendanceRecords = [];
+let membersByEmail = new Map();
+let membersUnsubscribe = null;
+let eventsUnsubscribe = null;
+let attendanceUnsubscribe = null;
+let messageTimer = null;
+
+let qrScanner = null;
+let scannerRunning = false;
+let scanProcessing = false;
+let preferredCameraId = null;
+
+function isAdmin(profile) {
+    // This check keeps normal members out of the admin page in the browser.
+    // Firestore rules still need to enforce the same role so someone cannot bypass the page and write directly.
+    return profile?.role === "admin" || profile?.isAdmin === true;
 }
 
+function redirectToLogin() {
+    window.location.replace("login.html");
+}
 
+function redirectToHome() {
+    window.location.replace("index.html");
+}
 
-
-
-const arrived = document.querySelector('#manualTimeArrived');
-const left = document.querySelector('#manualTimeLeaving')
-const eventChosen = document.querySelector('#manualEvent');
-const otherEventChosen = document.querySelector('#cameraEvent')
-// ^^^  use .append to automatically add events from data
-const studentEmail = document.querySelector('#manualEmail');
-
-const events = JSON.parse(localStorage.getItem('eventData'));
-
-const generateEvents = ()=>{
-    const events = JSON.parse(localStorage.getItem('eventData'));
-    eventChosen.innerHTML = '<option value="">Select event</option>'
-    otherEventChosen.innerHTML = '<option value="">Select event</option>'
-    if (events){
-    events.forEach((event)=>{
-        if(event.id && event.title){
-            const option = document.createElement('option');
-            const otherOption = document.createElement('option');
-            otherOption.value = event.id;
-            otherOption.textContent= event.title;
-            option.value = event.id
-            option.textContent = event.title
-            otherEventChosen.appendChild(otherOption);
-            eventChosen.appendChild(option);
-            
-        }
+function showAdminPage() {
+    adminAccessMessage.hidden = true;
+    adminPageSections.forEach((section) => {
+        section.hidden = false;
     });
-    }
 }
 
-generateEvents();
-
-
-const roundToNearestHalf = (num)=>{
-    return Math.round(num*2)/2
+function clearManualMessages() {
+    manualErrorMessage.textContent = "";
+    manualSuccessMessage.textContent = "";
+    manualErrorMessage.classList.remove("show");
+    manualSuccessMessage.classList.remove("show");
 }
 
-const timeToDecimal = (timeString) => {
-    const [hours, minutes] = timeString.split(':').map(Number);
-    return hours + (minutes / 60);
+function showManualError(message) {
+    clearManualMessages();
+    manualErrorMessage.textContent = message;
+    manualErrorMessage.classList.add("show");
 }
 
-const calculateTime = (arrived, left)=>{
-    const val = left-arrived;
-    return roundToNearestHalf(val);
-
+function showManualSuccess(message) {
+    clearManualMessages();
+    manualSuccessMessage.textContent = message;
+    manualSuccessMessage.classList.add("show");
 }
 
-let eventData = JSON.parse(localStorage.getItem('eventData')) || []
+function showCameraError(message) {
+    clearTimeout(messageTimer);
+    cameraErrorMessage.textContent = message;
+    cameraErrorMessage.classList.add("show");
+    messageTimer = setTimeout(() => {
+        cameraErrorMessage.textContent = "";
+        cameraErrorMessage.classList.remove("show");
+    }, 4500);
+}
 
-const successMessage = document.querySelector('#manualSuccessMessage');
-let successTime = null;
+function normalizeEmail(value) {
+    return String(value || "").trim().toLowerCase();
+}
 
-const errorMSG =document.querySelector('#manualErrorMessage'); 
-let errorTime = null;
+function roundHours(hours) {
+    return Math.round(hours / HOURS_STEP) * HOURS_STEP;
+}
 
-const clearButton = document.querySelector('#manualClearButton');
-clearButton.addEventListener('click',()=>{
-    arrived.value = '';
-        left.value = '';
-        eventChosen.value ='';
-        studentEmail.value ='';
-})
-const manualUserSignInOut = ()=>{
-    errorMSG.textContent= ''
-    successMessage.textContent =''
-    errorMSG.style.display='none';
-    successMessage.style.display='none';
-    clearTimeout(errorTime);
-    clearTimeout(successTime);
-    const timeArrived = timeToDecimal(arrived.value);
-    const timeLeft = timeToDecimal(left.value);
-    const studentEventChosen = eventChosen.value
-    const selectedEvent = eventData.find(e=>e.id === studentEventChosen);
-    if(!selectedEvent){
-        return;
-    }
-    const studentEventChosenTitle = selectedEvent.title
-    const chosenStudentEmail = studentEmail.value;
-    if(timeArrived ==='' || timeLeft === '' || studentEventChosen ==='' || chosenStudentEmail=== ''){
-        errorMSG.style.display = 'block';
-        errorMSG.textContent = 'Please fill in all boxes';
-        errorTime = setTimeout(()=>{
-            errorMSG.textContent = '';
-            errorMSG.style.display ='none';
-        }, 4000)
-        return;
+function calculateHours(startMs, endMs) {
+    if (!Number.isFinite(startMs) || !Number.isFinite(endMs) || endMs <= startMs) {
+        return NaN;
     }
 
-    const timeSpent = calculateTime(timeArrived, timeLeft);
-
-    if(timeSpent < 0){
-        errorMSG.style.display ='block';
-        errorMSG.textContent ='Invalid Time Entry'
-        errorTime = setTimeout(()=>{
-            errorMSG.textContent = '';
-            errorMSG.style.display ='none';
-        }, 4000)
-        return;
-    }
-
-   if(!userInfo[chosenStudentEmail]){
-        errorMSG.style.display = 'block';
-        errorMSG.textContent = 'Invalid Student Email';
-        errorTime = setTimeout(()=>{
-            errorMSG.textContent = '';
-            errorMSG.style.display ='none';
-        }, 4000)
-        return;
-
-   }
-
-        userInfo[chosenStudentEmail].hours += timeSpent;
-        userInfo[chosenStudentEmail].points += timeSpent;
-        successMessage.textContent = 'Student Successfully Logged!'
-        successMessage.style.display ='block';
-    successTime = setTimeout(()=>{
-        successMessage.textContent =''
-        successMessage.style.display = 'none';
-    },4000);
-
-    const now = new Date();
-     getNewRecords(chosenStudentEmail, studentEventChosen, studentEventChosenTitle, arrived.value, left.value, timeSpent, now);
-     renderAttendanceList();
-        arrived.value = '';
-        left.value = '';
-        eventChosen.value ='';
-        studentEmail.value ='';
-
-    localStorage.setItem('userinfo', JSON.stringify(userInfo));
-
-
-
-
-
-
-}   
-
-const manualSubmitButton = document.querySelector('#manualSubmitButton');
-manualSubmitButton.addEventListener('click',()=>{
-    manualUserSignInOut();
-})
-
-//log in attendance log list
-
-let attendanceList = document.querySelector('#attendanceList');
-let attendanceRecords = JSON.parse(localStorage.getItem('attendanceRecords'))||[];
-
-const getNewRecords = (studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date)=>{
-    const newRecord = { studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date };
-  attendanceRecords.push(newRecord);
-
-  localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords))
-  renderAttendanceList();
-}
-const renderAttendanceList =()=>{
-    let html = ''
-    attendanceRecords.forEach((record)=>{
-        html += ` <div class="attendance-item">
-                    <div class="attendance-info">
-                        <h3 class="attendance-name">${userInfo[record.studentEmail]?.firstname || 'unkown'} ${userInfo[record.studentEmail]?.lastname || 'unkown'}</h3>
-                        <p class="attendance-email">${record.studentEmail}</p>
-                        <p class ="attendance-event">${record.eventTitle}</p>
-                        <p class="attendance-event">Event ID: ${record.eventId}</p>
-                    </div>
-                    <div class="attendance-details">
-                        <p class="attendance-time">Time: ${record.timeArrived} - ${record.timeLeft}</p>
-                        <p class="attendance-hours">Hours: ${record.hours}</p>
-                        <p class="attendance-date">Date: ${record.date}</p>
-                    </div>
-                </div>
-           `
-    })
-
-        attendanceList.innerHTML = html;
-
-       
+    return roundHours((endMs - startMs) / 3_600_000);
 }
 
-document.addEventListener('DOMContentLoaded', renderAttendanceList);
+function combineEventDateAndTime(event, timeValue) {
+    const dateValue = event?.date;
+    if (!dateValue || !timeValue) return NaN;
 
-
-//log users with camera logic below
-const startBtn = document.querySelector('#startScanButton');
-const stopBtn = document.querySelector('#stopScanButton');
-const statusText = document.querySelector('.scanner-status');
-
-const config = { 
-    fps: 10, 
-    qrbox: 250 
-};
-
-
-let usersSignedIn = JSON.parse(localStorage.getItem('usersSignedIn'))|| [];
-
-const cameraErrorMessage = document.querySelector('#cameraErrorMessage');
-let cameraErrorMessageTime = null;
-
-const html5QrcodeScanner = new Html5QrcodeScanner("qr-reader", config, /* verbose= */ false);
-let statusTextTimer = null;
-// 4. Define what happens on success
-let studentScanned = false;
-function onScanSuccess(decodedText, decodedResult) {
-    if(studentScanned === false){
-        studentScanned = true;
-    } 
-    setTimeout(()=>{
-        studentScanned = false;
-    }, 1000);
-    
-    clearTimeout(cameraErrorMessageTime)
-    clearTimeout(statusTextTimer)
-    if (!usersSignedIn.some(record=> record.user === decodedText)){
-        console.log(`Scan result: ${decodedText}`);
-        const now = new Date();
-        const timeNow = now.toLocaleTimeString('en-GB', {
-  hour: '2-digit',
-  minute: '2-digit'
-});
-    const otherTimeNow = now.toLocaleTimeString();
-        const studentEventChosen = otherEventChosen.value
-        if(studentEventChosen === ''){
-        console.log('Event Not Chosen!')
-        cameraErrorMessage.style.display='block';
-        cameraErrorMessage.textContent ='Please select an event'
-        cameraErrorMessageTime = setTimeout(()=>{
-            cameraErrorMessage.style.display='none';
-            cameraErrorMessage.textContent = ''
-        },2000)
-        return;
-    }
-    const selectedEvent = eventData.find(e=>e.id == studentEventChosen);
-    if (!selectedEvent) {
-    console.error("Selected event not found in database.");
-    return;
+    const result = new Date(`${dateValue}T${timeValue}:00`);
+    return result.getTime();
 }
 
-          
-    const studentEventChosenTitle = selectedEvent.title
-    
-        usersSignedIn.push({user: decodedText, timeEntered: timeNow, timeExited: null});
-    const newRecord = {
-        studentEmail: decodedText,
-        eventId: studentEventChosen,
-        eventTitle: studentEventChosenTitle,
-        timeArrived: otherTimeNow, 
-        timeLeft: null,
-        hours: null, 
-        eventId: studentEventChosen,
-        date: now.toLocaleDateString()
-    }
-    attendanceRecords.push(newRecord);
+function formatTime(ms) {
+    if (!Number.isFinite(ms)) return "—";
 
-    const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.eventId === studentEventChosen);
-                if (record.timeLeft !== null){
-
-                    cameraErrorMessage.style.display='block';
-                    cameraErrorMessage.textContent ='User has already attended the event.'
-                    cameraErrorMessageTime = setTimeout(()=>{
-            cameraErrorMessage.style.display='none';
-            cameraErrorMessage.textContent = ''
-        },2000)
-                    return;
-                }
-
-    localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-        renderUsersLogged();
-        statusText.textContent = "Entry time Logged!";
-        statusText.style.color = "#4CAF50";
-        statusTextTimer = setTimeout(()=>{
-            statusText.textContent = "Ready to scan";
-        statusText.style.color = "#000000";
-        }, 2000)
-        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
-        
-    } else{
-        if(studentScanned === true){
-            cameraErrorMessage.style.display='block';
-                    cameraErrorMessage.textContent ='Please wait before scanning again.'
-                    cameraErrorMessageTime = setTimeout(()=>{
-            cameraErrorMessage.style.display='none';
-            cameraErrorMessage.textContent = ''
-        },2000)
-                    return;
-        }
-        const studentEventChosen = otherEventChosen.value
-        const user =  usersSignedIn.find(user=>user.user === decodedText);
-        const now = new Date();
-        const timeNow = now.toLocaleTimeString('en-GB', {
-  hour: '2-digit',
-  minute: '2-digit'
-});
-        user.timeExited = timeNow
-        
-        const otherTimeNow = now.toLocaleTimeString();
-        const timeEntered = timeToDecimal(user.timeEntered);
-        const timeExited = timeToDecimal(user.timeExited);
-
-        const timeSpent = calculateTime(timeEntered, timeExited);
-
-        userInfo[decodedText].hours += timeSpent;
-        userInfo[decodedText].points += timeSpent;
-        
-        const record = attendanceRecords.find(record => record.studentEmail === decodedText && record.eventId === studentEventChosen);
-                if (record.timeLeft){
-
-                    cameraErrorMessage.style.display='block';
-                    cameraErrorMessage.textContent ='User has already attended the event.'
-                    cameraErrorMessageTime = setTimeout(()=>{
-            cameraErrorMessage.style.display='none';
-            cameraErrorMessage.textContent = ''
-        },2000)
-                    return;
-                }
-        record.timeLeft = otherTimeNow;
-        record.hours = timeSpent;
-        localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords));
-        console.log('user time left:', record.timeLeft);
-        console.log('value that record.timeleft is saving:', otherTimeNow)
-        renderAttendanceList();
-        localStorage.setItem('userinfo', JSON.stringify(userInfo));
-
-        document.getElementById(decodedText).remove();
-        
-        usersSignedIn = usersSignedIn.filter(user=> user.user !== decodedText);
-        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
-        
-        renderUsersLogged();
-
-    
-    }
-}
-/* 
-const getNewRecords = (studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date)=>{
-    const newRecord = { studentEmail, eventId, eventTitle, timeArrived, timeLeft, hours, date };
-  attendanceRecords.push(newRecord);
-
-  localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords))
-  renderAttendanceList();
-}
-const renderAttendanceList =()=>{
-    let html = ''
-    attendanceRecords.forEach((record)=>{
-        html += ` <div class="attendance-item">
-                    <div class="attendance-info">
-                        <h3 class="attendance-name">${userInfo[record.studentEmail]?.firstname || 'unkown'} ${userInfo[record.studentEmail]?.lastname || 'unkown'}</h3>
-                        <p class="attendance-email">${record.studentEmail}</p>
-                        <p class ="attendance-event">${record.eventTitle}</p>
-                        <p class="attendance-event">Event ID: ${record.eventId}</p>
-                    </div>
-                    <div class="attendance-details">
-                        <p class="attendance-time">Time: ${record.timeArrived} - ${record.timeLeft}</p>
-                        <p class="attendance-hours">Hours: ${record.hours}</p>
-                        <p class="attendance-date">Date: ${record.date}</p>
-                    </div>
-                </div>
-           `
-    })
-
-        attendanceList.innerHTML = html;
-
-       
-*/
-
-const userScannedLogArea = document.querySelector('#userScannedLogBox');
-const renderUsersLogged =()=>{
-    let html = ''
-    usersSignedIn.forEach((user)=>{
-        html+=`
-                    <div class ="studentLogBox" id="${user.user}">
-                        <p class ="getDOM">${userInfo[user.user]?.firstname || 'unknown'} ${userInfo[user.user]?.lastname ||'unknown'} | Checked in: ${user.timeEntered} Checked out: ❌</p>
-                        <button class ="UserLogDelete" id="${user.user}">
-                            Delete
-                        </button>
-                    </div>
-                `
-    
-            })
-            userScannedLogArea.innerHTML = html; 
-}
-//delete userLog 
-
-
-const studentLogBox = document.querySelector('.studentLogBox')
-userScannedLogArea.addEventListener('click',(event)=>{
-    if (event.target && event.target.classList.contains('UserLogDelete')){
-        const email = event.target.id;
-        usersSignedIn = usersSignedIn.filter(user=> user.user !== email);
-
-        event.target.closest('.studentLogBox').remove()
-        localStorage.setItem('usersSignedIn', JSON.stringify(usersSignedIn));
-    }
-    
-})
-document.addEventListener('DOMContentLoaded', renderUsersLogged);
-// 5. Connect the HTML buttons to the scanner action methods
-startBtn.addEventListener('click', () => {
-    statusText.textContent = "Accessing camera...";
-    html5QrcodeScanner.render(onScanSuccess);
-});
-
-stopBtn.addEventListener('click', () => {
-    html5QrcodeScanner.clear().then(() => {
-        statusText.textContent = "Camera stopped";
-        statusText.style.color = "";
-        console.log("Scanner cleaned up safely.");
-    }).catch(err => {
-        console.error("Failed to clear scanner: ", err);
+    return new Date(ms).toLocaleTimeString([], {
+        hour: "numeric",
+        minute: "2-digit"
     });
-});
-
-const cameraUserLog = (studentEmail, hours) =>{
-    const user = userInfo[studentEmail]
-    user.hours += hours;
-    user.points += hours;    
 }
 
+function formatDate(ms) {
+    if (!Number.isFinite(ms)) return "—";
+    return new Date(ms).toLocaleDateString();
+}
 
-renderUsersLogged();
+function getEvent(eventId) {
+    return eventData.find((event) => String(event.id) === String(eventId));
+}
 
-const historyLogArea = document.querySelector('.attendance-list');
-const clearHistoryButton = document.querySelector('#clearLogHistory');
-clearHistoryButton.addEventListener('click',()=>{
-    console.log('hi')
-    historyLogArea.replaceChildren();
-    attendanceRecords = [];
-    localStorage.setItem('attendanceRecords', JSON.stringify(attendanceRecords))
-})
+function getAttendanceId(eventId, memberUid) {
+    // One record per member/event prevents a double scan from awarding hours twice.
+    return `${eventId}_${memberUid}`;
+}
+
+function fillEventSelect(selectElement) {
+    const selectedValue = selectElement.value;
+    selectElement.replaceChildren();
+
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = "Select event";
+    selectElement.append(placeholder);
+
+    eventData.forEach((event) => {
+        if (!event.id || !event.title) return;
+
+        const option = document.createElement("option");
+        option.value = event.id;
+        option.textContent = event.title;
+        selectElement.append(option);
+    });
+
+    if (eventData.some((event) => String(event.id) === selectedValue)) {
+        selectElement.value = selectedValue;
+    }
+}
+
+function syncLegacyEventCache() {
+    // A few pages are still being moved to Firestore, so keep their temporary event cache current for now.
+    localStorage.setItem("eventData", JSON.stringify(eventData));
+}
+
+function startEventsListener() {
+    const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
+
+    eventsUnsubscribe = onSnapshot(eventsRef, (snapshot) => {
+        eventData = snapshot.docs.map((eventDoc) => ({
+            ...eventDoc.data(),
+            id: eventDoc.id
+        }));
+
+        eventData.sort((a, b) => String(a.date || "").localeCompare(String(b.date || "")));
+        syncLegacyEventCache();
+        fillEventSelect(manualEventSelect);
+        fillEventSelect(cameraEventSelect);
+    }, (error) => {
+        console.error("Could not load events:", error);
+        showManualError("Could not load events. Refresh the page and try again.");
+    });
+}
+
+function startMembersListener() {
+    const usersRef = collection(database, "schools", SCHOOL_ID, "users");
+
+    membersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
+        const nextMembers = new Map();
+
+        snapshot.forEach((userDoc) => {
+            const profile = userDoc.data();
+            const email = normalizeEmail(profile.email);
+            if (!email) return;
+
+            nextMembers.set(email, {
+                uid: userDoc.id,
+                ref: userDoc.ref,
+                ...profile,
+                email
+            });
+        });
+
+        membersByEmail = nextMembers;
+        renderAttendance();
+        renderActiveCheckins();
+    }, (error) => {
+        console.error("Could not load members:", error);
+        showCameraError("Could not load the member list. Refresh the page.");
+    });
+}
+
+function getRecordTime(record, field, fallbackField) {
+    const timestamp = record[field];
+    if (timestamp?.toDate) return timestamp.toDate().getTime();
+    return Number(record[fallbackField]) || NaN;
+}
+
+function createAttendanceItem(record) {
+    const item = document.createElement("div");
+    item.className = "attendance-item";
+
+    const info = document.createElement("div");
+    info.className = "attendance-info";
+
+    const name = document.createElement("h3");
+    name.className = "attendance-name";
+    name.textContent = record.studentName || record.studentEmail || "Unknown member";
+
+    const email = document.createElement("p");
+    email.className = "attendance-email";
+    email.textContent = record.studentEmail || "";
+
+    const eventName = document.createElement("p");
+    eventName.className = "attendance-event";
+    eventName.textContent = record.eventTitle || "Unknown event";
+
+    info.append(name, email, eventName);
+
+    const details = document.createElement("div");
+    details.className = "attendance-details";
+
+    const checkInMs = getRecordTime(record, "checkInAt", "checkInMs");
+    const checkOutMs = getRecordTime(record, "checkOutAt", "checkOutMs");
+
+    const time = document.createElement("p");
+    time.className = "attendance-time";
+    time.textContent = record.status === "completed"
+        ? `Time: ${formatTime(checkInMs)} - ${formatTime(checkOutMs)}`
+        : `Checked in: ${formatTime(checkInMs)}`;
+
+    const hours = document.createElement("p");
+    hours.className = "attendance-hours";
+    hours.textContent = record.status === "completed"
+        ? `Hours: ${Number(record.hours || 0).toFixed(1)}`
+        : "Currently checked in";
+
+    const date = document.createElement("p");
+    date.className = "attendance-date";
+    date.textContent = formatDate(checkInMs);
+
+    details.append(time, hours, date);
+    item.append(info, details);
+    return item;
+}
+
+function renderAttendance() {
+    attendanceList.replaceChildren();
+
+    if (attendanceRecords.length === 0) {
+        const empty = document.createElement("p");
+        empty.className = "empty-state";
+        empty.textContent = "No attendance records yet";
+        attendanceList.append(empty);
+        return;
+    }
+
+    attendanceRecords.forEach((record) => {
+        attendanceList.append(createAttendanceItem(record));
+    });
+}
+
+function createActiveCheckinItem(record) {
+    const row = document.createElement("div");
+    row.className = "studentLogBox";
+
+    const member = membersByEmail.get(normalizeEmail(record.studentEmail));
+    const name = record.studentName
+        || `${member?.firstname || ""} ${member?.lastname || ""}`.trim()
+        || record.studentEmail
+        || "Unknown member";
+
+    const text = document.createElement("p");
+    const checkInMs = getRecordTime(record, "checkInAt", "checkInMs");
+    text.textContent = `${name} | ${record.eventTitle || "Event"} | Checked in: ${formatTime(checkInMs)}`;
+
+    const undoButton = document.createElement("button");
+    undoButton.type = "button";
+    undoButton.className = "UserLogDelete";
+    undoButton.dataset.recordId = record.id;
+    undoButton.textContent = "Undo check-in";
+
+    row.append(text, undoButton);
+    return row;
+}
+
+function renderActiveCheckins() {
+    activeCheckinList.replaceChildren();
+
+    const activeRecords = attendanceRecords.filter((record) => record.status === "checked_in");
+    if (activeRecords.length === 0) {
+        const empty = document.createElement("p");
+        empty.textContent = "No members currently checked in.";
+        activeCheckinList.append(empty);
+        return;
+    }
+
+    activeRecords.forEach((record) => {
+        activeCheckinList.append(createActiveCheckinItem(record));
+    });
+}
+
+function startAttendanceListener() {
+    const attendanceRef = collection(database, "schools", SCHOOL_ID, "attendance");
+    const attendanceQuery = query(attendanceRef, orderBy("updatedAt", "desc"), limit(100));
+
+    attendanceUnsubscribe = onSnapshot(attendanceQuery, (snapshot) => {
+        attendanceRecords = snapshot.docs.map((attendanceDoc) => ({
+            id: attendanceDoc.id,
+            ...attendanceDoc.data()
+        }));
+
+        renderAttendance();
+        renderActiveCheckins();
+    }, (error) => {
+        console.error("Could not load attendance:", error);
+        attendanceList.replaceChildren();
+        const errorText = document.createElement("p");
+        errorText.className = "empty-state";
+        errorText.textContent = "Could not load attendance records.";
+        attendanceList.append(errorText);
+    });
+}
+
+function getMemberByEmail(email) {
+    return membersByEmail.get(normalizeEmail(email)) || null;
+}
+
+async function createManualAttendance(member, event, startMs, endMs, hours) {
+    const attendanceId = getAttendanceId(event.id, member.uid);
+    const attendanceRef = doc(database, "schools", SCHOOL_ID, "attendance", attendanceId);
+
+    await runTransaction(database, async (transaction) => {
+        const attendanceSnapshot = await transaction.get(attendanceRef);
+        const memberSnapshot = await transaction.get(member.ref);
+
+        if (attendanceSnapshot.exists()) {
+            throw new Error("ATTENDANCE_EXISTS");
+        }
+
+        if (!memberSnapshot.exists()) {
+            throw new Error("MEMBER_MISSING");
+        }
+
+        const memberData = memberSnapshot.data();
+        const currentHours = Number(memberData.hours) || 0;
+        const currentPoints = Number(memberData.points) || 0;
+
+        transaction.set(attendanceRef, {
+            studentUid: member.uid,
+            studentEmail: member.email,
+            studentName: `${member.firstname || ""} ${member.lastname || ""}`.trim(),
+            eventId: event.id,
+            eventTitle: event.title,
+            status: "completed",
+            entryMethod: "manual",
+            checkInMs: startMs,
+            checkOutMs: endMs,
+            hours,
+            createdBy: firebaseUser.uid,
+            completedBy: firebaseUser.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+
+        transaction.update(member.ref, {
+            hours: currentHours + hours,
+            points: currentPoints + hours
+        });
+    });
+}
+
+async function handleManualAttendance() {
+    clearManualMessages();
+
+    const event = getEvent(manualEventSelect.value);
+    const email = normalizeEmail(studentEmailInput.value);
+    const member = getMemberByEmail(email);
+
+    if (!email || !manualEventSelect.value || !arrivedInput.value || !leftInput.value) {
+        showManualError("Please fill in all boxes.");
+        return;
+    }
+
+    if (!event) {
+        showManualError("Please choose a valid event.");
+        return;
+    }
+
+    if (!member) {
+        showManualError("That email does not belong to a registered member.");
+        return;
+    }
+
+    const startMs = combineEventDateAndTime(event, arrivedInput.value);
+    const endMs = combineEventDateAndTime(event, leftInput.value);
+    const hours = calculateHours(startMs, endMs);
+
+    if (!Number.isFinite(hours)) {
+        showManualError("Leaving time must be after arrival time.");
+        return;
+    }
+
+    if (hours <= 0) {
+        showManualError("That time range is too short to receive attendance credit.");
+        return;
+    }
+
+    manualSubmitButton.disabled = true;
+    manualSubmitButton.textContent = "Saving...";
+
+    try {
+        await createManualAttendance(member, event, startMs, endMs, hours);
+        showManualSuccess(`Attendance saved: ${hours.toFixed(1)} hour${hours === 1 ? "" : "s"}.`);
+        arrivedInput.value = "";
+        leftInput.value = "";
+        studentEmailInput.value = "";
+    } catch (error) {
+        if (error.message === "ATTENDANCE_EXISTS") {
+            showManualError("This member already has an attendance record for that event.");
+        } else if (error.message === "MEMBER_MISSING") {
+            showManualError("That member account no longer exists.");
+        } else {
+            console.error("Could not save manual attendance:", error);
+            showManualError("Could not save attendance. Please try again.");
+        }
+    } finally {
+        manualSubmitButton.disabled = false;
+        manualSubmitButton.textContent = "Mark Attendance";
+    }
+}
+
+async function checkMemberIn(member, event) {
+    const attendanceId = getAttendanceId(event.id, member.uid);
+    const attendanceRef = doc(database, "schools", SCHOOL_ID, "attendance", attendanceId);
+    const nowMs = Date.now();
+
+    return runTransaction(database, async (transaction) => {
+        const attendanceSnapshot = await transaction.get(attendanceRef);
+        const memberSnapshot = await transaction.get(member.ref);
+
+        if (!memberSnapshot.exists()) {
+            throw new Error("MEMBER_MISSING");
+        }
+
+        if (attendanceSnapshot.exists()) {
+            const existingRecord = attendanceSnapshot.data();
+            if (existingRecord.status === "completed") {
+                throw new Error("ALREADY_COMPLETED");
+            }
+            if (existingRecord.status === "checked_in") {
+                return { action: "checkout", record: existingRecord };
+            }
+        }
+
+        transaction.set(attendanceRef, {
+            studentUid: member.uid,
+            studentEmail: member.email,
+            studentName: `${member.firstname || ""} ${member.lastname || ""}`.trim(),
+            eventId: event.id,
+            eventTitle: event.title,
+            status: "checked_in",
+            entryMethod: "qr",
+            checkInAt: serverTimestamp(),
+            checkInMs: nowMs,
+            checkOutAt: null,
+            checkOutMs: null,
+            hours: null,
+            createdBy: firebaseUser.uid,
+            createdAt: serverTimestamp(),
+            updatedAt: serverTimestamp()
+        });
+
+        return { action: "checkin", checkInMs: nowMs };
+    });
+}
+
+async function checkMemberOut(member, event) {
+    const attendanceId = getAttendanceId(event.id, member.uid);
+    const attendanceRef = doc(database, "schools", SCHOOL_ID, "attendance", attendanceId);
+    const nowMs = Date.now();
+
+    return runTransaction(database, async (transaction) => {
+        const attendanceSnapshot = await transaction.get(attendanceRef);
+        const memberSnapshot = await transaction.get(member.ref);
+
+        if (!attendanceSnapshot.exists()) {
+            throw new Error("NOT_CHECKED_IN");
+        }
+
+        if (!memberSnapshot.exists()) {
+            throw new Error("MEMBER_MISSING");
+        }
+
+        const record = attendanceSnapshot.data();
+        if (record.status === "completed") {
+            throw new Error("ALREADY_COMPLETED");
+        }
+
+        if (record.status !== "checked_in") {
+            throw new Error("NOT_CHECKED_IN");
+        }
+
+        const checkInMs = Number(record.checkInMs);
+        const hours = calculateHours(checkInMs, nowMs);
+        if (!Number.isFinite(hours) || hours <= 0) {
+            throw new Error("TOO_SOON");
+        }
+
+        const memberData = memberSnapshot.data();
+        const currentHours = Number(memberData.hours) || 0;
+        const currentPoints = Number(memberData.points) || 0;
+
+        transaction.update(attendanceRef, {
+            status: "completed",
+            checkOutAt: serverTimestamp(),
+            checkOutMs: nowMs,
+            hours,
+            completedBy: firebaseUser.uid,
+            updatedAt: serverTimestamp()
+        });
+
+        transaction.update(member.ref, {
+            hours: currentHours + hours,
+            points: currentPoints + hours
+        });
+
+        return { hours };
+    });
+}
+
+async function handleScannedMember(decodedText) {
+    const event = getEvent(cameraEventSelect.value);
+    if (!event) {
+        throw new Error("NO_EVENT");
+    }
+
+    const email = normalizeEmail(decodedText);
+    const member = getMemberByEmail(email);
+    if (!member) {
+        throw new Error("INVALID_QR");
+    }
+
+    const attendanceId = getAttendanceId(event.id, member.uid);
+    const attendanceRef = doc(database, "schools", SCHOOL_ID, "attendance", attendanceId);
+    const attendanceSnapshot = await getDoc(attendanceRef);
+
+    if (attendanceSnapshot.exists() && attendanceSnapshot.data().status === "checked_in") {
+        const result = await checkMemberOut(member, event);
+        return {
+            message: `${member.firstname || "Member"} checked out — ${result.hours.toFixed(1)} hour${result.hours === 1 ? "" : "s"} credited.`
+        };
+    }
+
+    const result = await checkMemberIn(member, event);
+    if (result.action === "checkout") {
+        // The record changed between our first read and the transaction. Finish the checkout safely.
+        const checkoutResult = await checkMemberOut(member, event);
+        return {
+            message: `${member.firstname || "Member"} checked out — ${checkoutResult.hours.toFixed(1)} hour${checkoutResult.hours === 1 ? "" : "s"} credited.`
+        };
+    }
+
+    return {
+        message: `${member.firstname || "Member"} checked in successfully.`
+    };
+}
+
+async function stopScanner(statusMessage = "Camera stopped") {
+    if (!qrScanner || !scannerRunning) {
+        scannerRunning = false;
+        stopScanButton.disabled = true;
+        cameraEventSelect.disabled = false;
+        return;
+    }
+
+    try {
+        await qrScanner.stop();
+    } catch (error) {
+        console.warn("Scanner stop warning:", error);
+    } finally {
+        scannerRunning = false;
+        stopScanButton.disabled = true;
+        startScanButton.disabled = false;
+        cameraEventSelect.disabled = false;
+        startScanButton.textContent = "Start Camera";
+        scannerStatus.textContent = statusMessage;
+    }
+}
+
+async function onScanSuccess(decodedText) {
+    if (scanProcessing) return;
+    scanProcessing = true;
+
+    // Pause after every successful scan. This avoids one QR being read repeatedly and accidentally checking someone out.
+    await stopScanner("QR read. Saving attendance...");
+
+    try {
+        const result = await handleScannedMember(decodedText);
+        scannerStatus.textContent = `${result.message} Press Start Camera for the next scan.`;
+        scannerStatus.style.color = "#15803d";
+        startScanButton.textContent = "Scan Next Member";
+    } catch (error) {
+        scannerStatus.style.color = "";
+
+        switch (error.message) {
+            case "NO_EVENT":
+                showCameraError("Choose an event before scanning.");
+                break;
+            case "INVALID_QR":
+                showCameraError("That QR code does not belong to a registered member.");
+                break;
+            case "ALREADY_COMPLETED":
+                showCameraError("This member has already completed attendance for this event.");
+                break;
+            case "TOO_SOON":
+                showCameraError("The member was checked in too recently to receive time credit yet.");
+                break;
+            case "MEMBER_MISSING":
+                showCameraError("That member account no longer exists.");
+                break;
+            default:
+                console.error("QR attendance failed:", error);
+                showCameraError("Could not save this scan. Please try again.");
+        }
+    } finally {
+        scanProcessing = false;
+        startScanButton.disabled = false;
+    }
+}
+
+async function findPreferredCamera() {
+    if (preferredCameraId) return preferredCameraId;
+
+    const cameras = await window.Html5Qrcode.getCameras();
+    if (!cameras.length) {
+        throw new Error("NO_CAMERA");
+    }
+
+    const preferred = cameras.find((camera) => /back|rear|environment/i.test(camera.label)) || cameras[0];
+    preferredCameraId = preferred.id;
+    return preferredCameraId;
+}
+
+async function startScanner() {
+    cameraErrorMessage.textContent = "";
+    cameraErrorMessage.classList.remove("show");
+
+    if (!cameraEventSelect.value || !getEvent(cameraEventSelect.value)) {
+        showCameraError("Choose an event before starting the camera.");
+        return;
+    }
+
+    if (!window.Html5Qrcode) {
+        showCameraError("The QR scanner did not load. Refresh the page and try again.");
+        return;
+    }
+
+    if (scannerRunning) return;
+
+    startScanButton.disabled = true;
+    stopScanButton.disabled = false;
+    cameraEventSelect.disabled = true;
+    scannerStatus.textContent = "Requesting camera access...";
+    scannerStatus.style.color = "";
+
+    try {
+        if (!qrScanner) {
+            qrScanner = new window.Html5Qrcode("qr-reader");
+        }
+
+        const cameraId = await findPreferredCamera();
+        await qrScanner.start(
+            cameraId,
+            {
+                fps: 10,
+                qrbox: { width: 250, height: 250 }
+            },
+            onScanSuccess,
+            () => {}
+        );
+
+        scannerRunning = true;
+        scannerStatus.textContent = "Ready to scan";
+        startScanButton.textContent = "Camera Running";
+    } catch (error) {
+        console.error("Could not start scanner:", error);
+        scannerRunning = false;
+        startScanButton.disabled = false;
+        stopScanButton.disabled = true;
+        cameraEventSelect.disabled = false;
+
+        if (error.message === "NO_CAMERA") {
+            showCameraError("No camera was found on this device.");
+        } else {
+            showCameraError("Camera access failed. Check browser permissions and try again.");
+        }
+
+        scannerStatus.textContent = "Camera unavailable";
+    }
+}
+
+async function undoCheckin(recordId) {
+    const recordRef = doc(database, "schools", SCHOOL_ID, "attendance", recordId);
+
+    await runTransaction(database, async (transaction) => {
+        const snapshot = await transaction.get(recordRef);
+        if (!snapshot.exists()) return;
+
+        if (snapshot.data().status !== "checked_in") {
+            throw new Error("ALREADY_COMPLETED");
+        }
+
+        transaction.delete(recordRef);
+    });
+}
+
+activeCheckinList.addEventListener("click", async (event) => {
+    const button = event.target.closest(".UserLogDelete");
+    if (!button) return;
+
+    const recordId = button.dataset.recordId;
+    if (!recordId) return;
+
+    button.disabled = true;
+    try {
+        await undoCheckin(recordId);
+    } catch (error) {
+        console.error("Could not undo check-in:", error);
+        showCameraError(
+            error.message === "ALREADY_COMPLETED"
+                ? "That attendance record has already been completed and cannot be undone here."
+                : "Could not undo this check-in."
+        );
+        button.disabled = false;
+    }
+});
+
+manualSubmitButton.addEventListener("click", handleManualAttendance);
+manualClearButton.addEventListener("click", () => {
+    arrivedInput.value = "";
+    leftInput.value = "";
+    manualEventSelect.value = "";
+    studentEmailInput.value = "";
+    clearManualMessages();
+});
+
+startScanButton.addEventListener("click", startScanner);
+stopScanButton.addEventListener("click", () => stopScanner());
+
+window.addEventListener("pagehide", () => {
+    if (scannerRunning && qrScanner) {
+        qrScanner.stop().catch(() => {});
+    }
+
+    membersUnsubscribe?.();
+    eventsUnsubscribe?.();
+    attendanceUnsubscribe?.();
+});
+
+stopScanButton.disabled = true;
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        redirectToLogin();
+        return;
+    }
+
+    try {
+        const profileRef = doc(database, "schools", SCHOOL_ID, "users", user.uid);
+        const profileSnapshot = await getDoc(profileRef);
+
+        if (!profileSnapshot.exists()) {
+            redirectToHome();
+            return;
+        }
+
+        const profile = profileSnapshot.data();
+        if (!isAdmin(profile)) {
+            // Typing /admin.html directly is not enough to get access.
+            // The server-side Firestore rules will be the final protection for admin-only writes.
+            redirectToHome();
+            return;
+        }
+
+        firebaseUser = user;
+        showAdminPage();
+        startMembersListener();
+        startEventsListener();
+        startAttendanceListener();
+    } catch (error) {
+        console.error("Could not verify admin access:", error);
+        adminAccessMessage.textContent = "Could not verify admin access. Refresh the page and try again.";
+    }
+});

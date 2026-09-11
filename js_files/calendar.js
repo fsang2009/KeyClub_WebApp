@@ -1,33 +1,19 @@
-/*  rather than statically hardcoding our calendar, it is much 
-more efficient, advantageous, and feasible if we render it using
-our javascript. hardcoding would result in requiring constant
-updates, accounting for leap years and such. 
+import { onAuthStateChanged } from "firebase/auth";
+import {
+    collection,
+    deleteDoc,
+    doc,
+    getDoc,
+    getDocs,
+    onSnapshot,
+    serverTimestamp,
+    setDoc,
+    writeBatch
+} from "firebase/firestore";
+import { auth, database } from "./firebaseConfig.js";
 
-Step 1. using new Date() (which is a method that can find 
-the date, hour, time, day, month, year, etc. of TODAY.)
-, i will set a variable (like 'today') 
-to create an instance of the method. 
+const SCHOOL_ID = "southport_high_school";
 
-Step 2. using our new today instance, we can find our current year,
-current date, etc.
-
-Step 3. We will create a renderCalendar() function. 
-we will use today.getMonth() and today.getDay() 
-
-Step 4. create an array of the months of the year (getMonth() 
-starts at index 0, so january is 0 , december is 11)
-
-Step 5. idfk just start on it
-*/
-
-
-
-const userInfo = JSON.parse(localStorage.getItem('userinfo'));
-if(!userInfo){
-    window.location.href = 'login.html'
-}
-
-//actual calendar code below
 const months = [
     "January",
     "February",
@@ -41,328 +27,515 @@ const months = [
     "October",
     "November",
     "December"
-]
+];
 
+const calendarGrid = document.querySelector(".calendar-grid");
+const monthDateValue = document.querySelector("#monthDateValue");
+const previousMonthButton = document.querySelector("#previousMonth");
+const forwardMonthButton = document.querySelector("#nextMonth");
+const todayButton = document.querySelector(".today-button");
+const upcomingEventsGrid = document.querySelector(".upcoming-events-grid");
 
-const calendarGrid = document.querySelector('.calendar-grid');
-//Get all days in a month
+const scheduleEventModal = document.querySelector("#scheduleEventModal");
+const scheduleEventForm = document.querySelector("#scheduleEventForm");
+const closeScheduleEventModal = document.querySelector("#closeScheduleModal");
+const scheduleEventMessage = document.querySelector("#scheduleEventMessage");
 
-const currentDateInfo = new Date()
-// Render Calendar function 
-const renderCalendar =(month, year)=>{
-const firstDayofMonth = new Date(year, month, 1).getDay();
-const daysInMonth = new Date(year, month + 1, 0).getDate();
-const daysInPrevMonth = new Date(year, month, 0).getDate();
-console.log(firstDayofMonth)
-let dateCell = ''
-const fillInCellDates = daysInPrevMonth - firstDayofMonth + 1
+const eventName = document.querySelector("#eventName");
+const eventTime = document.querySelector("#eventTime");
+const eventEndTime = document.querySelector("#eventEndTime");
+const eventLocation = document.querySelector("#eventLocation");
+const eventDescription = document.querySelector("#eventDescription");
+const eventSignupLink = document.querySelector("#eventSignupLink");
 
-for(d=fillInCellDates; d<=daysInPrevMonth; d++){
-    dateCell +=`
-    <div class="calendar-day outside-month">
-                        <span class="day-number">${d}</span>
-                    </div>
-    `
+const eventDetailsModal = document.querySelector("#eventDetailsModal");
+const eventDetailsModalCloseButton = document.querySelector("#closeEventDetailsModal");
+const eventDetailsModalTitle = document.querySelector("#eventDetailsTitle");
+const eventDetailsModalTime = document.querySelector("#eventDetailsTime");
+const eventDetailsModalEndTime = document.querySelector("#eventDetailsEndTime");
+const eventDetailsModalLocation = document.querySelector("#eventDetailsLocation");
+const eventDetailsModalDescription = document.querySelector("#eventDetailsDescription");
+const eventDetailsSignupLink = document.querySelector("#eventDetailsSignupLink");
+const deleteEventCalendarButton = document.querySelector("#deleteEventButton");
+
+let firebaseUser = null;
+let currentProfile = null;
+let isAdmin = false;
+let events = [];
+let eventsUnsubscribe = null;
+let currentEventId = null;
+
+const today = new Date();
+let currentMonth = today.getMonth();
+let currentYear = today.getFullYear();
+
+function userIsAdmin(profile) {
+    // The page hides admin controls here, but Firestore rules still need to block unauthorized writes too.
+    return profile?.role === "admin" || profile?.isAdmin === true;
 }
-    for(i=1; i <= daysInMonth; i++){
-        
-        dateCell +=`<div class="calendar-day" id ="calendarDayBox"
-         data-day ="${i}"
-                        data-month ="${currentMonth}" 
-                        data-year ="${currentYear}">
-                        <span class="day-number">${i}</span>
-                    </div>`
+
+function showAdminControls(allowed) {
+    document.querySelectorAll("[data-admin-only]").forEach((element) => {
+        element.hidden = !allowed;
+    });
+}
+
+function padNumber(value) {
+    return String(value).padStart(2, "0");
+}
+
+function makeIsoDate(year, monthIndex, day) {
+    return `${year}-${padNumber(monthIndex + 1)}-${padNumber(day)}`;
+}
+
+function parseIsoDate(dateString) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(dateString || "")) return null;
+
+    const [year, month, day] = dateString.split("-").map(Number);
+    const parsed = new Date(year, month - 1, day);
+
+    if (
+        parsed.getFullYear() !== year ||
+        parsed.getMonth() !== month - 1 ||
+        parsed.getDate() !== day
+    ) {
+        return null;
     }
 
-    calendarGrid.innerHTML = dateCell
+    return parsed;
 }
 
+function convertTo12Hour(time24) {
+    if (!/^\d{2}:\d{2}$/.test(time24 || "")) return time24 || "";
 
+    const [hourString, minute] = time24.split(":");
+    const hour = Number(hourString);
+    const suffix = hour >= 12 ? "PM" : "AM";
+    const displayHour = hour % 12 || 12;
 
-let currentMonth = currentDateInfo.getMonth();
-let currentYear = currentDateInfo.getFullYear();
-
-const monthDateValue = document.querySelector('#monthDateValue');
-const updateMonthYear =(month, year)=>{
-    monthDateValue.textContent = `${month} ${year}`
+    return `${displayHour}:${minute} ${suffix}`;
 }
 
-updateMonthYear(months[currentMonth], currentYear)
-renderCalendar(currentMonth, currentYear);
-
-
-// Change as we move forward/backward in months
-
-const previousMonthButton = document.querySelector('#previousMonth');
-const forwardMonthButton = document.querySelector('#nextMonth');
-
-previousMonthButton.addEventListener('click',()=>{
-    if(currentMonth<=0){
-         currentMonth = 12;
-         currentYear --
-    }
-    currentMonth --
-    console.log(`currentMonth value: ${currentMonth}`)
-    renderCalendar(currentMonth, currentYear);
-    updateMonthYear(months[currentMonth], currentYear);
-    
-
-})
-
-forwardMonthButton.addEventListener('click',()=>{
-    if(currentMonth >=11){
-        currentMonth = -1;
-        currentYear++
-    }
-    currentMonth ++ 
-    renderCalendar(currentMonth, currentYear);
-    updateMonthYear(months[currentMonth], currentYear);
-})
-
-
-//schedule events logic 
-let currentDate = {
-    day: null,
-    month: null,
-    year: null,
+function timeToMinutes(time24) {
+    if (!/^\d{2}:\d{2}$/.test(time24 || "")) return -1;
+    const [hours, minutes] = time24.split(":").map(Number);
+    return (hours * 60) + minutes;
 }
-const scheduleEventModal = document.querySelector('#scheduleEventModal');
-calendarGrid.addEventListener('click',(event)=>{
-    if(event.target && event.target.closest('.calendar-day') && !event.target.closest('.calendar-event')){
-        scheduleEventModal.classList.add('active');
-        currentDate.day = event.target.dataset.day;
-        currentDate.month = event.target.dataset.month;
-        currentDate.year = event.target.dataset.year;
-        console.log(currentDate);
+
+function cleanSignupLink(value) {
+    const trimmed = value.trim();
+    if (!trimmed) return "";
+
+    try {
+        const url = new URL(trimmed);
+        if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+        return url.href;
+    } catch {
+        return null;
+    }
+}
+
+function setScheduleMessage(message) {
+    scheduleEventMessage.textContent = message;
+    scheduleEventMessage.hidden = !message;
+}
+
+function closeScheduleModal() {
+    scheduleEventModal.classList.remove("active");
+    scheduleEventForm.reset();
+    scheduleEventForm.dataset.date = "";
+    setScheduleMessage("");
+}
+
+function closeDetailsModal() {
+    currentEventId = null;
+    eventDetailsModal.classList.remove("active");
+    eventDetailsModalTitle.textContent = "Event Details";
+    eventDetailsModalTime.textContent = "";
+    eventDetailsModalEndTime.textContent = "";
+    eventDetailsModalLocation.textContent = "";
+    eventDetailsModalDescription.textContent = "";
+    eventDetailsSignupLink.hidden = true;
+    eventDetailsSignupLink.removeAttribute("href");
+}
+
+function renderCalendar() {
+    calendarGrid.replaceChildren();
+    monthDateValue.textContent = `${months[currentMonth]} ${currentYear}`;
+
+    const firstDayOfMonth = new Date(currentYear, currentMonth, 1).getDay();
+    const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+    const daysInPreviousMonth = new Date(currentYear, currentMonth, 0).getDate();
+
+    for (let offset = firstDayOfMonth - 1; offset >= 0; offset -= 1) {
+        const day = daysInPreviousMonth - offset;
+        const cell = document.createElement("div");
+        cell.className = "calendar-day outside-month";
+
+        const number = document.createElement("span");
+        number.className = "day-number";
+        number.textContent = day;
+
+        cell.appendChild(number);
+        calendarGrid.appendChild(cell);
     }
 
-})
+    for (let day = 1; day <= daysInMonth; day += 1) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day";
+        cell.dataset.day = String(day);
+        cell.dataset.month = String(currentMonth);
+        cell.dataset.year = String(currentYear);
+        cell.dataset.date = makeIsoDate(currentYear, currentMonth, day);
 
-let eventsCalendarData = JSON.parse(localStorage.getItem('eventsCalendarData'))||[];
+        if (
+            day === today.getDate() &&
+            currentMonth === today.getMonth() &&
+            currentYear === today.getFullYear()
+        ) {
+            cell.classList.add("today");
+        }
 
-const eventName = document.querySelector('#eventName');
-const eventTime = document.querySelector('#eventTime');
-const eventEndTime = document.querySelector('#eventEndTime');
-const eventLocation = document.querySelector('#eventLocation');
-const eventDescription = document.querySelector('#eventDescription');
+        const number = document.createElement("span");
+        number.className = "day-number";
+        number.textContent = day;
 
-const closeScheduleEventModal = document.querySelector('#closeScheduleModal');
-closeScheduleEventModal.addEventListener('click',()=>{
+        cell.appendChild(number);
+        calendarGrid.appendChild(cell);
+    }
 
-    currentDate.day = null;
-    currentDate.month = null;
-    currentDate.year = null;
-    scheduleEventModal.classList.remove('active');
-})
+    const cellsUsed = firstDayOfMonth + daysInMonth;
+    const trailingCells = (7 - (cellsUsed % 7)) % 7;
 
-document.querySelector('.submit-button').addEventListener('click',(event)=>{
+    for (let day = 1; day <= trailingCells; day += 1) {
+        const cell = document.createElement("div");
+        cell.className = "calendar-day outside-month";
+
+        const number = document.createElement("span");
+        number.className = "day-number";
+        number.textContent = day;
+
+        cell.appendChild(number);
+        calendarGrid.appendChild(cell);
+    }
+
+    renderEventsOnCalendar();
+}
+
+function renderEventsOnCalendar() {
+    const eventElements = calendarGrid.querySelectorAll(".calendar-event");
+    eventElements.forEach((element) => element.remove());
+
+    events.forEach((event) => {
+        const date = parseIsoDate(event.date);
+        if (!date) return;
+        if (date.getMonth() !== currentMonth || date.getFullYear() !== currentYear) return;
+
+        const dayCell = calendarGrid.querySelector(`[data-date="${event.date}"]`);
+        if (!dayCell) return;
+
+        const eventElement = document.createElement("button");
+        eventElement.type = "button";
+        eventElement.className = "calendar-event service-event";
+        eventElement.dataset.eventId = event.id;
+        eventElement.textContent = event.title || "Untitled Event";
+        eventElement.title = event.title || "Untitled Event";
+
+        dayCell.appendChild(eventElement);
+    });
+}
+
+function formatEventDate(dateString) {
+    const date = parseIsoDate(dateString);
+    if (!date) return "Date unavailable";
+
+    return date.toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric"
+    });
+}
+
+function renderUpcomingEvents() {
+    upcomingEventsGrid.replaceChildren();
+
+    const todayStart = new Date();
+    todayStart.setHours(0, 0, 0, 0);
+
+    const upcoming = events
+        .filter((event) => {
+            const date = parseIsoDate(event.date);
+            return date && date >= todayStart;
+        })
+        .sort((a, b) => {
+            const firstDate = parseIsoDate(a.date);
+            const secondDate = parseIsoDate(b.date);
+            return firstDate - secondDate;
+        })
+        .slice(0, 6);
+
+    if (upcoming.length === 0) {
+        const emptyMessage = document.createElement("p");
+        emptyMessage.textContent = "No upcoming events yet.";
+        upcomingEventsGrid.appendChild(emptyMessage);
+        return;
+    }
+
+    upcoming.forEach((event) => {
+        const card = document.createElement("article");
+        card.className = "upcoming-event-card";
+
+        const dateBox = document.createElement("div");
+        dateBox.className = "event-date";
+
+        const dateLabel = document.createElement("span");
+        dateLabel.className = "event-month";
+        dateLabel.textContent = formatEventDate(event.date);
+        dateBox.appendChild(dateLabel);
+
+        const information = document.createElement("div");
+        information.className = "event-information";
+
+        const category = document.createElement("span");
+        category.className = "event-category service-category";
+        category.textContent = "Service";
+
+        const title = document.createElement("h3");
+        title.textContent = event.title || "Untitled Event";
+
+        const time = document.createElement("p");
+        const startTime = event.time || convertTo12Hour(event.time24);
+        const endTime = event.endTime || convertTo12Hour(event.endTime24);
+        time.textContent = startTime && endTime ? `${startTime} – ${endTime}` : "Time TBD";
+
+        const location = document.createElement("p");
+        location.textContent = event.location || "Location TBD";
+
+        information.append(category, title, time, location);
+        card.append(dateBox, information);
+
+        card.addEventListener("click", () => openEventDetails(event.id));
+        upcomingEventsGrid.appendChild(card);
+    });
+}
+
+function openEventDetails(eventId) {
+    const selectedEvent = events.find((event) => event.id === eventId);
+    if (!selectedEvent) return;
+
+    currentEventId = selectedEvent.id;
+    eventDetailsModalTitle.textContent = `${selectedEvent.title || "Event"} Details`;
+    eventDetailsModalTime.textContent = selectedEvent.time || convertTo12Hour(selectedEvent.time24) || "TBD";
+    eventDetailsModalEndTime.textContent = selectedEvent.endTime || convertTo12Hour(selectedEvent.endTime24) || "TBD";
+    eventDetailsModalLocation.textContent = selectedEvent.location || "TBD";
+    eventDetailsModalDescription.textContent = selectedEvent.description || "No description provided.";
+
+    if (selectedEvent.signupLink) {
+        eventDetailsSignupLink.href = selectedEvent.signupLink;
+        eventDetailsSignupLink.hidden = false;
+    } else {
+        eventDetailsSignupLink.hidden = true;
+        eventDetailsSignupLink.removeAttribute("href");
+    }
+
+    deleteEventCalendarButton.hidden = !isAdmin;
+    eventDetailsModal.classList.add("active");
+}
+
+async function deleteEventMessages(eventId) {
+    // Firestore does not automatically remove an event's message subcollection.
+    const messagesRef = collection(database, "schools", SCHOOL_ID, "events", eventId, "messages");
+    const snapshot = await getDocs(messagesRef);
+    if (snapshot.empty) return;
+
+    const batch = writeBatch(database);
+    snapshot.docs.forEach((messageDoc) => batch.delete(messageDoc.ref));
+    await batch.commit();
+}
+
+async function deleteCurrentEvent() {
+    if (!isAdmin || !currentEventId) return;
+
+    const confirmed = window.confirm("Delete this event? This cannot be undone.");
+    if (!confirmed) return;
+
+    deleteEventCalendarButton.disabled = true;
+
+    try {
+        await deleteEventMessages(currentEventId);
+        await deleteDoc(doc(database, "schools", SCHOOL_ID, "events", currentEventId));
+        closeDetailsModal();
+    } catch (error) {
+        console.error("Could not delete event:", error);
+        window.alert("Could not delete the event. Please try again.");
+    } finally {
+        deleteEventCalendarButton.disabled = false;
+    }
+}
+
+async function saveCalendarEvent(event) {
     event.preventDefault();
+    if (!isAdmin || !firebaseUser) return;
 
-    const newEventName = eventName.value;
-    const newEventTime = eventTime.value;
-    const newEventEndTime = eventEndTime.value;
-    const newEventLocation=eventLocation.value;
-    const newEventDescription = eventDescription.value;
-    const id = Date.now();
+    const selectedDate = scheduleEventForm.dataset.date;
+    if (!parseIsoDate(selectedDate)) {
+        setScheduleMessage("Please close this window and select a date again.");
+        return;
+    }
 
-    eventsCalendarData.push({
-        name: newEventName,
-        time: newEventTime,
-        endTime: newEventEndTime,
-        location: newEventLocation,
-        description: newEventDescription,
-        id: id,
-         day: currentDate.day,
-    month: currentDate.month,
-    year: currentDate.year
-    })
+    if (timeToMinutes(eventEndTime.value) <= timeToMinutes(eventTime.value)) {
+        setScheduleMessage("End time must be later than the start time.");
+        return;
+    }
 
-    eventName.value = ''
-    eventTime.value = ''
-    eventEndTime.value = ''
-    eventLocation.value =''
-    eventDescription.value =''
+    const signupLink = cleanSignupLink(eventSignupLink.value);
+    if (signupLink === null) {
+        setScheduleMessage("Please enter a full http:// or https:// signup link.");
+        return;
+    }
 
-     const specificDay = document.querySelector(`[data-day="${currentDate.day}"][data-month="${currentDate.month}"][data-year="${currentDate.year}"]`);
-        if(specificDay){
-            const eventElement = document.createElement('div');
-            eventElement.className = 'calendar-event service-event';
-            eventElement.textContent = newEventName;
-            eventElement.id = id;
-            specificDay.appendChild(eventElement);
-        }
-    
-    
-    currentDate.day = null;
-    currentDate.month = null;
-    currentDate.year = null;
+    const eventId = crypto.randomUUID();
+    const eventToSave = {
+        id: eventId,
+        title: eventName.value.trim(),
+        date: selectedDate,
+        time24: eventTime.value,
+        endTime24: eventEndTime.value,
+        time: convertTo12Hour(eventTime.value),
+        endTime: convertTo12Hour(eventEndTime.value),
+        location: eventLocation.value.trim(),
+        description: eventDescription.value.trim(),
+        signupLink,
+        createdAt: serverTimestamp(),
+        createdBy: firebaseUser.uid,
+        updatedAt: serverTimestamp(),
+        updatedBy: firebaseUser.uid
+    };
 
-    
-    scheduleEventModal.classList.remove('active');
-    localStorage.setItem('eventsCalendarData', JSON.stringify(eventsCalendarData));
+    const submitButton = scheduleEventForm.querySelector("button[type='submit']");
+    submitButton.disabled = true;
+    setScheduleMessage("");
 
-
-})
-
-
-
-
-
-
-const renderAllEvents = ()=>{
-    eventsCalendarData.forEach((event)=>{
-        const specificDay = document.querySelector(`[data-day="${event.day}"][data-month="${event.month}"][data-year="${event.year}"]`);
-        if(specificDay){
-            const eventElement = document.createElement('div');
-            eventElement.className = 'calendar-event service-event';
-            eventElement.textContent = event.name;
-            eventElement.id = event.id
-            specificDay.appendChild(eventElement);
-        }
-    })
+    try {
+        // Calendar-created events use the same collection as the Events page, so both stay in sync.
+        await setDoc(doc(database, "schools", SCHOOL_ID, "events", eventId), eventToSave);
+        closeScheduleModal();
+    } catch (error) {
+        console.error("Could not schedule event:", error);
+        setScheduleMessage("Could not schedule the event. Please try again.");
+    } finally {
+        submitButton.disabled = false;
+    }
 }
-/*we have event, we have to remove div element
-get specific day box from day, month, year
-from box, remove the div with the id
-*/
 
-renderAllEvents()
-/*we have current event date by textContent, how to
-use value to enter event? 
+function subscribeToEvents() {
+    if (eventsUnsubscribe) eventsUnsubscribe();
 
-2. we now have not just the date, but the 
-day, month, and year, which are all datasets to a specific 
-box. so we should be easily able to use them to our advantage 
-by innerContent. make a scoped const in which we will find them
-by the exact dataset we're on, then innerHTML then boom 
-*/
+    const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
+    eventsUnsubscribe = onSnapshot(
+        eventsRef,
+        (snapshot) => {
+            events = snapshot.docs.map((eventDoc) => ({
+                id: eventDoc.id,
+                ...eventDoc.data()
+            }));
 
-/*<div class="calendar-day">
-    <span class="day-number">15</span>
-    
-    <div class="calendar-event service-event">
-        Beach Cleanup
-    </div>
-    
-    <div class="calendar-event meeting-event">
-        Club Meeting
-    </div>
-</div>
-*/
+            // Keep the old cache updated until every page has moved to Firestore.
+            localStorage.setItem("eventData", JSON.stringify(events));
+            renderEventsOnCalendar();
+            renderUpcomingEvents();
+        },
+        (error) => {
+            console.error("Could not load calendar events:", error);
+            upcomingEventsGrid.replaceChildren();
+            const message = document.createElement("p");
+            message.textContent = "Could not load events right now.";
+            upcomingEventsGrid.appendChild(message);
+        }
+    );
+}
 
-
-// opening up event modal
-/* <div class="calendar-day" id ="calendarDayBox"
-         data-day ="${i}"
-                        data-month ="${currentMonth}" 
-                        data-year ="${currentYear}">
-                        <span class="day-number">${i}</span>
-                    </div>` */
-
-const eventDetailsModal = document.querySelector('#eventDetailsModal');
-
-const eventDetailsModalTime = document.querySelector('#eventDetailsTime');
-const eventDetailsModalEndTime = document.querySelector('#eventDetailsEndTime');
-const eventDetailsModalLocation = document.querySelector('#eventDetailsLocation');
-const eventDetailsModalDescription  = document.querySelector('#eventDetailsDescription');
-const eventDetailsModalTitle = document.querySelector('#eventDetailsTitle');
-
-let currentId = null;
-
-calendarGrid.addEventListener('click',(event)=>{
-    if(event.target && event.target.closest('.calendar-event')){
-        console.log('Event clicked');
-        const eventId = event.target.id;
-        console.log('Event ID:', eventId);
-        const eventData = eventsCalendarData.find(e => String(e.id) === String(eventId));
-        console.log('Event data found:', eventData);
-        console.log('All events:', eventsCalendarData);
-
-        currentId  = eventId;
-
-        const time = eventData.time;
-        const endTime = eventData.endTime;
-        const location = eventData.location;
-        const description = eventData.description;
-        const title = eventData.name;
-
-        eventDetailsModalTitle.textContent = `${title} Details`;
-        eventDetailsModalDescription.textContent = `${description}`;
-        eventDetailsModalLocation.textContent = `${location}`;
-        eventDetailsModalTime.textContent = `${time}`;
-        eventDetailsModalEndTime.textContent = `${endTime}`;
-
-        console.log('Modal element:', eventDetailsModal);
-        eventDetailsModal.classList.add('active');
-        console.log('Modal should be active now');
-        
+calendarGrid.addEventListener("click", (event) => {
+    const eventButton = event.target.closest(".calendar-event");
+    if (eventButton) {
+        openEventDetails(eventButton.dataset.eventId);
+        return;
     }
 
-})
+    const dayCell = event.target.closest(".calendar-day:not(.outside-month)");
+    if (!dayCell || !isAdmin) return;
 
-//Close event details modal
-
-const eventDetailsModalCloseButton = document.querySelector('#closeEventDetailsModal');
-
-eventDetailsModalCloseButton.addEventListener('click',()=>{
-    eventDetailsModalTitle.textContent = '';
-        eventDetailsModalDescription.textContent = '';
-        eventDetailsModalLocation.textContent = '';
-        eventDetailsModalTime.textContent = '';
-        eventDetailsModalEndTime.textContent = '';
-        currentId = null;
-        eventDetailsModal.classList.remove('active');
-})
-
-//Delete event
-
-const deleteEventCalendarButton = document.querySelector('#deleteEventButton');
-deleteEventCalendarButton.addEventListener('click',()=>{
-    console.log('Id:', currentId)
-    if(currentId){
-        const event = eventsCalendarData.find(e=> String(e.id) === String(currentId));
-        document.getElementById(event.id).remove(); 
-        
-        eventsCalendarData = eventsCalendarData.filter(e => String(e.id) !== String(currentId));
-        localStorage.setItem('eventsCalendarData', JSON.stringify(eventsCalendarData));
-        eventDetailsModal.classList.remove('active');
-        
-    }
-})
-
-
-const eventData  = JSON.parse(localStorage.getItem('eventData'));
-const eventGrid = document.querySelector('.upcoming-events-grid');
-
-const renderEvents  = ()=>{
-    let html = ''
-    eventData.forEach((event)=>{
-        const formattedDate = new Date(event.date.replace(/-/g, '/')).toLocaleDateString('en-US', { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+    scheduleEventForm.dataset.date = dayCell.dataset.date;
+    setScheduleMessage("");
+    scheduleEventModal.classList.add("active");
 });
 
-        html += `<article class="upcoming-event-card">
-                    <div class="event-date">
-                        <span class="event-month">${formattedDate}</span>
-                        
-                    </div>
+previousMonthButton.addEventListener("click", () => {
+    currentMonth -= 1;
+    if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear -= 1;
+    }
+    renderCalendar();
+});
 
-                    <div class="event-information">
-                        <span class="event-category service-category">
-                            Service
-                        </span>
+forwardMonthButton.addEventListener("click", () => {
+    currentMonth += 1;
+    if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear += 1;
+    }
+    renderCalendar();
+});
 
-                        <h3>${event.title}</h3>
-                        <p>${event.time} – ${event.endTime}</p>
-                        <p>${event.location}</p>
-                    </div>
-                </article>`
-    })
+todayButton.addEventListener("click", () => {
+    const now = new Date();
+    currentMonth = now.getMonth();
+    currentYear = now.getFullYear();
+    renderCalendar();
+});
 
-    eventGrid.innerHTML = html
-}
+closeScheduleEventModal.addEventListener("click", closeScheduleModal);
+eventDetailsModalCloseButton.addEventListener("click", closeDetailsModal);
+scheduleEventForm.addEventListener("submit", saveCalendarEvent);
+deleteEventCalendarButton.addEventListener("click", deleteCurrentEvent);
 
-renderEvents();
+scheduleEventModal.addEventListener("click", (event) => {
+    if (event.target === scheduleEventModal) closeScheduleModal();
+});
 
+eventDetailsModal.addEventListener("click", (event) => {
+    if (event.target === eventDetailsModal) closeDetailsModal();
+});
+
+onAuthStateChanged(auth, async (user) => {
+    if (!user) {
+        window.location.replace("login.html");
+        return;
+    }
+
+    firebaseUser = user;
+
+    try {
+        const profileRef = doc(database, "schools", SCHOOL_ID, "users", user.uid);
+        const profileSnapshot = await getDoc(profileRef);
+
+        if (!profileSnapshot.exists()) {
+            window.location.replace("login.html");
+            return;
+        }
+
+        currentProfile = profileSnapshot.data();
+        isAdmin = userIsAdmin(currentProfile);
+        showAdminControls(isAdmin);
+        renderCalendar();
+        subscribeToEvents();
+    } catch (error) {
+        console.error("Could not verify calendar access:", error);
+        window.location.replace("login.html");
+    }
+});
+
+window.addEventListener("beforeunload", () => {
+    if (eventsUnsubscribe) eventsUnsubscribe();
+});
