@@ -649,7 +649,12 @@ function startReservationsListener(eventId) {
         if (event) renderSignupControls(event);
     }, (error) => {
         console.error("Could not load event signups:", error);
-        signupStatus.textContent = "Signups could not be loaded. Please refresh.";
+
+        // Keep the event's shift choices visible even if the live roster fails to load.
+        // Saving still goes through Firestore, so permission errors will not bypass security.
+        const event = currentEvent();
+        if (event) renderShiftChoices(event);
+        signupStatus.textContent = "Signup availability could not be loaded. Refresh and try again.";
     });
 }
 
@@ -668,6 +673,11 @@ function openEventModal(eventId) {
     document.querySelector("#modalEventDescription").textContent = event.description || "";
 
     eventModal.style.display = "block";
+
+    // Draw the signup controls immediately. The reservation listener updates
+    // slot counts a moment later, but members should never see an empty signup box
+    // while Firestore is still loading.
+    renderSignupControls(event);
     startReservationsListener(eventId);
 }
 
