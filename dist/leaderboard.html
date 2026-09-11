@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southport Key Club - Leaderboard</title>
+  <script type="module" crossorigin src="/assets/leaderboard-BRNocCHv.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebaseConfig--y5xjUz-.js">
+  <link rel="stylesheet" crossorigin href="/assets/leaderboard-B0fizmIU.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-v7735Zgn.css">
+</head>
+<body>
+    <section class="header">
+        <div class="header-content">
+            <h1>Leaderboard</h1>
+            <p class="header-description">Volunteer hours and points from the Southport Key Club</p>
+        </div>
+    </section>
+
+    <main class="main-content">
+        <div class="leaderboard-container">
+            <div class="tab-navigation" role="tablist" aria-label="Leaderboard type">
+                <button
+                    class="tab-button active"
+                    type="button"
+                    role="tab"
+                    aria-selected="true"
+                    aria-controls="schools-tab"
+                    id="school-ranking-button"
+                >School Rankings</button>
+                <button
+                    class="tab-button"
+                    type="button"
+                    role="tab"
+                    aria-selected="false"
+                    aria-controls="students-tab"
+                    id="student-ranking-button"
+                >Student Rankings</button>
+            </div>
+
+            <section class="tab-content active" id="schools-tab" role="tabpanel" aria-labelledby="school-ranking-button">
+                <div class="leaderboard-header">
+                    <h2>School Rankings</h2>
+                </div>
+                <div class="leaderboard-list" id="schoolLeaderboard" aria-live="polite"></div>
+            </section>
+
+            <section class="tab-content" id="students-tab" role="tabpanel" aria-labelledby="student-ranking-button">
+                <div class="leaderboard-header">
+                    <h2>Student Rankings</h2>
+                    <div class="filter-dropdown">
+                        <label for="studentSort">Rank by</label>
+                        <select id="studentSort">
+                            <option value="hours">Volunteer Hours</option>
+                            <option value="points">Points</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="leaderboard-list" id="studentLeaderboard" aria-live="polite"></div>
+
+                <div class="pagination-controls" id="studentPagination" hidden>
+                    <button class="pagination-button" type="button" id="prevStudentPage">
+                        <span aria-hidden="true">&larr;</span> Previous
+                    </button>
+                    <div class="pagination-numbers" id="studentPaginationNumbers" aria-label="Student leaderboard pages"></div>
+                    <button class="pagination-button" type="button" id="nextStudentPage">
+                        Next <span aria-hidden="true">&rarr;</span>
+                    </button>
+                </div>
+            </section>
+        </div>
+
+        <section class="top-performers-section" aria-labelledby="top-performers-title">
+            <h2 class="section-title" id="top-performers-title">Top Performers</h2>
+            <div class="top-performers-grid" aria-live="polite"></div>
+        </section>
+    </main>
+
+    <nav class="navbar" id="nav-bar" aria-label="Main navigation">
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="leaderboard.html" aria-current="page">Leaderboard</a>
+            <a href="profile.html">Profile</a>
+            <a href="admin.html" data-admin-only hidden>Admin</a>
+            <a href="studentlist.html">Student Directory</a>
+        </div>
+    </nav>
+</body>
+</html>

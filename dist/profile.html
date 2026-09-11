@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southport Key Club - Profile</title>
+
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script type="module" crossorigin src="/assets/profile-BL-EleQ3.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebaseConfig--y5xjUz-.js">
+  <link rel="stylesheet" crossorigin href="/assets/profile-bTX-gvEo.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-v7735Zgn.css">
+</head>
+<body>
+    <a href="landingpage.html">go landing page</a>
+
+    <section class="header">
+        <div class="profile-header">
+            <img src="/assets/avatar1-ChRwQanF.png" alt="Profile Picture">
+            <h1 id="username">Loading...</h1>
+            <p id="firstandlastname"></p>
+            <div class="profile-buttons">
+                <button type="button" class="edit-profile-button">Edit Profile</button>
+                <button type="button" id="logout-button" class="logout-button">Logout</button>
+            </div>
+        </div>
+
+        <div class="description">
+            <p id="description">Loading profile...</p>
+        </div>
+
+        <div class="qr-code-center">
+            <div class="qr-code-container" id="qrCodeContainer" aria-label="Your attendance QR code">
+                <!-- QR code is generated here after the profile loads. -->
+            </div>
+        </div>
+    </section>
+
+    <section class="main-content">
+        <div class="service-hours-board">
+            <div class="service-hours">
+                <h2>Service Hours</h2>
+                <p id="studentHours">Hours: 0</p>
+            </div>
+            <div class="points">
+                <h2>Points</h2>
+                <p id="studentPoints">Points: 0</p>
+            </div>
+        </div>
+
+        <div class="signed-up-events">
+            <h2 class="section-title">Your Events</h2>
+            <div class="events-scroll-container" id="signedUpEventsContainer">
+                <p class="empty-state">Loading events...</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="navbar" id="nav-bar">
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="profile.html" aria-current="page">Profile</a>
+            <a href="admin.html">Admin</a>
+            <a href="studentlist.html">Student Directory</a>
+        </div>
+    </section>
+
+    <div class="modal" id="editProfileModal" role="dialog" aria-modal="true" aria-labelledby="editProfileTitle">
+        <div class="modal-content edit-profile-modal-content">
+            <div class="modal-header">
+                <h2 id="editProfileTitle">Edit Profile</h2>
+                <button type="button" class="modal-close edit-profile-close" aria-label="Close edit profile">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <form class="edit-profile-form" id="editProfileForm">
+                    <div class="form-group">
+                        <label for="profileName">Display name</label>
+                        <input
+                            type="text"
+                            id="profileName"
+                            placeholder="Enter your display name"
+                            minlength="2"
+                            maxlength="15"
+                            autocomplete="nickname"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="profileDescription">Description</label>
+                        <textarea
+                            id="profileDescription"
+                            placeholder="Tell us about yourself"
+                            rows="4"
+                            maxlength="160"
+                        ></textarea>
+                    </div>
+
+                    <p id="profileEditMessage" role="status" aria-live="polite"></p>
+                    <button type="submit" class="submit-profile-button">Save Changes</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

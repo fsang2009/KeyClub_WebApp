@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Southport Key Club - Admin</title>
+
+
+    <!-- Pin the scanner version so an upstream update does not randomly break attendance. -->
+    <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+  <script type="module" crossorigin src="/assets/admin-CIm56Gbo.js"></script>
+  <link rel="modulepreload" crossorigin href="/assets/firebaseConfig--y5xjUz-.js">
+  <link rel="stylesheet" crossorigin href="/assets/admin-w10ATrDH.css">
+  <link rel="stylesheet" crossorigin href="/assets/common-v7735Zgn.css">
+</head>
+<body>
+    <p id="adminAccessMessage" style="padding: 24px; text-align: center; font-weight: 700;">Checking admin access...</p>
+
+    <section class="header" data-admin-page hidden>
+        <div class="header-content">
+            <h1>Admin Dashboard</h1>
+            <p class="header-description">Scan QR codes to track event attendance</p>
+        </div>
+    </section>
+
+    <section class="main-content" data-admin-page hidden>
+        <div class="admin-dashboard">
+            <div class="scan-section">
+                <h2 class="section-title">QR Code Scanner</h2>
+                <div class="scanner-container">
+                    <div class="form-group">
+                        <label for="cameraEvent">Event</label>
+                        <select id="cameraEvent">
+                            <option value="">Select event</option>
+                        </select>
+                    </div>
+
+                    <div class="scanner-viewport" id="scannerViewport">
+                        <div id="qr-reader" style="width: 100%;"></div>
+                    </div>
+
+                    <p class="scanner-status" role="status" aria-live="polite" style="text-align: center; margin: 15px 0; font-weight: bold; color: black;">Ready to scan</p>
+                    <p class="error-message" id="cameraErrorMessage" role="alert" aria-live="assertive"></p>
+
+                    <div class="scanner-controls">
+                        <button id="startScanButton" type="button" class="scan-button">Start Camera</button>
+                        <button id="stopScanButton" type="button" class="scan-button secondary">Stop Camera</button>
+                    </div>
+                </div>
+
+                <div class="userScannedLogContainer">
+                    <div class="userScannedLog" id="userScannedLogBox">
+                        <p>No members currently checked in.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="attendance-section">
+                <h2 class="section-title">Recent Attendance</h2>
+                <div class="attendance-list" id="attendanceList">
+                    <p class="empty-state">Loading attendance...</p>
+                </div>
+            </div>
+
+            <div class="manual-entry-section">
+                <h2 class="section-title">Manual Entry</h2>
+                <div class="manual-entry-form">
+                    <div class="form-group">
+                        <label for="manualEmail">Student Email</label>
+                        <input type="email" id="manualEmail" autocomplete="off" placeholder="Enter student email">
+                    </div>
+                    <div class="form-group">
+                        <label for="manualEvent">Event</label>
+                        <select id="manualEvent">
+                            <option value="">Select event</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="manualTimeArrived">Time Arrived</label>
+                        <input type="time" id="manualTimeArrived">
+                    </div>
+                    <div class="form-group">
+                        <label for="manualTimeLeaving">Time Leaving</label>
+                        <input type="time" id="manualTimeLeaving">
+                    </div>
+                    <p class="error-message" id="manualErrorMessage" role="alert" aria-live="assertive"></p>
+                    <p class="success-message" id="manualSuccessMessage" role="status" aria-live="polite"></p>
+                    <div class="button-group">
+                        <button id="manualSubmitButton" type="button" class="submit-button">Mark Attendance</button>
+                        <button id="manualClearButton" type="button" class="clear-button">Clear</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="navbar" id="nav-bar" data-admin-page hidden>
+        <div class="nav-links" id="nav-bar-nav-links">
+            <a href="index.html">Home</a>
+            <a href="events.html">Events</a>
+            <a href="calendar.html">Calendar</a>
+            <a href="leaderboard.html">Leaderboard</a>
+            <a href="profile.html">Profile</a>
+            <a href="admin.html" aria-current="page">Admin</a>
+            <a href="studentlist.html">Student Directory</a>
+        </div>
+    </section>
+</body>
+</html>
