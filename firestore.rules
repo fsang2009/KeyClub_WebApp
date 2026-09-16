@@ -137,12 +137,30 @@ service cloud.firestore {
           && signedIn()
           && request.resource.data.keys().hasOnly([
             "uid",
+            "email",
             "type",
             "slotNumber",
             "shiftId",
             "createdAt"
           ])
           && request.resource.data.uid == request.auth.uid
+          // Patch 22: older cached versions of events.js did not include email on
+          // reservation documents. Allow that older payload so members are not
+          // blocked by a permission error. When email is present, it must still
+          // belong to the signed-in member.
+          && (
+            !("email" in request.resource.data)
+            || (
+              request.resource.data.email is string
+              && (
+                request.resource.data.email == request.auth.token.email
+                || (
+                  exists(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid))
+                  && request.resource.data.email == get(/databases/$(database)/documents/schools/$(schoolId)/users/$(request.auth.uid)).data.email
+                )
+              )
+            )
+          )
           && request.resource.data.type in ["member", "general", "shift"]
           && request.resource.data.slotNumber is int
           && request.resource.data.shiftId is string

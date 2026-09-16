@@ -1,9 +1,12 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs, query, where } from "firebase/firestore";
 import { auth, database } from "./firebaseConfig.js";
 
 const SCHOOL_ID = "southport_high_school";
 const DEFAULT_AVATAR = "assets/images/profiles/avatar1.png";
+const MEMBER_CACHE_KEY = "keyconnect:members:v2";
+const MEMBER_CACHE_TTL_MS = 2 * 60 * 1000;
+const historyCache = new Map();
 
 const studentListContainer = document.querySelector("#studentsContainer");
 const userSearchBar = document.querySelector("#studentSearchInput");
@@ -15,8 +18,24 @@ const historyContainer = document.querySelector("#historyContainer");
 let members = [];
 let attendanceRecords = [];
 let selectedMemberUid = null;
-let membersUnsubscribe = null;
-let attendanceUnsubscribe = null;
+
+function readMemberCache() {
+    try {
+        const cached = JSON.parse(sessionStorage.getItem(MEMBER_CACHE_KEY));
+        if (!cached || !Array.isArray(cached.members)) return null;
+        if (Date.now() - Number(cached.savedAt || 0) > MEMBER_CACHE_TTL_MS) return null;
+        return cached.members;
+    } catch {
+        return null;
+    }
+}
+
+function writeMemberCache(nextMembers) {
+    sessionStorage.setItem(MEMBER_CACHE_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        members: nextMembers
+    }));
+}
 
 function redirectToLogin() {
     window.location.replace("login.html");
@@ -254,14 +273,43 @@ function renderHistory(member) {
     });
 }
 
-function openHistory(memberUid) {
+async function openHistory(memberUid) {
     const member = members.find((item) => item.uid === memberUid);
     if (!member) return;
 
     selectedMemberUid = memberUid;
-    renderHistory(member);
+    studentNameTarget.textContent = memberDisplayName(member);
+    historyContainer.replaceChildren();
+    const loading = document.createElement("p");
+    loading.className = "empty-state";
+    loading.textContent = "Loading history...";
+    historyContainer.append(loading);
     historyModal.classList.add("active");
     closeHistoryModalButton.focus();
+
+    try {
+        if (historyCache.has(memberUid)) {
+            attendanceRecords = historyCache.get(memberUid);
+        } else {
+            // Only read this student's attendance when someone actually opens their history.
+            const attendanceQuery = query(
+                collection(database, "schools", SCHOOL_ID, "attendance"),
+                where("studentUid", "==", memberUid)
+            );
+            const snapshot = await getDocs(attendanceQuery);
+            attendanceRecords = snapshot.docs.map((attendanceDoc) => ({
+                id: attendanceDoc.id,
+                ...attendanceDoc.data()
+            }));
+            historyCache.set(memberUid, attendanceRecords);
+        }
+
+        if (selectedMemberUid === memberUid) renderHistory(member);
+    } catch (error) {
+        console.error("Could not load attendance history:", error);
+        attendanceRecords = [];
+        if (selectedMemberUid === memberUid) renderHistory(member);
+    }
 }
 
 function closeHistory() {
@@ -290,54 +338,28 @@ document.addEventListener("keydown", (event) => {
     }
 });
 
-function startMemberListener() {
-    const usersRef = collection(database, "schools", SCHOOL_ID, "users");
-
-    membersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
-        members = snapshot.docs
-            .map((memberDoc) => ({
-                uid: memberDoc.id,
-                ...memberDoc.data()
-            }))
-            .sort((a, b) => memberDisplayName(a).localeCompare(memberDisplayName(b)));
-
+async function loadMembersOnce() {
+    const cachedMembers = readMemberCache();
+    if (cachedMembers) {
+        members = cachedMembers;
         renderStudents();
+        return;
+    }
 
-        if (selectedMemberUid) {
-            const selectedMember = members.find((member) => member.uid === selectedMemberUid);
-            if (selectedMember) renderHistory(selectedMember);
-            else closeHistory();
-        }
-    }, (error) => {
+    const usersRef = collection(database, "schools", SCHOOL_ID, "users");
+    try {
+        const snapshot = await getDocs(usersRef);
+        members = snapshot.docs
+            .map((memberDoc) => ({ uid: memberDoc.id, ...memberDoc.data() }))
+            .sort((a, b) => memberDisplayName(a).localeCompare(memberDisplayName(b)));
+        writeMemberCache(members);
+        renderStudents();
+    } catch (error) {
         console.error("Could not load student directory:", error);
         studentListContainer.replaceChildren(makeStatusRow("Could not load the student directory."));
-    });
+    }
 }
 
-function startAttendanceListener() {
-    const attendanceRef = collection(database, "schools", SCHOOL_ID, "attendance");
-
-    attendanceUnsubscribe = onSnapshot(attendanceRef, (snapshot) => {
-        attendanceRecords = snapshot.docs.map((attendanceDoc) => ({
-            id: attendanceDoc.id,
-            ...attendanceDoc.data()
-        }));
-
-        if (selectedMemberUid) {
-            const selectedMember = members.find((member) => member.uid === selectedMemberUid);
-            if (selectedMember) renderHistory(selectedMember);
-        }
-    }, (error) => {
-        // The directory can still work if history fails, so don't take down the whole page.
-        console.error("Could not load attendance history:", error);
-        attendanceRecords = [];
-    });
-}
-
-window.addEventListener("pagehide", () => {
-    membersUnsubscribe?.();
-    attendanceUnsubscribe?.();
-});
 
 onAuthStateChanged(auth, async (user) => {
     if (!user) {
@@ -355,8 +377,7 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         showAdminControls(userIsAdmin(profileSnapshot.data()));
-        startMemberListener();
-        startAttendanceListener();
+        await loadMembersOnce();
     } catch (error) {
         console.error("Could not verify the signed-in member:", error);
         studentListContainer.replaceChildren(makeStatusRow("Could not load the directory. Refresh and try again."));

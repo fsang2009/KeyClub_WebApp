@@ -3,13 +3,18 @@ import {
     collection,
     deleteDoc,
     doc,
+    arrayRemove,
+    arrayUnion,
+    getCountFromServer,
     getDoc,
     getDocs,
+    limit,
     onSnapshot,
     orderBy,
     query,
     serverTimestamp,
-    setDoc
+    setDoc,
+    updateDoc
 } from "firebase/firestore";
 import {
     deleteObject,
@@ -62,10 +67,7 @@ let isAdmin = false;
 let postData = [];
 let eventData = [];
 let sortNewestFirst = true;
-let postsUnsubscribe = null;
-let eventsUnsubscribe = null;
 let activeCommentsUnsubscribe = null;
-const postMetaUnsubscribers = new Map();
 const postMeta = new Map();
 const busyLikes = new Set();
 
@@ -351,71 +353,50 @@ function updatePostMetaInDom(postId) {
     if (heart) heart.textContent = meta.liked ? "❤️" : "♡";
 }
 
-function stopPostMetaListeners() {
-    postMetaUnsubscribers.forEach(({ likes, comments }) => {
-        likes?.();
-        comments?.();
-    });
-    postMetaUnsubscribers.clear();
-    postMeta.clear();
-}
-
-function startPostMetaListeners(postId) {
+async function loadPostMetaOnce(postId) {
     const likesRef = collection(database, "schools", SCHOOL_ID, "posts", postId, "likes");
     const commentsRef = collection(database, "schools", SCHOOL_ID, "posts", postId, "comments");
 
-    const likesUnsubscribe = onSnapshot(likesRef, (snapshot) => {
-        const previous = postMeta.get(postId) || {};
-        postMeta.set(postId, {
-            ...previous,
-            likeCount: snapshot.size,
-            liked: snapshot.docs.some((likeDoc) => likeDoc.id === firebaseUser?.uid)
-        });
-        updatePostMetaInDom(postId);
-    }, (error) => {
-        console.error(`Could not load likes for post ${postId}:`, error);
-    });
+    try {
+        // Aggregate counts cost far fewer reads than downloading every like/comment document.
+        const [likesCount, commentsCount] = await Promise.all([
+            getCountFromServer(likesRef),
+            getCountFromServer(commentsRef)
+        ]);
 
-    const commentsUnsubscribe = onSnapshot(commentsRef, (snapshot) => {
-        const previous = postMeta.get(postId) || {};
         postMeta.set(postId, {
-            ...previous,
-            commentCount: snapshot.size
+            likeCount: likesCount.data().count,
+            commentCount: commentsCount.data().count,
+            liked: Array.isArray(currentProfile?.likedPosts) && currentProfile.likedPosts.includes(postId)
         });
-        updatePostMetaInDom(postId);
-    }, (error) => {
-        console.error(`Could not load comment count for post ${postId}:`, error);
-    });
-
-    postMetaUnsubscribers.set(postId, {
-        likes: likesUnsubscribe,
-        comments: commentsUnsubscribe
-    });
+    } catch (error) {
+        console.error(`Could not load post counts for ${postId}:`, error);
+        postMeta.set(postId, { likeCount: 0, commentCount: 0, liked: false });
+    }
 }
 
-function startPostsListener() {
-    postsUnsubscribe?.();
-
+async function loadPostsOnce() {
     const postsRef = collection(database, "schools", SCHOOL_ID, "posts");
-    const postsQuery = query(postsRef, orderBy("createdAt", "desc"));
+    const postsQuery = query(postsRef, orderBy("createdAt", "desc"), limit(25));
 
-    postsUnsubscribe = onSnapshot(postsQuery, (snapshot) => {
+    try {
+        const snapshot = await getDocs(postsQuery);
         postData = snapshot.docs.map((postDoc) => ({
             id: postDoc.id,
             ...postDoc.data()
         }));
 
-        stopPostMetaListeners();
-        postData.forEach((post) => startPostMetaListeners(post.id));
+        postMeta.clear();
+        await Promise.all(postData.map((post) => loadPostMetaOnce(post.id)));
         renderPosts();
-    }, (error) => {
+    } catch (error) {
         console.error("Could not load posts:", error);
         postSection.replaceChildren();
         const message = document.createElement("p");
         message.className = "empty-state";
         message.textContent = "Could not load club posts. Please refresh and try again.";
         postSection.append(message);
-    });
+    }
 }
 
 function renderEventsInModal() {
@@ -435,19 +416,19 @@ function renderEventsInModal() {
     });
 }
 
-function startEventsListener() {
-    eventsUnsubscribe?.();
+async function loadEventsOnce() {
     const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
 
-    eventsUnsubscribe = onSnapshot(eventsRef, (snapshot) => {
+    try {
+        const snapshot = await getDocs(eventsRef);
         eventData = snapshot.docs.map((eventDoc) => ({
             id: eventDoc.id,
             ...eventDoc.data()
         }));
         renderEventsInModal();
-    }, (error) => {
+    } catch (error) {
         console.error("Could not load events for the post form:", error);
-    });
+    }
 }
 
 function validateMedia(file) {
@@ -546,6 +527,7 @@ async function publishPost() {
         });
 
         closePostModal();
+        await loadPostsOnce();
     } catch (error) {
         console.error("Could not publish post:", error);
 
@@ -602,6 +584,7 @@ async function deletePost(postId) {
         }
 
         await deleteDoc(postRef);
+        await loadPostsOnce();
     } catch (error) {
         console.error("Could not delete post:", error);
         window.alert("Could not delete this post. Please try again.");
@@ -621,17 +604,33 @@ async function toggleLike(postId) {
         "likes",
         firebaseUser.uid
     );
+    const profileRef = doc(database, "schools", SCHOOL_ID, "users", firebaseUser.uid);
+    const meta = postMeta.get(postId) || { likeCount: 0, commentCount: 0, liked: false };
 
     try {
-        const existingLike = await getDoc(likeRef);
-        if (existingLike.exists()) {
-            await deleteDoc(likeRef);
+        if (meta.liked) {
+            await Promise.all([
+                deleteDoc(likeRef),
+                updateDoc(profileRef, { likedPosts: arrayRemove(postId) })
+            ]);
+            meta.liked = false;
+            meta.likeCount = Math.max(0, meta.likeCount - 1);
+            currentProfile.likedPosts = (currentProfile.likedPosts || []).filter((id) => id !== postId);
         } else {
-            await setDoc(likeRef, {
-                userUid: firebaseUser.uid,
-                createdAt: serverTimestamp()
-            });
+            await Promise.all([
+                setDoc(likeRef, {
+                    userUid: firebaseUser.uid,
+                    createdAt: serverTimestamp()
+                }),
+                updateDoc(profileRef, { likedPosts: arrayUnion(postId) })
+            ]);
+            meta.liked = true;
+            meta.likeCount += 1;
+            currentProfile.likedPosts = [...new Set([...(currentProfile.likedPosts || []), postId])];
         }
+
+        postMeta.set(postId, meta);
+        updatePostMetaInDom(postId);
     } catch (error) {
         console.error("Could not update like:", error);
     } finally {
@@ -738,6 +737,10 @@ async function sendComment() {
             createdAt: serverTimestamp()
         });
 
+        const meta = postMeta.get(postId) || { likeCount: 0, commentCount: 0, liked: false };
+        meta.commentCount += 1;
+        postMeta.set(postId, meta);
+        updatePostMetaInDom(postId);
         commentInput.value = "";
     } catch (error) {
         console.error("Could not send comment:", error);
@@ -809,10 +812,7 @@ document.addEventListener("keydown", (event) => {
 });
 
 window.addEventListener("beforeunload", () => {
-    postsUnsubscribe?.();
-    eventsUnsubscribe?.();
     stopActiveCommentsListener();
-    stopPostMetaListeners();
 });
 
 onAuthStateChanged(auth, async (user) => {
@@ -843,8 +843,8 @@ onAuthStateChanged(auth, async (user) => {
 
         showAdminControls(isAdmin);
         syncLegacyProfileCache();
-        startPostsListener();
-        startEventsListener();
+        await loadPostsOnce();
+        if (isAdmin) await loadEventsOnce();
     } catch (error) {
         console.error("Could not load home page:", error);
         postSection.replaceChildren();

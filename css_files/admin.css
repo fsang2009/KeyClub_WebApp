@@ -48,8 +48,9 @@
 
 .scanner-viewport {
     position: relative;
-    width: 100%;
-    aspect-ratio: 16/9;
+    width: min(100%, 760px);
+    aspect-ratio: 4 / 3;
+    margin-inline: auto;
 
     overflow: hidden;
 
@@ -57,6 +58,34 @@
     border-radius: 16px;
 
     background: #0a1428;
+}
+
+/* html5-qrcode injects its own video sizing. Override it so the whole
+   camera feed stays visible on phones instead of being cropped off-screen. */
+#qr-reader {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden;
+    border: 0 !important;
+    background: #050b16;
+}
+
+#qr-reader video,
+#qr-reader canvas {
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    object-fit: contain !important;
+}
+
+#qr-reader__scan_region {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
 }
 
 .scanner-overlay {
@@ -424,6 +453,26 @@
 }
 
 @media (max-width: 600px) {
+    .scan-section {
+        padding: 16px;
+    }
+
+    .scanner-viewport {
+        width: 100%;
+        aspect-ratio: 1 / 1;
+        max-height: 70dvh;
+        border-radius: 14px;
+    }
+
+    .scanner-controls {
+        flex-direction: column;
+    }
+
+    .userScannedLog {
+        width: 100%;
+        margin: 24px 0 0;
+    }
+
     .scan-button {
         font-size: 0.8rem;
         padding: 12px 16px;

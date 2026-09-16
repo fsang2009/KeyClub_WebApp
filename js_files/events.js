@@ -19,6 +19,8 @@ import {
 import { auth, database } from "./firebaseConfig.js";
 
 const SCHOOL_ID = "southport_high_school";
+const MEMBER_CACHE_KEY = "keyconnect:members:v2";
+const MEMBER_CACHE_TTL_MS = 2 * 60 * 1000;
 
 const eventArea = document.querySelector(".event-grid");
 const eventModal = document.querySelector("#eventModal");
@@ -68,12 +70,40 @@ let currentReservations = [];
 let memberDirectory = new Map();
 let eventData = [];
 let isAdmin = false;
-let eventsUnsubscribe = null;
-let membersUnsubscribe = null;
 let reservationsUnsubscribe = null;
 let chatUnsubscribe = null;
 let chatEventID = "";
 let signupSettingsLocked = false;
+
+function readMemberCache() {
+    try {
+        const cached = JSON.parse(sessionStorage.getItem(MEMBER_CACHE_KEY));
+        if (!cached || !Array.isArray(cached.members)) return null;
+        if (Date.now() - Number(cached.savedAt || 0) > MEMBER_CACHE_TTL_MS) return null;
+        return cached.members;
+    } catch {
+        return null;
+    }
+}
+
+function writeMemberCache(members) {
+    sessionStorage.setItem(MEMBER_CACHE_KEY, JSON.stringify({ savedAt: Date.now(), members }));
+}
+
+async function ensureMemberDirectoryLoaded() {
+    if (memberDirectory.size > 0) return;
+
+    const cached = readMemberCache();
+    if (cached) {
+        memberDirectory = new Map(cached.map((member) => [member.uid, member]));
+        return;
+    }
+
+    const snapshot = await getDocs(collection(database, "schools", SCHOOL_ID, "users"));
+    const members = snapshot.docs.map((userDoc) => ({ uid: userDoc.id, ...userDoc.data() }));
+    writeMemberCache(members);
+    memberDirectory = new Map(members.map((member) => [member.uid, member]));
+}
 
 function redirectToLogin() {
     window.location.replace("login.html");
@@ -438,16 +468,16 @@ function signedUpMemberIds() {
     return ids;
 }
 
-function memberDisplayName(uid) {
-    const profile = memberDirectory.get(uid);
-    if (!profile) return "Member";
+function memberDisplayName(reservationOrUid) {
+    if (reservationOrUid && typeof reservationOrUid === "object") {
+        const email = String(reservationOrUid.email || "").trim().toLowerCase();
+        if (email) return email;
+        reservationOrUid = reservationOrUid.uid;
+    }
 
-    // Signup rosters should identify the actual member, not their display name.
-    const fullName = `${profile.firstname || ""} ${profile.lastname || ""}`.trim();
-    const email = String(profile.email || "").trim().toLowerCase();
-
-    if (fullName && email) return `${fullName} — ${email}`;
-    return fullName || email || "Member";
+    const profile = memberDirectory.get(reservationOrUid);
+    const email = String(profile?.email || "").trim().toLowerCase();
+    return email || "Email unavailable";
 }
 
 function shiftUsage(shiftId) {
@@ -525,7 +555,7 @@ function renderRoster(event) {
             list.append(empty);
         } else {
             members
-                .map((uid) => ({ uid, name: memberDisplayName(uid) }))
+                .map((uid) => ({ uid, name: memberDisplayName(currentReservations.find((reservation) => reservation.uid === uid) || uid) }))
                 .sort((a, b) => a.name.localeCompare(b.name))
                 .forEach(({ name }) => {
                     const item = document.createElement("li");
@@ -570,7 +600,7 @@ function renderRoster(event) {
             list.append(empty);
         } else {
             reservations
-                .map((reservation) => memberDisplayName(reservation.uid))
+                .map((reservation) => memberDisplayName(reservation))
                 .sort((a, b) => a.localeCompare(b))
                 .forEach((name) => {
                     const item = document.createElement("li");
@@ -643,11 +673,21 @@ function renderSignupControls(event) {
 function startReservationsListener(eventId) {
     stopReservationsListener();
 
-    reservationsUnsubscribe = onSnapshot(reservationsRef(eventId), (snapshot) => {
+    reservationsUnsubscribe = onSnapshot(reservationsRef(eventId), async (snapshot) => {
         currentReservations = snapshot.docs.map((reservationDoc) => ({
             id: reservationDoc.id,
             ...reservationDoc.data()
         }));
+
+        // New reservations carry the school email. Only fetch the member directory
+        // for older reservation documents that predate that field.
+        if (currentReservations.some((reservation) => !reservation.email)) {
+            try {
+                await ensureMemberDirectoryLoaded();
+            } catch (error) {
+                console.error("Could not load member emails for old reservations:", error);
+            }
+        }
 
         const event = currentEvent();
         if (event) renderSignupControls(event);
@@ -830,6 +870,7 @@ async function saveEvent(formEvent) {
         addEventModal.classList.remove("active");
         if (editing) closeEventModal();
         resetEventForm();
+        await loadEventsOnce();
     } catch (error) {
         console.error("Could not save event:", error);
         showEventFormMessage("Could not save the event. Please try again.");
@@ -882,6 +923,7 @@ async function deleteCurrentEvent() {
         await removeEventFromProfiles(eventId);
         await deleteDoc(doc(database, "schools", SCHOOL_ID, "events", eventId));
         closeEventModal();
+        await loadEventsOnce();
     } catch (error) {
         console.error("Could not delete event:", error);
         window.alert("The event could not be deleted. Please try again.");
@@ -934,7 +976,7 @@ function buildReservationPlan(event, reservations, selectedShiftIds) {
 
             claims.push({
                 id: `general_${slotNumber}`,
-                data: { uid, type: "general", slotNumber, shiftId: "" }
+                data: { uid, email: firebaseUser.email || currentProfile.email || "", type: "general", slotNumber, shiftId: "" }
             });
         }
 
@@ -943,7 +985,7 @@ function buildReservationPlan(event, reservations, selectedShiftIds) {
         if (!currentMember) {
             claims.push({
                 id: `member_${uid}`,
-                data: { uid, type: "member", slotNumber: 0, shiftId: "" }
+                data: { uid, email: firebaseUser.email || currentProfile.email || "", type: "member", slotNumber: 0, shiftId: "" }
             });
         }
 
@@ -968,7 +1010,7 @@ function buildReservationPlan(event, reservations, selectedShiftIds) {
 
         claims.push({
             id: `shift_${shiftId}_${slotNumber}`,
-            data: { uid, type: "shift", slotNumber, shiftId }
+            data: { uid, email: firebaseUser.email || currentProfile.email || "", type: "shift", slotNumber, shiftId }
         });
     }
 
@@ -1191,11 +1233,12 @@ async function migrateLegacyEventsIfNeeded(snapshot) {
     }
 }
 
-function startEventsListener() {
-    if (eventsUnsubscribe) eventsUnsubscribe();
-
+async function loadEventsOnce() {
     const eventsRef = collection(database, "schools", SCHOOL_ID, "events");
-    eventsUnsubscribe = onSnapshot(eventsRef, async (snapshot) => {
+
+    try {
+        const snapshot = await getDocs(eventsRef);
+
         try {
             await migrateLegacyEventsIfNeeded(snapshot);
         } catch (error) {
@@ -1212,35 +1255,10 @@ function startEventsListener() {
 
         syncLegacyEventCache();
         renderEvents();
-
-        if (currentEventID) {
-            const event = currentEvent();
-            if (!event) {
-                closeEventModal();
-            } else {
-                renderSignupControls(event);
-            }
-        }
-    }, (error) => {
+    } catch (error) {
         console.error("Could not load events:", error);
         eventArea.textContent = "Events could not be loaded. Please refresh and try again.";
-    });
-}
-
-function startMemberDirectoryListener() {
-    if (membersUnsubscribe) membersUnsubscribe();
-
-    const usersRef = collection(database, "schools", SCHOOL_ID, "users");
-    membersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
-        memberDirectory = new Map(
-            snapshot.docs.map((userDoc) => [userDoc.id, userDoc.data()])
-        );
-
-        const event = currentEvent();
-        if (event) renderRoster(event);
-    }, (error) => {
-        console.error("Could not load member names for event signups:", error);
-    });
+    }
 }
 
 async function loadProfile(user) {
@@ -1309,8 +1327,7 @@ onAuthStateChanged(auth, async (user) => {
         isAdmin = userIsAdmin(currentProfile);
         showAdminControls(isAdmin);
         syncLegacyProfileCache();
-        startMemberDirectoryListener();
-        startEventsListener();
+        await loadEventsOnce();
     } catch (error) {
         console.error("Could not load the current user:", error);
         window.alert("Your account could not be loaded. Please refresh and try again.");
@@ -1318,8 +1335,6 @@ onAuthStateChanged(auth, async (user) => {
 });
 
 window.addEventListener("beforeunload", () => {
-    if (eventsUnsubscribe) eventsUnsubscribe();
-    if (membersUnsubscribe) membersUnsubscribe();
     stopReservationsListener();
     stopChatListener();
 });

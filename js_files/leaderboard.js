@@ -1,11 +1,13 @@
 import { onAuthStateChanged } from "firebase/auth";
-import { collection, doc, getDoc, onSnapshot } from "firebase/firestore";
+import { collection, doc, getDoc, getDocs } from "firebase/firestore";
 import { auth, database } from "./firebaseConfig.js";
 
 const SCHOOL_ID = "southport_high_school";
 const SCHOOL_NAME = "Southport High School";
 const DEFAULT_AVATAR = "assets/images/profiles/avatar1.png";
 const STUDENTS_PER_PAGE = 10;
+const MEMBER_CACHE_KEY = "keyconnect:members:v2";
+const MEMBER_CACHE_TTL_MS = 2 * 60 * 1000;
 
 const schoolLeaderboard = document.querySelector("#schoolLeaderboard");
 const studentLeaderboard = document.querySelector("#studentLeaderboard");
@@ -22,7 +24,38 @@ const studentPaginationNumbers = document.querySelector("#studentPaginationNumbe
 let members = [];
 let currentSort = "hours";
 let currentStudentPage = 1;
-let membersUnsubscribe = null;
+
+function readMemberCache() {
+    try {
+        const cached = JSON.parse(sessionStorage.getItem(MEMBER_CACHE_KEY));
+        if (!cached || !Array.isArray(cached.members)) return null;
+        if (Date.now() - Number(cached.savedAt || 0) > MEMBER_CACHE_TTL_MS) return null;
+        return cached.members;
+    } catch {
+        return null;
+    }
+}
+
+function writeMemberCache(nextMembers) {
+    sessionStorage.setItem(MEMBER_CACHE_KEY, JSON.stringify({
+        savedAt: Date.now(),
+        members: nextMembers
+    }));
+}
+
+async function loadMembersOnce() {
+    const cachedMembers = readMemberCache();
+    if (cachedMembers) {
+        members = cachedMembers;
+        renderEverything();
+        return;
+    }
+
+    const snapshot = await getDocs(collection(database, "schools", SCHOOL_ID, "users"));
+    members = snapshot.docs.map((memberDoc) => ({ uid: memberDoc.id, ...memberDoc.data() }));
+    writeMemberCache(members);
+    renderEverything();
+}
 
 function redirectToLogin() {
     window.location.replace("login.html");
@@ -414,28 +447,11 @@ onAuthStateChanged(auth, async (user) => {
         }
 
         showAdminControls(userIsAdmin(profileSnapshot.data()));
-
-        // Keep this live so new attendance totals appear without a refresh.
-        const usersRef = collection(database, "schools", SCHOOL_ID, "users");
-        membersUnsubscribe?.();
-        membersUnsubscribe = onSnapshot(usersRef, (snapshot) => {
-            members = snapshot.docs.map((memberDoc) => ({
-                uid: memberDoc.id,
-                ...memberDoc.data()
-            }));
-
-            renderEverything();
-        }, (error) => {
-            console.error("Could not load leaderboard members:", error);
-            members = [];
-            renderEverything();
-        });
+        // Rankings do not need a permanent live listener. Refreshing the page gets fresh totals.
+        await loadMembersOnce();
     } catch (error) {
         console.error("Could not initialize the leaderboard:", error);
         renderEverything();
     }
 });
 
-window.addEventListener("beforeunload", () => {
-    membersUnsubscribe?.();
-});
